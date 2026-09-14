@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LO TENGO - Cadetes / Delivery</title>
+    <style>
+        :root {
+            --primary: #002855;
+            --secondary: #E85B04;
+            --success: #28a745;
+            --warning: #ffc107;
+            --bg-light: #f8f9fa;
+            --border: #e5e7eb;
+            --radius: 14px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #eef2f6;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        #app-container {
+            background: #ffffff;
+            width: 100%;
+            max-width: 480px;
+            min-height: 100vh;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .header-app {
+            background: var(--primary);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+        }
+
+        .header-app h1 {
+            margin: 0;
+            font-size: 20px;
+            letter-spacing: 0.5px;
+        }
+
+        .content-body {
+            padding: 15px;
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 90px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            margin: 6px 0 12px 0;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            box-sizing: border-box;
+            font-size: 14px;
+            background: #fff;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+            transition: opacity 0.2s;
+        }
+
+        button:hover { opacity: 0.9; }
+
+        .link-btn {
+            background: none;
+            color: var(--primary);
+            border: none;
+            text-decoration: underline;
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 13px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--primary);
+            margin: 0 0 12px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .bottom-nav {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: #ffffff;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0;
+            box-sizing: border-box;
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+            box-shadow: 0 -4px 10px rgba(0,0,0,0.03);
+            z-index: 10;
+        }
+
+        .nav-item {
+            background: none;
+            border: none;
+            color: #666;
+            font-size: 10px;
+            cursor: pointer;
+            width: auto;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .nav-item span { font-size: 16px; margin-bottom: 2px; }
+        .nav-item.active { color: var(--secondary); font-weight: bold; }
+
+        /* Banner emergente animado para burbuja de notificación visual */
+        #banner-notificacion-flotante {
+            position: fixed;
+            top: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 440px;
+            background: #137333;
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+            z-index: 9999;
+            transition: top 0.4s ease-in-out;
+            box-sizing: border-box;
+        }
+        #banner-notificacion-flotante.mostrar {
+            top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Burbuja Emergente Visual Global -->
+    <div id="banner-notificacion-flotante">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <b id="titulo-burbuja" style="font-size:15px;">📦 ¡Nuevo Pedido Disponible!</b>
+            <button type="button" onclick="cerrarBurbujaFlotante()" style="background:none; border:none; color:white; font-size:16px; cursor:pointer; width:auto; padding:0;">✕</button>
+        </div>
+        <p id="texto-burbuja" style="margin:6px 0 0 0; font-size:13px; opacity:0.95;">Un comercio liberó un pedido para retirar.</p>
+    </div>
+
+    <div id="app-container">
+        <!-- Header -->
+        <div class="header-app">
+            <h1><span style="color:var(--secondary);">LO</span> TENGO <small style="font-size:11px; opacity:0.8;">[Cadetes]</small></h1>
+            <span id="header-cadete-info" style="font-size: 11px; opacity: 0.9;">Panel Delivery</span>
+        </div>
+        
+        <!-- Contenedor Principal -->
+        <div class="content-body" id="main-content-cadete">
+            <!-- Login de Cadetes -->
+            <div id="screen-login-cadete">
+                <h3 style="color: var(--primary); margin-top: 0;">Acceso Cadetes</h3>
+                <label style="font-size: 12px; color: #555;">Cédula de Identidad (CI):</label>
+                <input type="text" id="loginCiCadete" placeholder="Ej: 45678912">
+
+                <label style="font-size: 12px; color: #555;">Contraseña:</label>
+                <input type="password" id="loginPassCadete" placeholder="Contraseña">
+
+                <button id="btnIngresarCadete" type="button" style="background-color: var(--primary); margin-top: 5px;">Ingresar como Cadete</button>
+                
+                <div style="text-align: center;">
+                    <p style="margin-top: 15px; font-size: 13px; color: #666;">¿No estás registrado como cadete?</p>
+                    <button id="irARegistroCadete" type="button" class="link-btn">Registrarme como Cadete</button>
+                </div>
+            </div>
+
+            <!-- Registro de Cadetes -->
+            <div id="screen-registro-cadete" style="display: none;">
+                <h3 style="color: var(--primary); margin-top: 0;">Registro de Cadete</h3>
+                <label>Nombre Completo:</label>
+                <input type="text" id="regCadNombre" placeholder="Ej: Carlos Gómez">
+                <label>Cédula de Identidad (CI):</label>
+                <input type="text" id="regCadCi" placeholder="Sin puntos ni guiones">
+                <label>Teléfono de Contacto:</label>
+                <input type="tel" id="regCadTel" placeholder="099123456">
+                <label>Vehículo:</label>
+                <select id="regCadVehiculo">
+                    <option value="Moto">🏍️ Moto</option>
+                    <option value="Bicicleta">🚲 Bicicleta</option>
+                    <option value="Auto">🚗 Automóvil</option>
+                </select>
+                <label>Contraseña:</label>
+                <input type="password" id="regCadPass" placeholder="Contraseña de acceso">
+                <button type="button" onclick="completarRegistroCadete()" style="background: var(--success); margin-top: 6px;">Crear Cuenta Cadete</button>
+                <button type="button" onclick="irLoginCadete()" class="link-btn" style="width:100%; text-align:center;">Volver al login</button>
+            </div>
+        </div>
+
+        <!-- Barra de Navegación Inferior del Cadete -->
+        <div class="bottom-nav" id="bottom-nav-cadete" style="display: none;">
+            <button class="nav-item active" onclick="mostrarDisponiblesCadete()"><span>📦</span>Disponibles <span id="badge-cadete-disponibles" style="background:var(--secondary); color:white; border-radius:50%; padding:1px 4px; font-size:8px; display:inline-block; vertical-align:top; margin-left:1px;">0</span></button>
+            <button class="nav-item" onclick="mostrarEnCursoCadete()"><span>🛵</span>En Curso</button>
+            <button class="nav-item" onclick="mostrarHistorialCadete()"><span>💰</span>Historial</button>
+            <button class="nav-item" onclick="cerrarSesionCadete()"><span>🚪</span>Salir</button>
+        </div>
+    </div>
+
+    <!-- Script con Alerta de Voz Sintetizada y Notificaciones Emergentes -->
+    <script>
+        let ultimoConteoPedidosCadete = 0;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            verificarSesionCadete();
+            configurarEventosLoginCadete();
+            
+            // Escuchar cambios de almacenamiento en tiempo real
+            window.addEventListener('storage', (e) => {
+                let cadete = obtenerCadeteActualizado();
+                if (cadete) {
+                    revisarNuevosPedidosCadete(true);
+                    const contenedor = document.getElementById('main-content-cadete');
+                    if (contenedor && document.getElementById('bandera-vista-disponibles')) {
+                        mostrarDisponiblesCadete();
+                    } else if (contenedor && document.getElementById('bandera-vista-curso')) {
+                        mostrarEnCursoCadete();
+                    }
+                }
+            });
+
+            // Verificar periódicamente por si hay peticiones locales en la misma instancia
+            setInterval(() => {
+                let cadete = obtenerCadeteActualizado();
+                if (cadete) {
+                    revisarNuevosPedidosCadete(false);
+                }
+            }, 5000);
+        });
+
+        // SÍNTESIS DE VOZ Y ALERTAS AUDIO-VISUALES
+        function reproducirAlertaVoz(mensaje) {
+            try {
+                if ('speechSynthesis' in window) {
+                    window.speechSynthesis.cancel(); // Detener cualquier audio previo acumulado
+                    let utterance = new SpeechSynthesisUtterance(mensaje);
+                    utterance.lang = 'es-UY';
+                    utterance.rate = 1.0;
+                    utterance.pitch = 1.0;
+                    window.speechSynthesis.speak(utterance);
+                }
+            } catch (err) {
+                console.error("Error reproduciendo voz sintética:", err);
+            }
+        }
+
+        function mostrarBurbujaEmergente(titulo, texto) {
+            const banner = document.getElementById('banner-notificacion-flotante');
+            const tit = document.getElementById('titulo-burbuja');
+            const txt = document.getElementById('texto-burbuja');
+
+            if (banner && tit && txt) {
+                tit.innerText = titulo;
+                txt.innerText = texto;
+                banner.classList.add('mostrar');
+
+                setTimeout(() => {
+                    cerrarBurbujaFlotante();
+                }, 6000);
+            }
+        }
+
+        function cerrarBurbujaFlotante() {
+            const banner = document.getElementById('banner-notificacion-flotante');
+            if (banner) banner.classList.remove('mostrar');
+        }
+
+        function revisarNuevosPedidosCadete(activarAlertaSonora) {
+            let pedidosCadete = JSON.parse(localStorage.getItem('lt_pedidos_cadete')) || [];
+            let disponibles = pedidosCadete.filter(p => p.estado === 'Disponible para retirar');
+            
+            let badge = document.getElementById('badge-cadete-disponibles');
+            if (badge) badge.innerText = disponibles.length;
+
+            if (disponibles.length > ultimoConteoPedidosCadete && activarAlertaSonora) {
+                // Se detectó un nuevo pedido entrante
+                reproducirAlertaVoz("Lo tengo");
+                mostrarBurbujaEmergente("📦 ¡Nuevo Pedido!", "Un comercio acaba de liberar un pedido para retirar.");
+            }
+            ultimoConteoPedidosCadete = disponibles.length;
+        }
+
+        function verificarSesionCadete() {
+            const sesion = localStorage.getItem('lt_sesion_cadete');
+            if (sesion) {
+                try {
+                    const cadete = JSON.parse(sesion);
+                    document.getElementById('header-cadete-info').innerText = cadete.nombre;
+                    document.getElementById('bottom-nav-cadete').style.display = 'flex';
+                    revisarNuevosPedidosCadete(false);
+                    mostrarDisponiblesCadete();
+                } catch (e) { console.error(e); }
+            }
+        }
+
+        function configurarEventosLoginCadete() {
+            const btnReg = document.getElementById('irARegistroCadete');
+            if (btnReg) {
+                btnReg.onclick = () => {
+                    document.getElementById('screen-login-cadete').style.display = 'none';
+                    document.getElementById('screen-registro-cadete').style.display = 'block';
+                };
+            }
+
+            const btnIng = document.getElementById('btnIngresarCadete');
+            if (btnIng) {
+                btnIng.onclick = () => {
+                    const ci = document.getElementById('loginCiCadete').value.trim();
+                    const pass = document.getElementById('loginPassCadete').value.trim();
+                    const base = JSON.parse(localStorage.getItem('lt_base_cadetes')) || [];
+                    const cadete = base.find(c => c.ci === ci && c.password === pass);
+
+                    if (!cadete) { alert("❌ CI o contraseña incorrectos."); return; }
+
+                    // Interacción previa requerida por navegadores móviles para habilitar síntesis de voz en segundo plano
+                    reproducirAlertaVoz("Lo tengo");
+
+                    localStorage.setItem('lt_sesion_cadete', JSON.stringify(cadete));
+                    location.reload();
+                };
+            }
+        }
+
+        function completarRegistroCadete() {
+            let nombre = document.getElementById('regCadNombre').value.trim();
+            let ci = document.getElementById('regCadCi').value.trim();
+            let telefono = document.getElementById('regCadTel').value.trim();
+            let vehiculo = document.getElementById('regCadVehiculo').value;
+            let password = document.getElementById('regCadPass').value.trim();
+
+            if (!nombre || !ci || !password) { alert("⚠️ Completá los campos obligatorios."); return; }
+
+            let base = JSON.parse(localStorage.getItem('lt_base_cadetes')) || [];
+            if (base.some(c => c.ci === ci)) { alert("⚠️ Ya existe un cadete registrado con esta CI."); return; }
+
+            let nuevoCadete = { ci, nombre, telefono, vehiculo, password, entregas: [] };
+            base.push(nuevoCadete);
+            localStorage.setItem('lt_base_cadetes', JSON.stringify(base));
+            localStorage.setItem('lt_sesion_cadete', JSON.stringify(nuevoCadete));
+
+            alert("✅ ¡Registro de cadete exitoso!");
+            location.reload();
+        }
+
+        function irLoginCadete() {
+            document.getElementById('screen-registro-cadete').style.display = 'none';
+            document.getElementById('screen-login-cadete').style.display = 'block';
+        }
+
+        function cerrarSesionCadete() {
+            localStorage.removeItem('lt_sesion_cadete');
+            location.reload();
+        }
+
+        function obtenerCadeteActualizado() {
+            let sesion = JSON.parse(localStorage.getItem('lt_sesion_cadete'));
+            if (!sesion) return null;
+            let base = JSON.parse(localStorage.getItem('lt_base_cadetes')) || [];
+            return base.find(c => c.ci === sesion.ci) || sesion;
+        }
+
+        /* --- 1. PEDIDOS DISPONIBLES PARA RETIRAR --- */
+        function mostrarDisponiblesCadete() {
+            actualizarMenuActivoCadete(0);
+            let pedidosCadete = JSON.parse(localStorage.getItem('lt_pedidos_cadete')) || [];
+            let disponibles = pedidosCadete.filter(p => p.estado === 'Disponible para retirar');
+            disponibles.sort((a, b) => b.id - a.id);
+
+            const container = document.getElementById('main-content-cadete');
+            let htmlDisponibles = disponibles.map(p => `
+                <div style="background: #fff; border: 1px solid var(--border); border-left: 4px solid var(--secondary); border-radius: var(--radius); padding: 15px; margin-bottom: 15px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <strong style="color: var(--secondary); font-size: 16px;">📦 Pedido #${p.id}</strong>
+                        <span style="font-size: 12px; font-weight:bold; color:var(--success);">$${p.total}</span>
+                    </div>
+                    <p style="margin: 6px 0 2px 0; font-size: 13px;">🏪 <b>Comercio:</b> ${p.comercio}</p>
+                    <p style="margin: 2px 0; font-size: 13px; color:#555;">📍 <b>Retiro:</b> ${p.direccionComercio}</p>
+                    <hr style="border:0; border-top:1px dashed #eee; margin:8px 0;">
+                    <p style="margin: 2px 0; font-size: 13px;">👤 <b>Cliente:</b> ${p.cliente}</p>
+                    <p style="margin: 2px 0 10px 0; font-size: 13px; color:#555;">📍 <b>Entrega:</b> ${p.direccionCliente}</p>
+
+                    <button type="button" onclick="tomarPedidoCadete(${p.id})" style="background: var(--success); margin-top: 5px;">🚀 Aceptar y Tomar Pedido</button>
+                </div>
+            `).join('') || '<p style="text-align:center; color:#666; margin-top:30px;">No hay pedidos disponibles para retirar en este momento.</p>';
+
+            container.innerHTML = `
+                <div id="bandera-vista-disponibles"></div>
+                <div class="section-title">
+                    <span>📦 Pedidos Disponibles</span>
+                    <button type="button" onclick="mostrarDisponiblesCadete()" style="width:auto; padding:6px 10px; font-size:11px; background:var(--primary);">Actualizar 🔄</button>
+                </div>
+                ${htmlDisponibles}
+            `;
+        }
+
+        window.tomarPedidoCadete = function(idPedido) {
+            let pedidosCadete = JSON.parse(localStorage.getItem('lt_pedidos_cadete')) || [];
+            let pIndex = pedidosCadete.findIndex(p => Number(p.id) === Number(idPedido));
+            
+            if (pIndex !== -1) {
+                let sesion = obtenerCadeteActualizado();
+                pedidosCadete[pIndex].estado = 'En camino a retirar';
+                pedidosCadete[pIndex].cadeteAsignado = sesion.nombre;
+                pedidosCadete[pIndex].ciCadete = sesion.ci;
+
+                localStorage.setItem('lt_pedidos_cadete', JSON.stringify(pedidosCadete));
+                window.dispatchEvent(new Event('storage'));
+
+                reproducirAlertaVoz("Lo tengo");
+                mostrarBurbujaEmergente("🛵 Pedido Asignado", "Dirígete al local comercial a retirar el pedido.");
+                mostrarEnCursoCadete();
+            } else {
+                alert("⚠️ Este pedido ya fue tomado por otro cadete.");
+                mostrarDisponiblesCadete();
+            }
+        };
+
+        /* --- 2. PEDIDOS EN CURSO --- */
+        function mostrarEnCursoCadete() {
+            actualizarMenuActivoCadete(1);
+            let sesion = obtenerCadeteActualizado();
+            if (!sesion) return;
+
+            let pedidosCadete = JSON.parse(localStorage.getItem('lt_pedidos_cadete')) || [];
+            let enCurso = pedidosCadete.filter(p => p.ciCadete === sesion.ci && p.estado !== 'Entregado y Cerrado');
+            enCurso.sort((a, b) => b.id - a.id);
+
+            const container = document.getElementById('main-content-cadete');
+            let htmlCurso = enCurso.map(p => `
+                <div style="background: #fff; border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: var(--radius); padding: 15px; margin-bottom: 15px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <strong style="color: var(--primary); font-size: 16px;">🛵 Pedido #${p.id}</strong>
+                        <span style="font-size: 11px; background:#eef2f6; padding:4px 8px; border-radius:6px; font-weight:bold;">${p.estado}</span>
+                    </div>
+                    
+                    <p style="margin: 6px 0 2px 0; font-size: 13px;">🏪 <b>Retirar en:</b> ${p.comercio} (${p.direccionComercio})</p>
+                    <p style="margin: 2px 0; font-size: 13px;">👤 <b>Cliente:</b> ${p.cliente} (${p.telefonoCliente})</p>
+                    <p style="margin: 2px 0 10px 0; font-size: 13px;">📍 <b>Destino:</b> ${p.direccionCliente}</p>
+
+                    <div style="background:#f8f9fa; padding:10px; border-radius:8px; margin-top:8px;">
+                        <label style="font-size:11px; font-weight:bold; color:var(--primary); display:block; margin-bottom:4px;">VERIFICAR PIN DE ENTREGA (Cliente):</label>
+                        <input type="text" id="pin-ingresado-${p.id}" placeholder="Ingresá el PIN de 4 dígitos" style="margin-bottom:6px; text-align:center; font-size:16px; letter-spacing:2px; font-weight:bold;">
+                        <button type="button" onclick="finalizarEntregaConPin(${p.id})" style="background:var(--success);">✅ Confirmar Entrega (Llegué al cliente)</button>
+                    </div>
+                </div>
+            `).join('') || '<p style="text-align:center; color:#666; margin-top:30px;">No tenés pedidos en curso actualmente.</p>';
+
+            container.innerHTML = `
+                <div id="bandera-vista-curso"></div>
+                <div class="section-title"><span>🛵 Mis Pedidos en Curso</span></div>
+                ${htmlCurso}
+            `;
+        }
+
+        window.finalizarEntregaConPin = function(idPedido) {
+            let inputPin = document.getElementById(`pin-ingresado-${idPedido}`);
+            let pinIngresado = inputPin ? inputPin.value.trim() : '';
+
+            let pedidosCadete = JSON.parse(localStorage.getItem('lt_pedidos_cadete')) || [];
+            let pedido = pedidosCadete.find(p => Number(p.id) === Number(idPedido));
+
+            if (!pedido) { alert("⚠️ Pedido no encontrado."); return; }
+
+            if (pinIngresado !== String(pedido.codigoVerificacion)) {
+                alert("❌ PIN incorrecto. Solicitale el código correcto al cliente.");
+                return;
+            }
+
+            // ÉXITO: CERRAR PEDIDO
+            pedido.estado = 'Entregado y Cerrado';
+            localStorage.setItem('lt_pedidos_cadete', JSON.stringify(pedidosCadete));
+
+            // Actualizar en el panel de la empresa
+            let baseEmpresas = JSON.parse(localStorage.getItem('lt_base_empresas')) || [];
+            for (let emp of baseEmpresas) {
+                if (emp.pedidos) {
+                    let pEmp = emp.pedidos.find(p => Number(p.id) === Number(idPedido));
+                    if (pEmp) {
+                        pEmp.estado = 'Entregado y Cerrado';
+                    }
+                }
+            }
+            localStorage.setItem('lt_base_empresas', JSON.stringify(baseEmpresas));
+
+            // Actualizar en el panel del cliente
+            let pedidosCliente = JSON.parse(localStorage.getItem('lt_pedidos_cliente')) || [];
+            let pCliente = pedidosCliente.find(p => Number(p.id) === Number(idPedido));
+            if (pCliente) {
+                pCliente.estado = 'Entregado y Cerrado';
+                localStorage.setItem('lt_pedidos_cliente', JSON.stringify(pedidosCliente));
+            }
+
+            // Guardar en el historial del cadete
+            let sesion = obtenerCadeteActualizado();
+            let baseCadetes = JSON.parse(localStorage.getItem('lt_base_cadetes')) || [];
+            let cadIndex = baseCadetes.findIndex(c => c.ci === sesion.ci);
+            if (cadIndex !== -1) {
+                if (!baseCadetes[cadIndex].entregas) baseCadetes[cadIndex].entregas = [];
+                baseCadetes[cadIndex].entregas.push(pedido);
+                localStorage.setItem('lt_base_cadetes', JSON.stringify(baseCadetes));
+                localStorage.setItem('lt_sesion_cadete', JSON.stringify(baseCadetes[cadIndex]));
+            }
+
+            window.dispatchEvent(new Event('storage'));
+
+            // Reproducir la voz solicitada al llegar al cliente
+            reproducirAlertaVoz("Lo tengo");
+            mostrarBurbujaEmergente("🎉 ¡Entrega Exitosa!", "El pedido fue cerrado y registrado correctamente.");
+            mostrarEnCursoCadete();
+        };
+
+        /* --- 3. HISTORIAL DE GANANCIAS --- */
+        function mostrarHistorialCadete() {
+            actualizarMenuActivoCadete(2);
+            let sesion = obtenerCadeteActualizado();
+            if (!sesion) return;
+
+            let entregas = sesion.entregas || [];
+            entregas.sort((a, b) => b.id - a.id);
+
+            let totalGanado = entregas.length * 80; // Tarifa fija estimada de envío por entrega
+
+            const container = document.getElementById('main-content-cadete');
+            let htmlHistorial = entregas.map(e => `
+                <div style="background:#fff; border:1px solid var(--border); border-radius:var(--radius); padding:12px; margin-bottom:10px; font-size:13px;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                        <b>Pedido #${e.id} (${e.comercio})</b>
+                        <span style="color:var(--success); font-weight:bold;">Completado ✓</span>
+                    </div>
+                    <p style="margin:2px 0; color:#555;">Cliente: ${e.cliente} - Destino: ${e.direccionCliente}</p>
+                    <div style="display:flex; justify-content:space-between; border-top:1px dashed #eee; margin-top:6px; paddingTop:6px;">
+                        <span>Tarifa de Envío:</span>
+                        <b style="color:var(--primary);">+$80.00</b>
+                    </div>
+                </div>
+            `).join('') || '<p style="text-align:center; color:#666; margin-top:30px;">Aún no tenés entregas finalizadas en tu historial.</p>';
+
+            container.innerHTML = `
+                <div class="section-title"><span>💰 Historial de Ganancias</span></div>
+                <div style="background:linear-gradient(135deg, var(--secondary), #c04800); color:white; padding:15px; border-radius:var(--radius); margin-bottom:15px;">
+                    <h4 style="margin:0 0 4px 0; font-size:14px;">Total Envíos Realizados: ${entregas.length}</h4>
+                    <h2 style="margin:0; font-size:22px;">Ganancia Total: $${totalGanado.toFixed(2)}</h2>
+                </div>
+                ${htmlHistorial}
+            `;
+        }
+
+        function actualizarMenuActivoCadete(index) {
+            const botones = document.querySelectorAll('.bottom-nav .nav-item');
+            botones.forEach((btn, idx) => {
+                if (idx === index) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+        }
+    </script>
+</body>
+</html>

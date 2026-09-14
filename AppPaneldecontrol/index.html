@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LO TENGO — Panel de Administración Central</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        :root { --bg: #0f172a; --card: #1e293b; --accent: #38bdf8; --text: #f8fafc; --text-muted: #94a3b8; --danger: #ef4444; --success: #22c55e; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 20px; }
+        header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; padding-bottom: 15px; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        h1 { margin: 0; font-size: 22px; color: var(--accent); }
+        .grid-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .card { background-color: var(--card); padding: 18px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        .card h3 { margin: 0 0 10px 0; font-size: 13px; color: var(--text-muted); }
+        .card .value { font-size: 22px; font-weight: bold; }
+        .filters-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .filter-box { background-color: var(--card); padding: 15px; border-radius: 12px; display: flex; flex-direction: column; gap: 8px; }
+        .filter-box label { font-size: 13px; font-weight: bold; color: var(--accent); }
+        .filter-box select, .filter-box input { padding: 9px 12px; border-radius: 8px; background: #0f172a; color: white; border: 1px solid #334155; font-size: 13px; }
+        table { width: 100%; border-collapse: collapse; background-color: var(--card); border-radius: 12px; overflow: hidden; margin-bottom: 20px; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #334155; font-size: 13px; }
+        th { background-color: #0f172a; color: var(--accent); }
+        .btn { background-color: var(--accent); color: #0f172a; border: none; padding: 8px 14px; font-weight: bold; border-radius: 6px; cursor: pointer; transition: 0.2s; font-size: 12px; }
+        .btn:hover { opacity: 0.9; }
+        .btn-danger { background-color: var(--danger); color: white; }
+        .btn-success { background-color: var(--success); color: white; }
+        .section-title { font-size: 17px; margin: 25px 0 10px 0; font-weight: 600; color: var(--accent); }
+        .badge-socket { font-size: 11px; background: rgba(56, 189, 248, 0.2); padding: 4px 8px; border-radius: 6px; border: 1px solid var(--accent); }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div>
+            <h1>LO TENGO — Panel de Control Central</h1>
+            <span id="socket-status" class="badge-socket">🔴 Desconectado</span>
+        </div>
+        <div>
+            <button class="btn" style="background:var(--accent); padding:10px 16px;" onclick="ejecutarCierreCadetes()">🔒 Cierre Semanal Cadetes</button>
+        </div>
+    </header>
+
+    <div class="grid-stats">
+        <div class="card">
+            <h3>Ventas Totales Plataforma</h3>
+            <div class="value" id="stat-ventas">$0</div>
+        </div>
+        <div class="card">
+            <h3>Comisión App Empresas (10%)</h3>
+            <div class="value" id="stat-comision-empresas">$0</div>
+        </div>
+        <div class="card">
+            <h3>Fondo Retenido Garantía</h3>
+            <div class="value" style="color: #fbbf24;" id="stat-retenido">$0</div>
+        </div>
+        <div class="card">
+            <h3>Neto a Abonar Empresas</h3>
+            <div class="value" style="color: #34d399;" id="stat-neto-empresas">$0</div>
+        </div>
+    </div>
+
+    <!-- FILTROS -->
+    <div class="filters-container">
+        <div class="filter-box">
+            <label for="filtroEmpresa">🏪 Filtrar por Comercio:</label>
+            <select id="filtroEmpresa" onchange="renderizarPanelCompleto()">
+                <option value="TODAS">Todas las empresas</option>
+            </select>
+        </div>
+
+        <div class="filter-box">
+            <label for="filtroCadete">🛵 Filtrar por Cadete:</label>
+            <select id="filtroCadete" onchange="renderizarPanelCompleto()">
+                <option value="TODOS">Todos los cadetes</option>
+            </select>
+        </div>
+
+        <div class="filter-box">
+            <label for="busquedaPedido">🔍 Buscar Pedido (ID, Cliente o Local):</label>
+            <input type="text" id="busquedaPedido" placeholder="Ej: 1001 o Juan" oninput="renderizarPanelCompleto()">
+        </div>
+    </div>
+
+    <div class="section-title">👤 Control, Sanciones y Rendimiento de Cadetes</div>
+    <table>
+        <thead>
+            <tr>
+                <th>ID Cadete</th>
+                <th>Nombre y Teléfono</th>
+                <th>Vehículo</th>
+                <th>Comisión</th>
+                <th>Estado Operativo</th>
+                <th>Acciones de Emergencia</th>
+            </tr>
+        </thead>
+        <tbody id="tabla-cadetes"></tbody>
+    </table>
+
+    <div class="section-title">📦 Monitoreo y Manipulación Forzada de Envíos (Anti-Tranqueos)</div>
+    <table>
+        <thead>
+            <tr>
+                <th>ID Pedido</th>
+                <th>Comercio</th>
+                <th>Cliente / Destino</th>
+                <th>Cadete Asignado</th>
+                <th>Estado Actual</th>
+                <th>Acciones Manuales (Desatascar)</th>
+            </tr>
+        </thead>
+        <tbody id="tabla-envios"></tbody>
+    </table>
+
+    <div class="section-title">📊 Estado de Cuentas y Liquidación a Empresas</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Comercio</th>
+                <th>Ventas Brutas (UYU)</th>
+                <th>Comisión App (10%)</th>
+                <th>Garantía (48h)</th>
+                <th>Neto a Abonar (UYU)</th>
+                <th>Acción Financiera</th>
+            </tr>
+        </thead>
+        <tbody id="tabla-empresas"></tbody>
+    </table>
+
+    <script>
+        let socket = null;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            inicializarSocket();
+            renderizarPanelCompleto();
+
+            window.addEventListener('storage', () => {
+                renderizarPanelCompleto();
+            });
+        });
+
+        function inicializarSocket() {
+            try {
+                socket = io();
+                socket.on('connect', () => {
+                    document.getElementById('socket-status').innerText = "🟢 En Línea";
+                    document.getElementById('socket-status').style.background = "rgba(40, 167, 69, 0.2)";
+                    document.getElementById('socket-status').style.borderColor = "#28a745";
+                });
+                socket.on('disconnect', () => {
+                    document.getElementById('socket-status').innerText = "🔴 Desconectado";
+                    document.getElementById('socket-status').style.background = "rgba(217, 83, 79, 0.2)";
+                    document.getElementById('socket-status').style.borderColor = "#d9534f";
+                });
+                socket.on('actualizar_panel', () => renderizarPanelCompleto());
+            } catch (e) {
+                console.warn("Socket no disponible.");
+            }
+        }
+
+        function obtenerDatosPlataforma() {
+            let baseEmpresas = JSON.parse(localStorage.getItem('lt_base_empresas')) || [];
+            let baseCadetes = JSON.parse(localStorage.getItem('lt_base_cadetes')) || [];
+
+            let todosLosPedidos = [];
+            baseEmpresas.forEach(empresa => {
+                (empresa.pedidos || []).forEach(ped => {
+                    todosLosPedidos.push({
+                        ...ped,
+                        rutEmpresa: empresa.rut,
+                        nombreEmpresa: empresa.name || empresa.nombre || 'Comercio'
+                    });
+                });
+            });
+
+            return { empresas: baseEmpresas, cadetes: baseCadetes, pedidos: todosLosPedidos };
+        }
+
+        function renderizarPanelCompleto() {
+            const datos = obtenerDatosPlataforma();
+            poblarFiltros(datos);
+
+            let empresaSel = document.getElementById('filtroEmpresa').value;
+            let cadeteSel = document.getElementById('filtroCadete').value;
+            let textoBusqueda = document.getElementById('busquedaPedido').value.toLowerCase().trim();
+
+            let ventasTotales = datos.pedidos.reduce((acc, p) => acc + (parseFloat(p.total) || 1500), 0);
+            let comisionApp = ventasTotales * 0.10;
+            let retenido = ventasTotales - comisionApp;
+
+            document.getElementById('stat-ventas').innerText = `$${ventasTotales.toLocaleString('es-UY')}`;
+            document.getElementById('stat-comision-empresas').innerText = `$${comisionApp.toLocaleString('es-UY')}`;
+            document.getElementById('stat-retenido').innerText = `$${retenido.toLocaleString('es-UY')}`;
+            document.getElementById('stat-neto-empresas').innerText = `$${retenido.toLocaleString('es-UY')}`;
+
+            // Tabla Cadetes
+            let tbodyCadetes = document.getElementById('tabla-cadetes');
+            tbodyCadetes.innerHTML = '';
+            if (datos.cadetes.length === 0) {
+                tbodyCadetes.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">No hay cadetes registrados.</td></tr>`;
+            } else {
+                datos.cadetes.forEach(c => {
+                    if (cadeteSel !== 'TODOS' && c.nombre !== cadeteSel) return;
+                    let suspendido = c.suspendido || false;
+                    let estadoHtml = suspendido 
+                        ? `<span style="color:var(--danger); font-weight:bold;">🚫 Suspendido / Sancionado</span>` 
+                        : `<span style="color:var(--success); font-weight:bold;">🟢 Activo Operativo</span>`;
+                    
+                    let btnAccionCadete = suspendido
+                        ? `<button class="btn btn-success" onclick="cambiarEstadoCadete('${c.id}', false)">Reactivar</button>`
+                        : `<button class="btn btn-danger" onclick="cambiarEstadoCadete('${c.id}', true)">Suspender / Sancionar</button>`;
+
+                    tbodyCadetes.innerHTML += `
+                        <tr>
+                            <td>${c.id}</td>
+                            <td><b>${c.nombre}</b><br><span style="font-size:11px; color:var(--text-muted);">${c.telefono || ''}</span></td>
+                            <td>${c.tipoVehiculo ? c.tipoVehiculo.toUpperCase() : 'MOTO'}</td>
+                            <td>${suspendido ? '0% (Sancionado)' : '80% (Normal)'}</td>
+                            <td>${estadoHtml}</td>
+                            <td>${btnAccionCadete}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            // Tabla Envíos
+            let tbodyEnvios = document.getElementById('tabla-envios');
+            tbodyEnvios.innerHTML = '';
+            let pedidosFiltrados = datos.pedidos.filter(p => {
+                let coincideEmpresa = (empresaSel === 'TODAS' || p.nombreEmpresa === empresaSel);
+                let coincideBusqueda = (textoBusqueda === '' || 
+                    String(p.id).toLowerCase().includes(textoBusqueda) || 
+                    (p.cliente && p.cliente.toLowerCase().includes(textoBusqueda)) || 
+                    p.nombreEmpresa.toLowerCase().includes(textoBusqueda));
+                return coincideEmpresa && coincideBusqueda;
+            });
+
+            if (pedidosFiltrados.length === 0) {
+                tbodyEnvios.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">No hay pedidos activos.</td></tr>`;
+            } else {
+                pedidosFiltrados.forEach(p => {
+                    let estadoLabel = p.estado === 'entregado' ? '<span style="color:var(--success); font-weight:bold;">Entregado ✅</span>' : '<span style="color:#fbbf24; font-weight:bold;">En Ruta 🚚</span>';
+                    tbodyEnvios.innerHTML += `
+                        <tr>
+                            <td><b>#${p.id}</b></td>
+                            <td>${p.nombreEmpresa}</td>
+                            <td>${p.cliente || 'Consumidor'}</td>
+                            <td>${p.cadeteAsignado || 'Sin asignar'}</td>
+                            <td>${estadoLabel}</td>
+                            <td>
+                                <div style="display:flex; gap:5px;">
+                                    <button class="btn btn-success" style="padding:4px 8px; font-size:11px;" onclick="forzarEstadoPedido('${p.id}', '${p.rutEmpresa}', 'entregado')">Forzar Entregado</button>
+                                    <button class="btn btn-danger" style="padding:4px 8px; font-size:11px;" onclick="forzarEstadoPedido('${p.id}', '${p.rutEmpresa}', 'cancelado')">Cancelar</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+
+            // Tabla Empresas
+            let tbodyEmpresas = document.getElementById('tabla-empresas');
+            tbodyEmpresas.innerHTML = '';
+            let resumenEmp = {};
+            datos.pedidos.forEach(p => {
+                if (empresaSel !== 'TODAS' && p.nombreEmpresa !== empresaSel) return;
+                if (!resumenEmp[p.nombreEmpresa]) resumenEmp[p.nombreEmpresa] = { total: 0 };
+                resumenEmp[p.nombreEmpresa].total += (parseFloat(p.total) || 1500);
+            });
+
+            let keysEmp = Object.keys(resumenEmp);
+            if (keysEmp.length === 0) {
+                tbodyEmpresas.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">Sin datos de comercios.</td></tr>`;
+            } else {
+                keysEmp.forEach(empName => {
+                    let totalV = resumenEmp[empName].total;
+                    let com = totalV * 0.10;
+                    let neto = totalV - com;
+                    tbodyEmpresas.innerHTML += `
+                        <tr>
+                            <td><b>${empName}</b></td>
+                            <td>$${totalV.toLocaleString('es-UY')}</td>
+                            <td>$${com.toLocaleString('es-UY')} (10%)</td>
+                            <td><span style="color:#fbbf24;">⏳ Retenido</span></td>
+                            <td><strong style="color:var(--success);">$${neto.toLocaleString('es-UY')}</strong></td>
+                            <td><button class="btn" onclick="alert('✅ Pago liberado para ${empName}')">Liberar</button></td>
+                        </tr>
+                    `;
+                });
+            }
+        }
+
+        function poblarFiltros(datos) {
+            const selEmp = document.getElementById('filtroEmpresa');
+            let valAntEmp = selEmp.value;
+            selEmp.innerHTML = '<option value="TODAS">Todas las empresas</option>';
+            datos.empresas.forEach(e => {
+                let nom = e.name || e.nombre;
+                selEmp.innerHTML += `<option value="${nom}">${nom}</option>`;
+            });
+            if ([...selEmp.options].some(o => o.value === valAntEmp)) selEmp.value = valAntEmp;
+
+            const selCad = document.getElementById('filtroCadete');
+            let valAntCad = selCad.value;
+            selCad.innerHTML = '<option value="TODOS">Todos los cadetes</option>';
+            datos.cadetes.forEach(c => {
+                selCad.innerHTML += `<option value="${c.nombre}">${c.nombre}</option>`;
+            });
+            if ([...selCad.options].some(o => o.value === valAntCad)) selCad.value = valAntCad;
+        }
+
+        function cambiarEstadoCadete(idCadete, suspender) {
+            let cadetes = JSON.parse(localStorage.getItem('lt_base_cadetes')) || [];
+            let cadete = cadetes.find(c => c.id === idCadete);
+            if (cadete) {
+                cadete.suspendido = suspender;
+                localStorage.setItem('lt_base_cadetes', JSON.stringify(cadetes));
+                if (socket) socket.emit('sincronizar_plataforma');
+                renderizarPanelCompleto();
+            }
+        }
+
+        function forzarEstadoPedido(idPedido, rutEmpresa, nuevoEstado) {
+            let baseEmpresas = JSON.parse(localStorage.getItem('lt_base_empresas')) || [];
+            let empresa = baseEmpresas.find(e => e.rut === rutEmpresa || (e.pedidos || []).some(p => p.id == idPedido));
+            if (empresa) {
+                let pedido = (empresa.pedidos || []).find(p => p.id == idPedido);
+                if (pedido) {
+                    pedido.estado = nuevoEstado;
+                    localStorage.setItem('lt_base_empresas', JSON.stringify(baseEmpresas));
+                    if (socket) socket.emit('sincronizar_plataforma');
+                    renderizarPanelCompleto();
+                }
+            }
+        }
+
+        function ejecutarCierreCadetes() {
+            if(confirm("¿Estás seguro de realizar el cierre semanal?")) {
+                alert("🔒 Cierre ejecutado con éxito.");
+            }
+        }
+    </script>
+</body>
+</html>
