@@ -1,11 +1,18 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
+
+// Servir las carpetas estáticas de las interfaces
+app.use('/cliente', express.static(path.join(__dirname, 'AppCliente')));
+app.use('/cadete', express.static(path.join(__dirname, 'AppDriver')));
+app.use('/empresa', express.static(path.join(__dirname, 'AppEmpresa')));
+app.use('/admin', express.static(path.join(__dirname, 'AppPaneldecontrol')));
 
 // Base de datos en memoria del servidor (para arrancar las pruebas en la nube)
 let baseDatosMemoria = {
@@ -15,9 +22,9 @@ let baseDatosMemoria = {
     pedidos: []
 };
 
-// Ruta de prueba para verificar que el servidor responde
+// Ruta principal redirige directo al módulo cliente
 app.get('/', (req, res) => {
-    res.json({ estado: 'ok', mensaje: '🚀 El servidor en la nube de Lo Tengo está funcionando correctamente' });
+    res.redirect('/cliente');
 });
 
 // 1. GESTIÓN DE EMPRESAS Y CATÁLOGOS
