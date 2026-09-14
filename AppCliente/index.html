@@ -3,35 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LO TENGO - Cliente Sincronizado</title>
+    <title>LO TENGO - Profesional Edition</title>
     <style>
         :root {
             --primary: #002855;
             --secondary: #E85B04;
-            --success: #28a745;
-            --warning: #ffc107;
-            --bg-light: #f8f9fa;
-            --border: #e5e7eb;
-            --radius: 14px;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg-body: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --radius-lg: 20px;
+            --radius-md: 14px;
+            --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.04);
+            --shadow-lg: 0 10px 25px rgba(0, 40, 85, 0.08);
         }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #eef2f6;
+            background-color: var(--bg-body);
             margin: 0;
             padding: 0;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            color: var(--text-main);
         }
 
         #app-container {
-            background: #ffffff;
+            background: var(--card-bg);
             width: 100%;
             max-width: 480px;
             min-height: 100vh;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            box-shadow: var(--shadow-lg);
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
@@ -39,54 +47,73 @@
         }
 
         .header-app {
-            background: var(--primary);
+            background: linear-gradient(135deg, var(--primary), #001833);
             color: white;
-            padding: 15px 20px;
+            padding: 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom-left-radius: 20px;
-            border-bottom-right-radius: 20px;
+            border-bottom-left-radius: 24px;
+            border-bottom-right-radius: 24px;
+            box-shadow: 0 4px 15px rgba(0,40,85,0.2);
         }
 
         .header-app h1 {
             margin: 0;
-            font-size: 20px;
-            letter-spacing: 0.5px;
+            font-size: 22px;
+            letter-spacing: -0.5px;
+            font-weight: 800;
         }
 
         .content-body {
-            padding: 15px;
+            padding: 20px;
             flex: 1;
             overflow-y: auto;
-            padding-bottom: 90px;
+            padding-bottom: 100px;
+        }
+
+        label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            display: block;
+            margin-bottom: 4px;
         }
 
         input, select {
             width: 100%;
-            padding: 12px;
-            margin: 6px 0 12px 0;
-            border: 1px solid var(--border);
-            border-radius: 10px;
+            padding: 14px 16px;
+            margin: 0 0 16px 0;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-md);
             box-sizing: border-box;
             font-size: 14px;
-            background: #fff;
+            background: #ffffff;
+            color: var(--text-main);
+            transition: all 0.2s ease;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(0, 40, 85, 0.08);
         }
 
         button {
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             background-color: var(--primary);
             color: white;
             border: none;
-            border-radius: 10px;
-            font-weight: bold;
+            border-radius: var(--radius-md);
+            font-weight: 700;
             cursor: pointer;
-            font-size: 14px;
-            transition: opacity 0.2s;
+            font-size: 15px;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(0,40,85,0.15);
         }
 
-        button:hover { opacity: 0.9; }
+        button:hover { opacity: 0.92; transform: translateY(-1px); }
+        button:active { transform: scale(0.98); }
 
         .link-btn {
             background: none;
@@ -96,17 +123,20 @@
             cursor: pointer;
             margin-top: 10px;
             font-size: 13px;
+            box-shadow: none;
         }
 
+        /* Estética de Buscador Pro */
         .search-container {
-            background: #f1f3f5;
-            padding: 10px 15px;
-            border-radius: 12px;
+            background: #f8fafc;
+            padding: 12px 18px;
+            border-radius: var(--radius-md);
             display: flex;
             align-items: center;
-            gap: 10px;
-            margin-bottom: 18px;
-            border: 1px solid #e2e8f0;
+            gap: 12px;
+            margin-bottom: 24px;
+            border: 1.5px solid var(--border);
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.01);
         }
 
         .search-container input {
@@ -116,175 +146,223 @@
             padding: 0;
             outline: none;
             font-size: 14px;
+            box-shadow: none !important;
         }
 
+        /* Carrusel Categorías Pro */
         .categorias-scroll {
             display: flex;
-            gap: 12px;
+            gap: 16px;
             overflow-x: auto;
             padding-bottom: 8px;
-            margin-bottom: 22px;
+            margin-bottom: 28px;
             scrollbar-width: none;
         }
         .categorias-scroll::-webkit-scrollbar { display: none; }
 
         .cat-card {
-            min-width: 80px;
-            max-width: 80px;
+            min-width: 82px;
+            max-width: 82px;
             background: #fff;
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 10px 5px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 12px 6px;
             text-align: center;
             cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            box-shadow: var(--shadow-sm);
             flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+        .cat-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--secondary);
+            box-shadow: 0 6px 15px rgba(232, 91, 4, 0.12);
+        }
+        .cat-card.outlet-highlight {
+            border-color: var(--secondary);
+            background: linear-gradient(135deg, #fff, #fff5f0);
         }
         .cat-img-wrap {
-            width: 45px;
-            height: 45px;
-            margin: 0 auto 6px auto;
+            width: 50px;
+            height: 50px;
+            margin: 0 auto 8px auto;
             border-radius: 50%;
             overflow: hidden;
             background: #e2e8f0;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
         }
         .cat-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
-        .cat-card p { margin: 0; font-size: 11px; font-weight: 700; color: #333; }
+        .cat-card p { margin: 0; font-size: 11px; font-weight: 700; color: var(--text-main); }
 
         .section-title {
-            font-size: 16px;
+            font-size: 17px;
             font-weight: 800;
             color: var(--primary);
-            margin: 0 0 12px 0;
+            margin: 0 0 14px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
 
+        /* Tarjetas Destacados */
         .trending-scroll {
             display: flex;
-            gap: 12px;
+            gap: 16px;
             overflow-x: auto;
-            padding-bottom: 10px;
-            margin-bottom: 22px;
+            padding-bottom: 12px;
+            margin-bottom: 28px;
             scrollbar-width: none;
         }
         .trending-scroll::-webkit-scrollbar { display: none; }
 
         .trending-card {
-            min-width: 150px;
-            max-width: 150px;
+            min-width: 160px;
+            max-width: 160px;
             background: #fff;
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-lg);
             overflow: hidden;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.03);
+            box-shadow: var(--shadow-sm);
             flex-shrink: 0;
             cursor: pointer;
+            transition: all 0.2s ease;
         }
-        .trending-img { width: 100%; height: 105px; object-fit: cover; }
-        .trending-info { padding: 8px; }
+        .trending-card:hover { transform: translateY(-4px); box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
+        .trending-img { width: 100%; height: 120px; object-fit: cover; }
+        .trending-info { padding: 12px; }
 
+        /* Tarjetas Comercio Pro */
         .comercio-card {
             background: #fff;
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 12px;
-            margin-bottom: 12px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow-sm);
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 16px;
+            transition: all 0.2s ease;
         }
+        .comercio-card:hover { border-color: #cbd5e1; transform: translateY(-2px); box-shadow: var(--shadow-lg); }
 
         .comercio-avatar {
-            width: 60px;
-            height: 60px;
-            border-radius: 12px;
+            width: 70px;
+            height: 70px;
+            border-radius: var(--radius-md);
             object-fit: cover;
             background: #eef2f6;
             flex-shrink: 0;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
         }
 
-        /* Insignias de estado sincronizadas con app empresas */
         .badge-estado {
-            padding: 4px 8px;
-            border-radius: 6px;
+            padding: 5px 10px;
+            border-radius: 8px;
             font-size: 11px;
-            font-weight: bold;
+            font-weight: 700;
             display: inline-block;
         }
-        .estado-recibido { background: #e2e8f0; color: #333; }
-        .estado-proceso { background: #fff3cd; color: #856404; }
-        .estado-pronto { background: #d4edda; color: #155724; }
-        .estado-camino { background: #cce5ff; color: #004085; }
+        .estado-recibido { background: #f1f5f9; color: #475569; }
+        .estado-proceso { background: #fef3c7; color: #b45309; }
+        .estado-pronto { background: #d1fae5; color: #065f46; }
+        .estado-camino { background: #e0f2fe; color: #0369a1; }
 
+        .outlet-banner {
+            background: linear-gradient(135deg, #ff7e5f, #feb47b);
+            color: white;
+            padding: 20px;
+            border-radius: var(--radius-lg);
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 8px 20px rgba(235,91,4,0.25);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .outlet-banner:hover { transform: scale(1.01); }
+
+        /* Navegación Inferior Pro */
         .bottom-nav {
             position: absolute;
             bottom: 0;
             left: 0;
             width: 100%;
             background: #ffffff;
-            border-top: 1px solid var(--border);
+            border-top: 1.5px solid var(--border);
             display: flex;
             justify-content: space-around;
-            padding: 10px 0;
-            border-top-left-radius: 20px;
-            border-top-right-radius: 20px;
-            box-shadow: 0 -4px 10px rgba(0,0,0,0.03);
+            padding: 12px 0;
+            border-top-left-radius: 24px;
+            border-top-right-radius: 24px;
+            box-shadow: 0 -6px 20px rgba(0,0,0,0.06);
             z-index: 10;
         }
 
         .nav-item {
             background: none;
             border: none;
-            color: #666;
+            color: var(--text-muted);
             font-size: 11px;
             cursor: pointer;
             display: flex;
             flex-direction: column;
             align-items: center;
+            font-weight: 600;
+            transition: color 0.2s;
         }
-        .nav-item span { font-size: 18px; margin-bottom: 2px; }
-        .nav-item.active { color: var(--secondary); font-weight: bold; }
+        .nav-item span { font-size: 22px; margin-bottom: 3px; }
+        .nav-item.active { color: var(--secondary); font-weight: 800; }
     </style>
 </head>
 <body>
 
     <div id="app-container">
         <div class="header-app">
-            <h1><span style="color:var(--secondary);">LO</span> TENGO <small style="font-size:11px; opacity:0.8;">[Cliente]</small></h1>
-            <span id="header-user-info" style="font-size: 12px; opacity: 0.9;">📍 Montevideo</span>
+            <h1><span style="color: #ff9800;">LO</span> TENGO <small style="font-size:11px; opacity:0.85; font-weight: 500;">[Cliente Pro]</small></h1>
+            <span id="header-user-info" style="font-size: 12px; opacity: 0.95; font-weight: 600; background: rgba(255,255,255,0.15); padding: 6px 12px; border-radius: 20px;">📍 Montevideo</span>
         </div>
         
         <div class="content-body" id="main-content">
             <!-- Login -->
             <div id="screen-login">
-                <h3 style="color: var(--primary); margin-top: 0;">Iniciar Sesión (Cliente)</h3>
-                <label style="font-size: 12px; color: #555;">Número de WhatsApp:</label>
+                <h3 style="color: var(--primary); margin-top: 0; font-size: 20px;">Iniciar Sesión</h3>
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">Ingresá a tu cuenta sincronizada de LO TENGO.</p>
+                
+                <label>Número de WhatsApp:</label>
                 <input type="tel" id="loginTelefono" placeholder="Ej: 099123456">
 
-                <label style="font-size: 12px; color: #555;">Contraseña:</label>
-                <input type="password" id="loginPassword" placeholder="Tu contraseña">
+                <label>Contraseña:</label>
+                <input type="password" id="loginPassword" placeholder="Tu contraseña secreta">
 
-                <button id="btnIniciarSesion" type="button" style="margin-top: 5px;">Ingresar</button>
+                <!-- Checkbox recordar credenciales -->
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px; background: #f8fafc; padding: 12px; border-radius: var(--radius-md); border: 1.5px solid var(--border);">
+                    <input type="checkbox" id="recordarCredenciales" style="width: 18px; height: 18px; margin: 0; cursor: pointer; accent-color: var(--primary);">
+                    <label for="recordarCredenciales" style="font-size: 13px; color: var(--text-main); cursor: pointer; margin: 0; font-weight: 600;">Recordar mi WhatsApp y contraseña</label>
+                </div>
+
+                <button id="btnIniciarSesion" type="button">Ingresar</button>
                 
-                <div style="text-align: center;">
-                    <p style="margin-top: 15px; font-size: 13px; color: #666;">¿No tenés cuenta?</p>
-                    <button id="irARegistro" type="button" class="link-btn">Registrarse con WhatsApp</button>
+                <div style="text-align: center; margin-top: 15px;">
+                    <p style="font-size: 13px; color: var(--text-muted);">¿No tenés cuenta aún?</p>
+                    <button id="irARegistro" type="button" class="link-btn">Crear una cuenta nueva</button>
                 </div>
             </div>
 
             <!-- Registro -->
             <div id="screen-registro" style="display: none;">
-                <h3 style="color: var(--primary); margin-top: 0;">Registro Rápido</h3>
+                <h3 style="color: var(--primary); margin-top: 0; font-size: 20px;">Registro Rápido</h3>
                 <label>Nombre y Apellido:</label>
-                <input type="text" id="regNombre" placeholder="Tu nombre">
+                <input type="text" id="regNombre" placeholder="Tu nombre completo">
                 <label>WhatsApp:</label>
-                <input type="tel" id="regTelefono" placeholder="099123456">
-                <label>Dirección de Entrega:</label>
-                <input type="text" id="regDireccion" placeholder="Calle y número">
+                <input type="tel" id="regTelefono" placeholder="Ej: 099123456">
+                <label>Dirección de Entrega (Montevideo):</label>
+                <input type="text" id="regDireccion" placeholder="Calle y número, Barrio (ej: Pocitos)">
                 <label>Contraseña:</label>
-                <input type="password" id="regPassword" placeholder="Contraseña">
-                <button type="button" onclick="completarRegistroCliente()" style="background: var(--success);">Crear Cuenta</button>
-                <button type="button" onclick="irLogin()" class="link-btn" style="width:100%; text-align:center;">Volver al login</button>
+                <input type="password" id="regPassword" placeholder="Crea una contraseña">
+                <button type="button" onclick="completarRegistroCliente()" style="background: var(--success); margin-top: 10px;">Completar Registro</button>
+                <button type="button" onclick="irLogin()" class="link-btn" style="width:100%; text-align:center;">← Volver al login</button>
             </div>
         </div>
 
@@ -301,9 +379,9 @@
         document.addEventListener("DOMContentLoaded", () => {
             verificarSesionCliente();
             configurarEventosLogin();
+            cargarCredencialesGuardadas();
 
-            // Escucha cambios en tiempo real provenientes de otras pestañas o apps (ej. App Empresas)
-            window.addEventListener('storage', (e) => {
+            window.addEventListener('storage', () => {
                 const contenedorPedidos = document.getElementById('contenedor-cards-pedidos');
                 if (contenedorPedidos) {
                     renderizarListaPedidos();
@@ -323,6 +401,18 @@
             }
         }
 
+        function cargarCredencialesGuardadas() {
+            const guardado = localStorage.getItem('lt_credenciales_guardadas');
+            if (guardado) {
+                try {
+                    const creds = JSON.parse(guardado);
+                    document.getElementById('loginTelefono').value = creds.telefono || '';
+                    document.getElementById('loginPassword').value = creds.password || '';
+                    document.getElementById('recordarCredenciales').checked = true;
+                } catch (e) { console.error(e); }
+            }
+        }
+
         function configurarEventosLogin() {
             const btnReg = document.getElementById('irARegistro');
             if (btnReg) {
@@ -337,10 +427,18 @@
                 btnIng.onclick = () => {
                     const tel = document.getElementById('loginTelefono').value;
                     const pass = document.getElementById('loginPassword').value;
+                    const recordar = document.getElementById('recordarCredenciales').checked;
+
                     const usuarios = JSON.parse(localStorage.getItem('lt_base_usuarios')) || [];
                     const usr = usuarios.find(u => u.telefono === tel && u.password === pass);
 
                     if (!usr) { alert("❌ Credenciales incorrectas."); return; }
+
+                    if (recordar) {
+                        localStorage.setItem('lt_credenciales_guardadas', JSON.stringify({ telefono: tel, password: pass }));
+                    } else {
+                        localStorage.removeItem('lt_credenciales_guardadas');
+                    }
 
                     localStorage.setItem('lt_sesion_activa', JSON.stringify(usr));
                     location.reload();
@@ -357,7 +455,7 @@
             if (!nombre || !telefono || !password) { alert("⚠️ Completá todos los campos obligatorios."); return; }
 
             let usuarios = JSON.parse(localStorage.getItem('lt_base_usuarios')) || [];
-            let nuevoU = { nombre, telefono, direccion, password };
+            let nuevoU = { nombre, telefono, direccion: direccion || 'Montevideo', password };
             usuarios.push(nuevoU);
             localStorage.setItem('lt_base_usuarios', JSON.stringify(usuarios));
             localStorage.setItem('lt_sesion_activa', JSON.stringify(nuevoU));
@@ -368,6 +466,13 @@
         function irLogin() {
             document.getElementById('screen-registro').style.display = 'none';
             document.getElementById('screen-login').style.display = 'block';
+        }
+
+        function esZonaSeguraEfectivo(direccion) {
+            if (!direccion) return false;
+            const dirLower = direccion.toLowerCase();
+            const zonasSeguras = ['pocitos', 'punta carretas', 'carrasco', 'buceo', 'malvín', 'tres cruces', 'parque batlle', 'punta gorda', 'centro'];
+            return zonasSeguras.some(z => dirLower.includes(z));
         }
 
         function mostrarHome() {
@@ -391,14 +496,13 @@
                 <div class="trending-card" onclick="verCatalogoComercio('${prod.empresaRut}')">
                     <img src="${prod.imagenUrl}" class="trending-img" alt="${prod.nombre}">
                     <div class="trending-info">
-                        <span style="font-size:10px; background:#e2e8f0; padding:2px 4px; border-radius:3px;">${prod.empresaNombre}</span>
-                        <p style="margin:4px 0 2px 0; font-size:11px; font-weight:bold; color:#333; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${prod.nombre}</p>
-                        <p style="margin:0; font-size:12px; font-weight:800; color:var(--success);">$${prod.precio}</p>
+                        <span style="font-size:10px; background:#f1f5f9; color:var(--text-muted); padding:3px 6px; border-radius:6px; font-weight:700;">${prod.empresaNombre}</span>
+                        <p style="margin:6px 0 2px 0; font-size:13px; font-weight:700; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${prod.nombre}</p>
+                        <p style="margin:0; font-size:14px; font-weight:800; color:var(--success);">$${prod.precio}</p>
                     </div>
                 </div>
-            `).join('') || '<p style="font-size:12px; color:#666;">No hay productos destacados.</p>';
+            `).join('') || '<p style="font-size:13px; color:var(--text-muted);">No hay productos destacados actualmente.</p>';
 
-            // Lógica de visualización de logo según el rubro de la empresa solicitada
             let htmlComercios = baseEmpresas.map(emp => {
                 let mostrarLogo = (emp.giro === 'Gastronomía' && emp.logo);
                 let imagenComercio = mostrarLogo ? emp.logo : 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=200&q=80';
@@ -407,14 +511,14 @@
                     <div class="comercio-card" onclick="verCatalogoComercio('${emp.rut}')">
                         <img src="${imagenComercio}" class="comercio-avatar" alt="${emp.nombre}">
                         <div style="flex:1;">
-                            <h4 style="margin:0 0 2px 0; color:var(--primary); font-size:15px;">${emp.nombre}</h4>
-                            <p style="margin:0; font-size:12px; color:#666;">📍 ${emp.direccion || 'Montevideo'} • ⭐ 4.8</p>
-                            <span style="font-size:10px; color:var(--secondary); font-weight:bold;">📦 Compra directa al local</span>
+                            <h4 style="margin:0 0 4px 0; color:var(--primary); font-size:16px; font-weight:800;">${emp.nombre}</h4>
+                            <p style="margin:0; font-size:12px; color:var(--text-muted);">📍 ${emp.direccion || 'Montevideo'} • ⭐ 4.9 (15-25 min)</p>
+                            <span style="font-size:10px; color:var(--secondary); font-weight:700; background:#fff5f0; padding:3px 8px; border-radius:6px; display:inline-block; margin-top:6px; border: 1px solid #ffd8cc;">⚡ Tienda Oficial Aliada</span>
                         </div>
-                        <span style="color:#ccc; font-size:18px;">›</span>
+                        <span style="color:#cbd5e1; font-size:22px; font-weight:bold;">›</span>
                     </div>
                 `;
-            }).join('') || '<p style="text-align:center; color:#666;">No hay comercios disponibles.</p>';
+            }).join('') || '<p style="text-align:center; color:var(--text-muted);">No hay comercios disponibles.</p>';
 
             container.innerHTML = `
                 <div class="search-container">
@@ -424,12 +528,16 @@
 
                 <div class="categorias-scroll">
                     <div class="cat-card" onclick="mostrarHome()">
-                        <div class="cat-img-wrap"><img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=150&q=80" alt="Comida"></div>
-                        <p>Comida</p>
+                        <div class="cat-img-wrap"><img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=150&q=80" alt="Restaurantes"></div>
+                        <p>Restaurantes</p>
                     </div>
-                    <div class="cat-card" onclick="mostrarZonaOutlet()">
+                    <div class="cat-card" onclick="mostrarHome()">
+                        <div class="cat-img-wrap"><img src="https://images.unsplash.com/photo-1534723452862-4c874018d66d?auto=format&fit=crop&w=150&q=80" alt="Tiendas"></div>
+                        <p>Tiendas</p>
+                    </div>
+                    <div class="cat-card outlet-highlight" onclick="mostrarZonaOutlet()">
                         <div class="cat-img-wrap"><img src="https://images.unsplash.com/photo-1607083206869-4c7672e72a8a?auto=format&fit=crop&w=150&q=80" alt="Outlet"></div>
-                        <p>Outlet</p>
+                        <p style="color:var(--secondary);">Outlet 🔥</p>
                     </div>
                     <div class="cat-card" onclick="mostrarHome()">
                         <div class="cat-img-wrap"><img src="https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=150&q=80" alt="Farmacia"></div>
@@ -437,10 +545,18 @@
                     </div>
                 </div>
 
-                <div class="section-title">🔥 Lo más pedido</div>
+                <div class="outlet-banner" onclick="mostrarZonaOutlet()">
+                    <div>
+                        <h4 style="margin:0 0 4px 0; font-size:17px; font-weight:800;">🔥 ZONA OUTLET DESTACADO</h4>
+                        <p style="margin:0; font-size:12px; opacity:0.95; font-weight:500;">Liquidaciones flash y ofertas exclusivas de socios.</p>
+                    </div>
+                    <span style="font-size:24px; font-weight:bold;">›</span>
+                </div>
+
+                <div class="section-title">Lo más pedido 🌟</div>
                 <div class="trending-scroll">${htmlTrending}</div>
 
-                <div class="section-title">🏪 Comercios Disponibles</div>
+                <div class="section-title">Comercios y Tiendas Aliadas 🏪</div>
                 ${htmlComercios}
             `;
         }
@@ -455,27 +571,65 @@
                 <div class="comercio-card">
                     <img src="${p.imagen || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=200&q=80'}" class="comercio-avatar" alt="${p.nombre}">
                     <div style="flex:1;">
-                        <h4 style="margin:0 0 2px 0; color:var(--primary); font-size:14px;">${p.nombre}</h4>
-                        <p style="margin:0; font-size:13px; font-weight:bold; color:var(--success);">$${p.precio}</p>
+                        <h4 style="margin:0 0 4px 0; color:var(--primary); font-size:15px; font-weight:800;">${p.nombre}</h4>
+                        <p style="margin:0; font-size:15px; font-weight:800; color:var(--success);">$${p.precio}</p>
                     </div>
-                    <button type="button" onclick="crearPedidoLocal('${emp.rut}', ${p.id})" style="width:auto; padding:8px 14px; font-size:12px; background:var(--secondary);">Pedir</button>
+                    <button type="button" onclick="iniciarFlujoPago('${emp.rut}', ${p.id})" style="width:auto; padding:10px 16px; font-size:13px; background:var(--secondary);">Pedir</button>
                 </div>
-            `).join('') || '<p style="text-align:center; color:#666;">Sin productos cargados.</p>';
+            `).join('') || '<p style="text-align:center; color:var(--text-muted);">Sin productos cargados actualmente.</p>';
 
             container.innerHTML = `
-                <div style="display:flex; align-items:center; gap:10px; margin-bottom:15px;">
-                    <button type="button" onclick="mostrarHome()" style="width:auto; padding:6px 12px; font-size:12px; background:#6c757d;">← Volver</button>
-                    <h3 style="color:var(--primary); margin:0; font-size:18px;">${emp.nombre}</h3>
+                <div style="display:flex; align-items:center; gap:12px; margin-bottom:18px;">
+                    <button type="button" onclick="mostrarHome()" style="width:auto; padding:8px 14px; font-size:12px; background:#64748b; box-shadow:none;">← Volver</button>
+                    <h3 style="color:var(--primary); margin:0; font-size:18px; font-weight:800;">${emp.nombre}</h3>
                 </div>
-                <div style="background:#eef2f6; padding:10px; border-radius:8px; margin-bottom:15px; font-size:12px; color:#444;">
+                <div style="background:#f8fafc; padding:14px; border-radius:var(--radius-md); margin-bottom:20px; font-size:13px; color:var(--text-muted); border: 1.5px solid var(--border);">
                     📍 <b>${emp.direccion}</b> | 📞 ${emp.telefono}
                 </div>
-                <h4 style="color:var(--primary); margin-bottom:10px;">Catálogo del Local</h4>
+                <h4 style="color:var(--primary); margin-bottom:12px; font-size:16px; font-weight:800;">Catálogo Disponible</h4>
                 ${prods}
             `;
         }
 
-        function crearPedidoLocal(rut, productoId) {
+        function iniciarFlujoPago(rut, productoId) {
+            let sesion = JSON.parse(localStorage.getItem('lt_sesion_activa'));
+            let direccionUsuario = sesion.direccion || '';
+            let permiteEfectivo = esZonaSeguraEfectivo(direccionUsuario);
+
+            let opcionesPagoHTML = `
+                <div style="background:#fff; padding:20px; border-radius:var(--radius-lg); border:1.5px solid var(--border); box-shadow:var(--shadow-sm);">
+                    <h4 style="color:var(--primary); margin-top:0; font-size:18px; font-weight:800;">💳 Método de Pago</h4>
+                    <p style="font-size:13px; color:var(--text-muted); margin-bottom:20px;">Dirección de entrega: <b>${direccionUsuario}</b></p>
+                    
+                    <button type="button" onclick="crearPedidoLocalConPago('${rut}', ${productoId}, 'mercadopago')" style="background:#009ee3; margin-bottom:12px; font-weight:700;">
+                        💙 Pagar con Mercado Pago (Online)
+                    </button>
+            `;
+
+            if (permiteEfectivo) {
+                opcionesPagoHTML += `
+                    <button type="button" onclick="crearPedidoLocalConPago('${rut}', ${productoId}, 'efectivo')" style="background:var(--success); font-weight:700;">
+                        💵 Pagar en Efectivo (Zona Segura)
+                    </button>
+                `;
+            } else {
+                opcionesPagoHTML += `
+                    <div style="background:#fef3c7; color:#b45309; padding:14px; border-radius:var(--radius-md); font-size:13px; text-align:center; border: 1.5px solid #fde68a; font-weight:600; margin-bottom: 12px;">
+                        ⚠️ Pago en efectivo no disponible temporalmente para esta zona por seguridad. Usá Mercado Pago.
+                    </div>
+                `;
+            }
+
+            opcionesPagoHTML += `
+                <button type="button" onclick="verCatalogoComercio('${rut}')" style="background:#64748b; margin-top:6px; box-shadow:none;">Cancelar</button>
+                </div>
+            `;
+
+            const container = document.getElementById('main-content');
+            container.innerHTML = opcionesPagoHTML;
+        }
+
+        function crearPedidoLocalConPago(rut, productoId, metodoPago) {
             let base = JSON.parse(localStorage.getItem('lt_base_empresas')) || [];
             let emp = base.find(e => e.rut === rut);
             if (!emp) return;
@@ -483,14 +637,18 @@
             let p = emp.productos.find(prod => prod.id === productoId);
             let sesion = JSON.parse(localStorage.getItem('lt_sesion_activa'));
 
+            if (metodoPago === 'mercadopago') {
+                alert("🔄 Redirigiendo a la pasarela segura de Mercado Pago...");
+            }
+
             let nuevoPedido = {
                 id: Date.now(),
                 cliente: sesion.nombre,
                 telefonoCliente: sesion.telefono,
                 direccion: sesion.direccion,
-                formaPago: 'efectivo',
+                formaPago: metodoPago,
                 total: p.precio,
-                estado: 'Recibido', // Sincronizado exactamente con App Empresas
+                estado: 'Recibido',
                 items: [{ nombre: p.nombre, precio: p.precio, cantidad: 1 }],
                 codigoVerificacion: Math.floor(1000 + Math.random() * 9000).toString(),
                 tiempoInicioEstado: Date.now()
@@ -500,9 +658,9 @@
             emp.pedidos.push(nuevoPedido);
             
             localStorage.setItem('lt_base_empresas', JSON.stringify(base));
-            window.dispatchEvent(new Event('storage')); // Dispara evento de sincronización
+            window.dispatchEvent(new Event('storage'));
 
-            alert(`✅ ¡Pedido realizado con éxito a "${emp.nombre}"!\n\nEstado inicial: Recibido 📥\n🔑 PIN de retiro: [ ${nuevoPedido.codigoVerificacion} ]`);
+            alert(`✅ ¡Pedido confirmado con éxito!\n\n💳 Pago: ${metodoPago.toUpperCase()}\n📥 Estado: Recibido\n🔑 PIN de seguridad: [ ${nuevoPedido.codigoVerificacion} ]`);
             mostrarPedidosActivos();
         }
 
@@ -519,19 +677,22 @@
             });
 
             let html = ofertas.map(o => `
-                <div class="comercio-card" style="border-left: 4px solid var(--secondary);">
+                <div class="comercio-card" style="border-left: 5px solid var(--secondary);">
                     <img src="${o.imagen || 'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=200&q=80'}" class="comercio-avatar" alt="${o.nombre}">
                     <div style="flex:1;">
-                        <span style="font-size:10px; color:var(--secondary); font-weight:bold;">${o.empresaNombre}</span>
-                        <h4 style="margin:2px 0; color:var(--primary); font-size:14px;">${o.nombre}</h4>
-                        <p style="margin:0; font-size:13px; font-weight:bold; color:var(--success);">$${o.precio} <span style="background:var(--secondary); color:#fff; padding:2px 5px; border-radius:4px; font-size:10px;">-${o.descuento}%</span></p>
+                        <span style="font-size:10px; color:var(--secondary); font-weight:800; background:#fff5f0; padding:3px 6px; border-radius:4px;">${o.empresaNombre}</span>
+                        <h4 style="margin:4px 0; color:var(--primary); font-size:15px; font-weight:800;">${o.nombre}</h4>
+                        <p style="margin:0; font-size:14px; font-weight:800; color:var(--success);">$${o.precio} <span style="background:var(--secondary); color:#fff; padding:2px 6px; border-radius:6px; font-size:10px; font-weight:700;">-${o.descuento || 20}%</span></p>
                     </div>
-                    <button type="button" onclick="crearPedidoLocal('${o.rutEmpresa}', ${o.id})" style="width:auto; padding:8px 12px; font-size:12px; background:var(--secondary);">Comprar</button>
+                    <button type="button" onclick="iniciarFlujoPago('${o.rutEmpresa}', ${o.id})" style="width:auto; padding:10px 14px; font-size:12px; background:var(--secondary);">Comprar</button>
                 </div>
-            `).join('') || '<p style="text-align:center; color:#666; margin-top:20px;">No hay ofertas flash ahora mismo.</p>';
+            `).join('') || '<p style="text-align:center; color:var(--text-muted); margin-top:30px;">No hay ofertas flash en la Zona Outlet en este momento.</p>';
 
             container.innerHTML = `
-                <h3 style="color:var(--primary); margin-top:0;">🔥 Zona Outlet</h3>
+                <div style="background: linear-gradient(135deg, var(--primary), #004085); color:white; padding:20px; border-radius:var(--radius-lg); margin-bottom:20px; box-shadow: var(--shadow-sm);">
+                    <h3 style="margin:0 0 6px 0; font-size:18px; font-weight:800;">🔥 Zona Outlet Destacado</h3>
+                    <p style="margin:0; font-size:12px; opacity:0.9; font-weight:500;">Oportunidades únicas de nuestras tiendas aliadas en Montevideo.</p>
+                </div>
                 ${html}
             `;
         }
@@ -541,17 +702,19 @@
             const container = document.getElementById('main-content');
 
             container.innerHTML = `
-                <h3 style="color:var(--primary); margin-top:0;">🛵 Solicitar Cadetería Expresa</h3>
+                <h3 style="color:var(--primary); margin-top:0; font-size:18px; font-weight:800;">🛵 Solicitud de Cadetería Express</h3>
+                <p style="font-size:13px; color:var(--text-muted); margin-bottom:20px;">Envío seguro punto a punto en Montevideo.</p>
+
                 <label>Tipo de Vehículo:</label>
                 <select id="cadVehiculo">
                     <option value="moto">Moto ($220)</option>
                     <option value="camioneta">Camioneta ($480)</option>
                 </select>
-                <label>Punto A (Origen):</label>
+                <label>Punto A (Origen - Retiro):</label>
                 <input type="text" id="cadPuntoA" placeholder="Dirección de retiro">
-                <label>Punto B (Destino):</label>
+                <label>Punto B (Destino - Entrega):</label>
                 <input type="text" id="cadPuntoB" placeholder="Dirección de entrega">
-                <button type="button" onclick="confirmarCadeteriaExpress()" style="background:var(--success); margin-top:10px;">Solicitar Envío</button>
+                <button type="button" onclick="confirmarCadeteriaExpress()" style="background:var(--success); margin-top:10px; font-weight:700;">Solicitar Envío Ahora</button>
             `;
         }
 
@@ -568,7 +731,7 @@
                 cliente: sesion.nombre,
                 telefonoCliente: sesion.telefono,
                 direccion: pb,
-                formaPago: 'efectivo',
+                formaPago: 'mercadopago',
                 total: vehiculo === 'moto' ? 220 : 480,
                 estado: 'Recibido',
                 descripcion: `Envío de Cadetería Express (${vehiculo}) - Origen: ${pa} -> Destino: ${pb}`,
@@ -586,7 +749,7 @@
             localStorage.setItem('lt_base_empresas', JSON.stringify(base));
             window.dispatchEvent(new Event('storage'));
 
-            alert(`✅ ¡Cadetería solicitada!\n🔑 PIN: [ ${nuevoPedido.codigoVerificacion} ]`);
+            alert(`✅ ¡Cadetería solicitada con éxito!\n🔑 PIN de seguridad: [ ${nuevoPedido.codigoVerificacion} ]`);
             mostrarPedidosActivos();
         }
 
@@ -617,27 +780,29 @@
                 
                 if (estadoActual === 'En Preparación') claseEstado = 'estado-proceso';
                 if (estadoActual.includes('Listo para Retirar')) claseEstado = 'estado-pronto';
+                if (estadoActual === 'En Camino') claseEstado = 'estado-camino';
 
                 let itemsTexto = (p.items || []).map(i => `${i.cantidad}x ${i.nombre}`).join(', ');
 
                 return `
-                    <div class="comercio-card" style="display:block; border-left: 4px solid var(--primary); margin-bottom: 12px;">
-                        <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
-                            <strong style="color:var(--primary); font-size:13px;">Pedido #${p.id.toString().slice(-4)}</strong>
+                    <div class="comercio-card" style="display:block; border-left: 5px solid var(--primary); margin-bottom: 14px;">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:8px; align-items:center;">
+                            <strong style="color:var(--primary); font-size:14px; font-weight:800;">Pedido #${p.id.toString().slice(-4)}</strong>
                             <span class="badge-estado ${claseEstado}">${estadoActual}</span>
                         </div>
-                        <p style="margin:2px 0; font-size:12px; color:#555;">🏪 Local: ${p.empresaNombre}</p>
-                        <p style="margin:2px 0; font-size:12px; color:#555;">📦 Ítems: ${itemsTexto}</p>
-                        <p style="margin:2px 0; font-size:12px; color:#555;">📍 Destino: ${p.direccion}</p>
-                        <div style="background:#f1f3f5; padding:6px; border-radius:6px; text-align:center; margin-top:8px;">
-                            <span style="font-size:11px; color:#333;">🔑 PIN de seguridad: <b>${p.codigoVerificacion}</b></span>
+                        <p style="margin:3px 0; font-size:13px; color:var(--text-muted);">🏪 Local: <b>${p.empresaNombre}</b></p>
+                        <p style="margin:3px 0; font-size:13px; color:var(--text-muted);">📦 Ítems: ${itemsTexto}</p>
+                        <p style="margin:3px 0; font-size:13px; color:var(--text-muted);">💳 Pago: <b>${(p.formaPago || 'efectivo').toUpperCase()}</b></p>
+                        <p style="margin:3px 0; font-size:13px; color:var(--text-muted);">📍 Destino: ${p.direccion}</p>
+                        <div style="background:#f8fafc; padding:10px; border-radius:var(--radius-md); text-align:center; margin-top:10px; border: 1.5px solid var(--border);">
+                            <span style="font-size:12px; color:var(--text-main);">🔑 PIN de seguridad para entrega: <b style="color:var(--secondary); font-size:14px;">${p.codigoVerificacion}</b></span>
                         </div>
                     </div>
                 `;
-            }).join('') || '<p style="text-align:center; color:#666; margin-top:20px;">No tenés pedidos registrados.</p>';
+            }).join('') || '<p style="text-align:center; color:var(--text-muted); margin-top:30px;">No tenés pedidos activos registrados.</p>';
 
             container.innerHTML = `
-                <h3 style="color:var(--primary); margin-top:0;">📦 Seguimiento de Mis Pedidos</h3>
+                <h3 style="color:var(--primary); margin-top:0; font-size:18px; font-weight:800;">📦 Seguimiento de Mis Pedidos</h3>
                 <div id="contenedor-cards-pedidos">${html}</div>
             `;
         }
