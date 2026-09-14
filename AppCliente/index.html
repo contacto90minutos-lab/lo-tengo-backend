@@ -3,27 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LO TENGO - Profesional Edition</title>
+    <title>LO TENGO - Ultra Pro</title>
     <style>
         :root {
-            --primary: #002855;
-            --secondary: #E85B04;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --bg-body: #f1f5f9;
-            --card-bg: #ffffff;
-            --text-main: #1e293b;
-            --text-muted: #64748b;
-            --border: #e2e8f0;
-            --radius-lg: 20px;
-            --radius-md: 14px;
-            --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.04);
-            --shadow-lg: 0 10px 25px rgba(0, 40, 85, 0.08);
+            --primary: #0F172A;
+            --accent: #FF5722;
+            --accent-gradient: linear-gradient(135deg, #FF5722, #FF9800);
+            --outlet-gradient: linear-gradient(135deg, #D946EF, #8B5CF6);
+            --success: #10B981;
+            --bg-body: #0B0F19;
+            --card-bg: #1E293B;
+            --card-border: rgba(255, 255, 255, 0.08);
+            --text-main: #F8FAFC;
+            --text-muted: #94A3B8;
+            --radius-lg: 24px;
+            --radius-md: 16px;
+            --shadow-glow: 0 10px 30px -10px rgba(255, 87, 34, 0.3);
+            --shadow-outlet: 0 12px 35px -8px rgba(217, 70, 239, 0.4);
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
             background-color: var(--bg-body);
             margin: 0;
             padding: 0;
@@ -35,41 +35,41 @@
         }
 
         #app-container {
-            background: var(--card-bg);
+            background: #111827;
             width: 100%;
             max-width: 480px;
             min-height: 100vh;
-            box-shadow: var(--shadow-lg);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
             position: relative;
+            border-left: 1px solid var(--card-border);
+            border-right: 1px solid var(--card-border);
         }
 
         .header-app {
-            background: linear-gradient(135deg, var(--primary), #001833);
+            background: linear-gradient(180deg, #1E293B, #111827);
             color: white;
-            padding: 20px;
+            padding: 20px 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom-left-radius: 24px;
-            border-bottom-right-radius: 24px;
-            box-shadow: 0 4px 15px rgba(0,40,85,0.2);
+            border-bottom: 1px solid var(--card-border);
         }
 
         .header-app h1 {
             margin: 0;
-            font-size: 22px;
+            font-size: 20px;
+            font-weight: 900;
             letter-spacing: -0.5px;
-            font-weight: 800;
         }
 
         .content-body {
             padding: 20px;
             flex: 1;
             overflow-y: auto;
-            padding-bottom: 100px;
+            padding-bottom: 110px;
         }
 
         label {
@@ -77,226 +77,188 @@
             font-weight: 600;
             color: var(--text-muted);
             display: block;
-            margin-bottom: 4px;
+            margin-bottom: 6px;
         }
 
         input, select {
             width: 100%;
-            padding: 14px 16px;
+            padding: 15px 18px;
             margin: 0 0 16px 0;
-            border: 1.5px solid var(--border);
+            border: 1.5px solid var(--card-border);
             border-radius: var(--radius-md);
             box-sizing: border-box;
-            font-size: 14px;
-            background: #ffffff;
-            color: var(--text-main);
-            transition: all 0.2s ease;
+            font-size: 15px;
+            background: #1F2937;
+            color: white;
+            transition: all 0.2s;
         }
         input:focus, select:focus {
             outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(0, 40, 85, 0.08);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(255, 87, 34, 0.15);
         }
 
         button {
             width: 100%;
-            padding: 14px;
-            background-color: var(--primary);
+            padding: 15px;
+            background: var(--accent-gradient);
             color: white;
             border: none;
             border-radius: var(--radius-md);
-            font-weight: 700;
+            font-weight: 800;
             cursor: pointer;
             font-size: 15px;
+            box-shadow: var(--shadow-glow);
             transition: all 0.2s;
-            box-shadow: 0 4px 12px rgba(0,40,85,0.15);
         }
-
-        button:hover { opacity: 0.92; transform: translateY(-1px); }
+        button:hover { opacity: 0.95; transform: translateY(-2px); }
         button:active { transform: scale(0.98); }
 
         .link-btn {
             background: none;
-            color: var(--primary);
+            color: var(--accent);
             border: none;
             text-decoration: underline;
             cursor: pointer;
             margin-top: 10px;
-            font-size: 13px;
+            font-size: 14px;
             box-shadow: none;
         }
 
-        /* Estética de Buscador Pro */
+        /* Buscador Ultra Pro */
         .search-container {
-            background: #f8fafc;
-            padding: 12px 18px;
+            background: #1F2937;
+            padding: 14px 20px;
             border-radius: var(--radius-md);
             display: flex;
             align-items: center;
             gap: 12px;
             margin-bottom: 24px;
-            border: 1.5px solid var(--border);
-            box-shadow: inset 0 1px 2px rgba(0,0,0,0.01);
+            border: 1.5px solid var(--card-border);
         }
-
         .search-container input {
             border: none;
             background: transparent;
             margin: 0;
             padding: 0;
             outline: none;
-            font-size: 14px;
-            box-shadow: none !important;
+            font-size: 15px;
+            color: white;
         }
 
-        /* Carrusel Categorías Pro */
+        /* Carrusel Categorías Estilizadas */
         .categorias-scroll {
             display: flex;
-            gap: 16px;
+            gap: 14px;
             overflow-x: auto;
-            padding-bottom: 8px;
+            padding-bottom: 10px;
             margin-bottom: 28px;
             scrollbar-width: none;
         }
         .categorias-scroll::-webkit-scrollbar { display: none; }
 
         .cat-card {
-            min-width: 82px;
-            max-width: 82px;
-            background: #fff;
-            border: 1.5px solid var(--border);
+            min-width: 90px;
+            max-width: 90px;
+            background: var(--card-bg);
+            border: 1.5px solid var(--card-border);
             border-radius: var(--radius-lg);
-            padding: 12px 6px;
+            padding: 14px 8px;
             text-align: center;
             cursor: pointer;
-            box-shadow: var(--shadow-sm);
             flex-shrink: 0;
-            transition: all 0.2s ease;
+            transition: all 0.25s ease;
         }
         .cat-card:hover {
-            transform: translateY(-3px);
-            border-color: var(--secondary);
-            box-shadow: 0 6px 15px rgba(232, 91, 4, 0.12);
+            transform: translateY(-4px);
+            border-color: var(--accent);
         }
-        .cat-card.outlet-highlight {
-            border-color: var(--secondary);
-            background: linear-gradient(135deg, #fff, #fff5f0);
-        }
-        .cat-img-wrap {
-            width: 50px;
-            height: 50px;
-            margin: 0 auto 8px auto;
-            border-radius: 50%;
+        
+        /* Banner Zona Outlet ultra llamativo */
+        .outlet-super-banner {
+            background: var(--outlet-gradient);
+            color: white;
+            padding: 24px;
+            border-radius: var(--radius-lg);
+            margin-bottom: 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-outlet);
+            cursor: pointer;
+            position: relative;
             overflow: hidden;
-            background: #e2e8f0;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+            border: 1px solid rgba(255,255,255,0.2);
+            animation: pulse-outlet 3s infinite;
         }
-        .cat-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
-        .cat-card p { margin: 0; font-size: 11px; font-weight: 700; color: var(--text-main); }
+        @keyframes pulse-outlet {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.01); box-shadow: 0 15px 40px -5px rgba(217, 70, 239, 0.6); }
+            100% { transform: scale(1); }
+        }
 
         .section-title {
-            font-size: 17px;
-            font-weight: 800;
-            color: var(--primary);
-            margin: 0 0 14px 0;
+            font-size: 18px;
+            font-weight: 900;
+            color: var(--text-main);
+            margin: 0 0 16px 0;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            letter-spacing: -0.3px;
         }
 
-        /* Tarjetas Destacados */
-        .trending-scroll {
-            display: flex;
-            gap: 16px;
-            overflow-x: auto;
-            padding-bottom: 12px;
-            margin-bottom: 28px;
-            scrollbar-width: none;
-        }
-        .trending-scroll::-webkit-scrollbar { display: none; }
-
-        .trending-card {
-            min-width: 160px;
-            max-width: 160px;
-            background: #fff;
-            border: 1.5px solid var(--border);
-            border-radius: var(--radius-lg);
-            overflow: hidden;
-            box-shadow: var(--shadow-sm);
-            flex-shrink: 0;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .trending-card:hover { transform: translateY(-4px); box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
-        .trending-img { width: 100%; height: 120px; object-fit: cover; }
-        .trending-info { padding: 12px; }
-
-        /* Tarjetas Comercio Pro */
+        /* Tarjetas de Comercios Pro */
         .comercio-card {
-            background: #fff;
-            border: 1.5px solid var(--border);
+            background: var(--card-bg);
+            border: 1.5px solid var(--card-border);
             border-radius: var(--radius-lg);
             padding: 16px;
             margin-bottom: 16px;
-            box-shadow: var(--shadow-sm);
             display: flex;
             align-items: center;
             gap: 16px;
-            transition: all 0.2s ease;
+            transition: all 0.2s;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
         }
-        .comercio-card:hover { border-color: #cbd5e1; transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+        .comercio-card:hover {
+            border-color: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
 
         .comercio-avatar {
-            width: 70px;
-            height: 70px;
+            width: 72px;
+            height: 72px;
             border-radius: var(--radius-md);
             object-fit: cover;
-            background: #eef2f6;
+            background: #374151;
             flex-shrink: 0;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
         }
 
         .badge-estado {
-            padding: 5px 10px;
+            padding: 6px 12px;
             border-radius: 8px;
             font-size: 11px;
-            font-weight: 700;
+            font-weight: 800;
             display: inline-block;
         }
-        .estado-recibido { background: #f1f5f9; color: #475569; }
-        .estado-proceso { background: #fef3c7; color: #b45309; }
-        .estado-pronto { background: #d1fae5; color: #065f46; }
-        .estado-camino { background: #e0f2fe; color: #0369a1; }
+        .estado-recibido { background: #374151; color: #E5E7EB; }
+        .estado-proceso { background: #78350F; color: #FCD34D; }
+        .estado-pronto { background: #064E3B; color: #6EE7B7; }
+        .estado-camino { background: #1E3A8A; color: #93C5FD; }
 
-        .outlet-banner {
-            background: linear-gradient(135deg, #ff7e5f, #feb47b);
-            color: white;
-            padding: 20px;
-            border-radius: var(--radius-lg);
-            margin-bottom: 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 8px 20px rgba(235,91,4,0.25);
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        .outlet-banner:hover { transform: scale(1.01); }
-
-        /* Navegación Inferior Pro */
+        /* Barra de Navegación Inferior Estilo App Moderna */
         .bottom-nav {
             position: absolute;
             bottom: 0;
             left: 0;
             width: 100%;
-            background: #ffffff;
-            border-top: 1.5px solid var(--border);
+            background: rgba(17, 24, 39, 0.95);
+            backdrop-filter: blur(12px);
+            border-top: 1px solid var(--card-border);
             display: flex;
             justify-content: space-around;
-            padding: 12px 0;
-            border-top-left-radius: 24px;
-            border-top-right-radius: 24px;
-            box-shadow: 0 -6px 20px rgba(0,0,0,0.06);
+            padding: 14px 0;
             z-index: 10;
         }
 
@@ -312,64 +274,59 @@
             font-weight: 600;
             transition: color 0.2s;
         }
-        .nav-item span { font-size: 22px; margin-bottom: 3px; }
-        .nav-item.active { color: var(--secondary); font-weight: 800; }
+        .nav-item span { font-size: 22px; margin-bottom: 4px; }
+        .nav-item.active { color: var(--accent); font-weight: 800; }
     </style>
 </head>
 <body>
 
     <div id="app-container">
         <div class="header-app">
-            <h1><span style="color: #ff9800;">LO</span> TENGO <small style="font-size:11px; opacity:0.85; font-weight: 500;">[Cliente Pro]</small></h1>
-            <span id="header-user-info" style="font-size: 12px; opacity: 0.95; font-weight: 600; background: rgba(255,255,255,0.15); padding: 6px 12px; border-radius: 20px;">📍 Montevideo</span>
+            <h1><span style="color: var(--accent);">LO</span> TENGO <small style="font-size:10px; opacity:0.7; font-weight: 400;">ULTRA V2</small></h1>
+            <span id="header-user-info" style="font-size: 12px; font-weight: 700; background: rgba(255,255,255,0.08); padding: 6px 14px; border-radius: 20px; border: 1px solid var(--card-border);">📍 Montevideo</span>
         </div>
         
         <div class="content-body" id="main-content">
-            <!-- Login -->
             <div id="screen-login">
-                <h3 style="color: var(--primary); margin-top: 0; font-size: 20px;">Iniciar Sesión</h3>
-                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">Ingresá a tu cuenta sincronizada de LO TENGO.</p>
+                <h3 style="color: var(--text-main); margin-top: 0; font-size: 22px; font-weight: 900;">Iniciar Sesión</h3>
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 24px;">Accede a tu cuenta de LO TENGO.</p>
                 
                 <label>Número de WhatsApp:</label>
                 <input type="tel" id="loginTelefono" placeholder="Ej: 099123456">
 
                 <label>Contraseña:</label>
-                <input type="password" id="loginPassword" placeholder="Tu contraseña secreta">
+                <input type="password" id="loginPassword" placeholder="Tu contraseña">
 
-                <!-- Checkbox recordar credenciales -->
-                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px; background: #f8fafc; padding: 12px; border-radius: var(--radius-md); border: 1.5px solid var(--border);">
-                    <input type="checkbox" id="recordarCredenciales" style="width: 18px; height: 18px; margin: 0; cursor: pointer; accent-color: var(--primary);">
-                    <label for="recordarCredenciales" style="font-size: 13px; color: var(--text-main); cursor: pointer; margin: 0; font-weight: 600;">Recordar mi WhatsApp y contraseña</label>
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px; background: #1F2937; padding: 14px; border-radius: var(--radius-md); border: 1.5px solid var(--card-border);">
+                    <input type="checkbox" id="recordarCredenciales" style="width: 18px; height: 18px; margin: 0; cursor: pointer; accent-color: var(--accent);">
+                    <label for="recordarCredenciales" style="font-size: 13px; color: var(--text-main); cursor: pointer; margin: 0; font-weight: 700;">Recordar credenciales</label>
                 </div>
 
-                <button id="btnIniciarSesion" type="button">Ingresar</button>
+                <button id="btnIniciarSesion" type="button">Ingresar al Sistema</button>
                 
-                <div style="text-align: center; margin-top: 15px;">
-                    <p style="font-size: 13px; color: var(--text-muted);">¿No tenés cuenta aún?</p>
-                    <button id="irARegistro" type="button" class="link-btn">Crear una cuenta nueva</button>
+                <div style="text-align: center; margin-top: 20px;">
+                    <button id="irARegistro" type="button" class="link-btn">¿No tenés cuenta? Registrate acá</button>
                 </div>
             </div>
 
-            <!-- Registro -->
             <div id="screen-registro" style="display: none;">
-                <h3 style="color: var(--primary); margin-top: 0; font-size: 20px;">Registro Rápido</h3>
+                <h3 style="color: var(--text-main); margin-top: 0; font-size: 22px; font-weight: 900;">Crear Cuenta</h3>
                 <label>Nombre y Apellido:</label>
-                <input type="text" id="regNombre" placeholder="Tu nombre completo">
+                <input type="text" id="regNombre" placeholder="Tu nombre">
                 <label>WhatsApp:</label>
                 <input type="tel" id="regTelefono" placeholder="Ej: 099123456">
-                <label>Dirección de Entrega (Montevideo):</label>
-                <input type="text" id="regDireccion" placeholder="Calle y número, Barrio (ej: Pocitos)">
+                <label>Dirección en Montevideo:</label>
+                <input type="text" id="regDireccion" placeholder="Calle, número y barrio">
                 <label>Contraseña:</label>
-                <input type="password" id="regPassword" placeholder="Crea una contraseña">
+                <input type="password" id="regPassword" placeholder="Contraseña segura">
                 <button type="button" onclick="completarRegistroCliente()" style="background: var(--success); margin-top: 10px;">Completar Registro</button>
                 <button type="button" onclick="irLogin()" class="link-btn" style="width:100%; text-align:center;">← Volver al login</button>
             </div>
         </div>
 
-        <!-- Barra Navegación -->
         <div class="bottom-nav" id="bottom-nav" style="display: none;">
             <button class="nav-item active" onclick="mostrarHome()"><span>🏠</span>Inicio</button>
-            <button class="nav-item" onclick="mostrarZonaOutlet()"><span>🔥</span>Outlet</button>
+            <button class="nav-item" onclick="mostrarZonaOutlet()"><span>⚡</span>Outlet</button>
             <button class="nav-item" onclick="mostrarFormularioCadeteria()"><span>🛵</span>Cadetería</button>
             <button class="nav-item" onclick="mostrarPedidosActivos()"><span>📦</span>Pedidos</button>
         </div>
@@ -383,9 +340,7 @@
 
             window.addEventListener('storage', () => {
                 const contenedorPedidos = document.getElementById('contenedor-cards-pedidos');
-                if (contenedorPedidos) {
-                    renderizarListaPedidos();
-                }
+                if (contenedorPedidos) renderizarListaPedidos();
             });
         });
 
@@ -452,7 +407,7 @@
             let direccion = document.getElementById('regDireccion').value;
             let password = document.getElementById('regPassword').value;
 
-            if (!nombre || !telefono || !password) { alert("⚠️ Completá todos los campos obligatorios."); return; }
+            if (!nombre || !telefono || !password) { alert("⚠️ Completá los campos obligatorios."); return; }
 
             let usuarios = JSON.parse(localStorage.getItem('lt_base_usuarios')) || [];
             let nuevoU = { nombre, telefono, direccion: direccion || 'Montevideo', password };
@@ -480,83 +435,58 @@
             const container = document.getElementById('main-content');
             let baseEmpresas = JSON.parse(localStorage.getItem('lt_base_empresas')) || [];
 
-            let productosTrending = [];
-            baseEmpresas.forEach(emp => {
-                (emp.productos || []).forEach(p => {
-                    productosTrending.push({ 
-                        ...p, 
-                        empresaRut: emp.rut, 
-                        empresaNombre: emp.nombre,
-                        imagenUrl: p.imagen || 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=400&q=80'
-                    });
-                });
-            });
-
-            let htmlTrending = productosTrending.slice(0, 5).map(prod => `
-                <div class="trending-card" onclick="verCatalogoComercio('${prod.empresaRut}')">
-                    <img src="${prod.imagenUrl}" class="trending-img" alt="${prod.nombre}">
-                    <div class="trending-info">
-                        <span style="font-size:10px; background:#f1f5f9; color:var(--text-muted); padding:3px 6px; border-radius:6px; font-weight:700;">${prod.empresaNombre}</span>
-                        <p style="margin:6px 0 2px 0; font-size:13px; font-weight:700; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${prod.nombre}</p>
-                        <p style="margin:0; font-size:14px; font-weight:800; color:var(--success);">$${prod.precio}</p>
-                    </div>
-                </div>
-            `).join('') || '<p style="font-size:13px; color:var(--text-muted);">No hay productos destacados actualmente.</p>';
-
             let htmlComercios = baseEmpresas.map(emp => {
-                let mostrarLogo = (emp.giro === 'Gastronomía' && emp.logo);
-                let imagenComercio = mostrarLogo ? emp.logo : 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=200&q=80';
+                let imagenComercio = (emp.giro === 'Gastronomía' && emp.logo) ? emp.logo : 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=200&q=80';
+                let etiquetaGiro = emp.giro === 'Gastronomía' ? '🍔 Restaurantes' : '🛍️ Tiendas';
 
                 return `
                     <div class="comercio-card" onclick="verCatalogoComercio('${emp.rut}')">
                         <img src="${imagenComercio}" class="comercio-avatar" alt="${emp.nombre}">
                         <div style="flex:1;">
-                            <h4 style="margin:0 0 4px 0; color:var(--primary); font-size:16px; font-weight:800;">${emp.nombre}</h4>
-                            <p style="margin:0; font-size:12px; color:var(--text-muted);">📍 ${emp.direccion || 'Montevideo'} • ⭐ 4.9 (15-25 min)</p>
-                            <span style="font-size:10px; color:var(--secondary); font-weight:700; background:#fff5f0; padding:3px 8px; border-radius:6px; display:inline-block; margin-top:6px; border: 1px solid #ffd8cc;">⚡ Tienda Oficial Aliada</span>
+                            <h4 style="margin:0 0 4px 0; color:white; font-size:16px; font-weight:900;">${emp.nombre}</h4>
+                            <p style="margin:0; font-size:12px; color:var(--text-muted);">📍 ${emp.direccion || 'Montevideo'} • ⭐ 4.9</p>
+                            <span style="font-size:10px; color:var(--accent); font-weight:800; background:rgba(255,87,34,0.12); padding:3px 8px; border-radius:6px; display:inline-block; margin-top:6px; border: 1px solid rgba(255,87,34,0.3);">${etiquetaGiro}</span>
                         </div>
-                        <span style="color:#cbd5e1; font-size:22px; font-weight:bold;">›</span>
+                        <span style="color:var(--text-muted); font-size:22px; font-weight:bold;">›</span>
                     </div>
                 `;
-            }).join('') || '<p style="text-align:center; color:var(--text-muted);">No hay comercios disponibles.</p>';
+            }).join('') || '<p style="text-align:center; color:var(--text-muted); padding:20px;">No hay comercios disponibles.</p>';
 
             container.innerHTML = `
                 <div class="search-container">
                     <span>🔍</span>
-                    <input type="text" placeholder="Buscar tiendas, restaurantes...">
+                    <input type="text" placeholder="¿Qué estás buscando hoy?">
                 </div>
 
                 <div class="categorias-scroll">
                     <div class="cat-card" onclick="mostrarHome()">
-                        <div class="cat-img-wrap"><img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=150&q=80" alt="Restaurantes"></div>
-                        <p>Restaurantes</p>
+                        <div style="font-size:24px; margin-bottom:6px;">🍔</div>
+                        <p style="margin:0; font-size:11px; font-weight:800;">Restaurantes</p>
                     </div>
                     <div class="cat-card" onclick="mostrarHome()">
-                        <div class="cat-img-wrap"><img src="https://images.unsplash.com/photo-1534723452862-4c874018d66d?auto=format&fit=crop&w=150&q=80" alt="Tiendas"></div>
-                        <p>Tiendas</p>
+                        <div style="font-size:24px; margin-bottom:6px;">🛍️</div>
+                        <p style="margin:0; font-size:11px; font-weight:800;">Tiendas</p>
                     </div>
-                    <div class="cat-card outlet-highlight" onclick="mostrarZonaOutlet()">
-                        <div class="cat-img-wrap"><img src="https://images.unsplash.com/photo-1607083206869-4c7672e72a8a?auto=format&fit=crop&w=150&q=80" alt="Outlet"></div>
-                        <p style="color:var(--secondary);">Outlet 🔥</p>
+                    <div class="cat-card" onclick="mostrarZonaOutlet()" style="border-color:#D946EF; background:rgba(217,70,239,0.08);">
+                        <div style="font-size:24px; margin-bottom:6px;">⚡</div>
+                        <p style="margin:0; font-size:11px; font-weight:900; color:#E879F9;">Outlet</p>
                     </div>
                     <div class="cat-card" onclick="mostrarHome()">
-                        <div class="cat-img-wrap"><img src="https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=150&q=80" alt="Farmacia"></div>
-                        <p>Farmacia</p>
+                        <div style="font-size:24px; margin-bottom:6px;">💊</div>
+                        <p style="margin:0; font-size:11px; font-weight:800;">Farmacia</p>
                     </div>
                 </div>
 
-                <div class="outlet-banner" onclick="mostrarZonaOutlet()">
+                <div class="outlet-super-banner" onclick="mostrarZonaOutlet()">
                     <div>
-                        <h4 style="margin:0 0 4px 0; font-size:17px; font-weight:800;">🔥 ZONA OUTLET DESTACADO</h4>
-                        <p style="margin:0; font-size:12px; opacity:0.95; font-weight:500;">Liquidaciones flash y ofertas exclusivas de socios.</p>
+                        <div style="font-size:11px; font-weight:900; background:rgba(255,255,255,0.2); padding:3px 8px; border-radius:6px; display:inline-block; margin-bottom:6px; letter-spacing: 0.5px;">OFERTAS FLASH</div>
+                        <h3 style="margin:0; font-size:19px; font-weight:900; letter-spacing: -0.5px;">ZONA OUTLET DESTACADO</h3>
+                        <p style="margin:4px 0 0 0; font-size:12px; opacity:0.9; font-weight:600;">Descuentos insuperables por tiempo limitado.</p>
                     </div>
-                    <span style="font-size:24px; font-weight:bold;">›</span>
+                    <span style="font-size:28px; font-weight:900;">⚡</span>
                 </div>
 
-                <div class="section-title">Lo más pedido 🌟</div>
-                <div class="trending-scroll">${htmlTrending}</div>
-
-                <div class="section-title">Comercios y Tiendas Aliadas 🏪</div>
+                <div class="section-title">Comercios Aliados 🏪</div>
                 ${htmlComercios}
             `;
         }
@@ -571,22 +501,22 @@
                 <div class="comercio-card">
                     <img src="${p.imagen || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=200&q=80'}" class="comercio-avatar" alt="${p.nombre}">
                     <div style="flex:1;">
-                        <h4 style="margin:0 0 4px 0; color:var(--primary); font-size:15px; font-weight:800;">${p.nombre}</h4>
-                        <p style="margin:0; font-size:15px; font-weight:800; color:var(--success);">$${p.precio}</p>
+                        <h4 style="margin:0 0 4px 0; color:white; font-size:15px; font-weight:900;">${p.nombre}</h4>
+                        <p style="margin:0; font-size:15px; font-weight:900; color:var(--success);">$${p.precio}</p>
                     </div>
-                    <button type="button" onclick="iniciarFlujoPago('${emp.rut}', ${p.id})" style="width:auto; padding:10px 16px; font-size:13px; background:var(--secondary);">Pedir</button>
+                    <button type="button" onclick="iniciarFlujoPago('${emp.rut}', ${p.id})" style="width:auto; padding:10px 16px; font-size:13px;">Pedir</button>
                 </div>
-            `).join('') || '<p style="text-align:center; color:var(--text-muted);">Sin productos cargados actualmente.</p>';
+            `).join('') || '<p style="text-align:center; color:var::text-muted;">Sin productos cargados.</p>';
 
             container.innerHTML = `
                 <div style="display:flex; align-items:center; gap:12px; margin-bottom:18px;">
-                    <button type="button" onclick="mostrarHome()" style="width:auto; padding:8px 14px; font-size:12px; background:#64748b; box-shadow:none;">← Volver</button>
-                    <h3 style="color:var(--primary); margin:0; font-size:18px; font-weight:800;">${emp.nombre}</h3>
+                    <button type="button" onclick="mostrarHome()" style="width:auto; padding:8px 14px; font-size:12px; background:#374151; box-shadow:none;">← Volver</button>
+                    <h3 style="color:white; margin:0; font-size:18px; font-weight:900;">${emp.nombre}</h3>
                 </div>
-                <div style="background:#f8fafc; padding:14px; border-radius:var(--radius-md); margin-bottom:20px; font-size:13px; color:var(--text-muted); border: 1.5px solid var(--border);">
+                <div style="background:#1F2937; padding:14px; border-radius:var(--radius-md); margin-bottom:20px; font-size:13px; color:var(--text-muted); border: 1.5px solid var(--card-border);">
                     📍 <b>${emp.direccion}</b> | 📞 ${emp.telefono}
                 </div>
-                <h4 style="color:var(--primary); margin-bottom:12px; font-size:16px; font-weight:800;">Catálogo Disponible</h4>
+                <h4 style="color:white; margin-bottom:12px; font-size:16px; font-weight:900;">Catálogo</h4>
                 ${prods}
             `;
         }
@@ -597,36 +527,35 @@
             let permiteEfectivo = esZonaSeguraEfectivo(direccionUsuario);
 
             let opcionesPagoHTML = `
-                <div style="background:#fff; padding:20px; border-radius:var(--radius-lg); border:1.5px solid var(--border); box-shadow:var(--shadow-sm);">
-                    <h4 style="color:var(--primary); margin-top:0; font-size:18px; font-weight:800;">💳 Método de Pago</h4>
-                    <p style="font-size:13px; color:var(--text-muted); margin-bottom:20px;">Dirección de entrega: <b>${direccionUsuario}</b></p>
+                <div style="background:var(--card-bg); padding:20px; border-radius:var(--radius-lg); border:1.5px solid var(--card-border);">
+                    <h4 style="color:white; margin-top:0; font-size:18px; font-weight:900;">💳 Método de Pago</h4>
+                    <p style="font-size:13px; color:var(--text-muted); margin-bottom:20px;">Entrega en: <b>${direccionUsuario}</b></p>
                     
-                    <button type="button" onclick="crearPedidoLocalConPago('${rut}', ${productoId}, 'mercadopago')" style="background:#009ee3; margin-bottom:12px; font-weight:700;">
+                    <button type="button" onclick="crearPedidoLocalConPago('${rut}', ${productoId}, 'mercadopago')" style="background:#0284c7; margin-bottom:12px; font-weight:800;">
                         💙 Pagar con Mercado Pago (Online)
                     </button>
             `;
 
             if (permiteEfectivo) {
                 opcionesPagoHTML += `
-                    <button type="button" onclick="crearPedidoLocalConPago('${rut}', ${productoId}, 'efectivo')" style="background:var(--success); font-weight:700;">
+                    <button type="button" onclick="crearPedidoLocalConPago('${rut}', ${productoId}, 'efectivo')" style="background:var(--success); font-weight:800;">
                         💵 Pagar en Efectivo (Zona Segura)
                     </button>
                 `;
             } else {
                 opcionesPagoHTML += `
-                    <div style="background:#fef3c7; color:#b45309; padding:14px; border-radius:var(--radius-md); font-size:13px; text-align:center; border: 1.5px solid #fde68a; font-weight:600; margin-bottom: 12px;">
-                        ⚠️ Pago en efectivo no disponible temporalmente para esta zona por seguridad. Usá Mercado Pago.
+                    <div style="background:#451a03; color:#fde68a; padding:14px; border-radius:var(--radius-md); font-size:13px; text-align:center; border: 1.5px solid #78350f; font-weight:700; margin-bottom: 12px;">
+                        ⚠️ Efectivo no disponible para esta zona. Usá Mercado Pago.
                     </div>
                 `;
             }
 
             opcionesPagoHTML += `
-                <button type="button" onclick="verCatalogoComercio('${rut}')" style="background:#64748b; margin-top:6px; box-shadow:none;">Cancelar</button>
+                <button type="button" onclick="verCatalogoComercio('${rut}')" style="background:#374151; margin-top:6px; box-shadow:none;">Cancelar</button>
                 </div>
             `;
 
-            const container = document.getElementById('main-content');
-            container.innerHTML = opcionesPagoHTML;
+            document.getElementById('main-content').innerHTML = opcionesPagoHTML;
         }
 
         function crearPedidoLocalConPago(rut, productoId, metodoPago) {
@@ -636,10 +565,6 @@
 
             let p = emp.productos.find(prod => prod.id === productoId);
             let sesion = JSON.parse(localStorage.getItem('lt_sesion_activa'));
-
-            if (metodoPago === 'mercadopago') {
-                alert("🔄 Redirigiendo a la pasarela segura de Mercado Pago...");
-            }
 
             let nuevoPedido = {
                 id: Date.now(),
@@ -660,7 +585,7 @@
             localStorage.setItem('lt_base_empresas', JSON.stringify(base));
             window.dispatchEvent(new Event('storage'));
 
-            alert(`✅ ¡Pedido confirmado con éxito!\n\n💳 Pago: ${metodoPago.toUpperCase()}\n📥 Estado: Recibido\n🔑 PIN de seguridad: [ ${nuevoPedido.codigoVerificacion} ]`);
+            alert(`✅ ¡Pedido confirmado!\n🔑 PIN de seguridad: [ ${nuevoPedido.codigoVerificacion} ]`);
             mostrarPedidosActivos();
         }
 
@@ -677,21 +602,21 @@
             });
 
             let html = ofertas.map(o => `
-                <div class="comercio-card" style="border-left: 5px solid var(--secondary);">
+                <div class="comercio-card" style="border-left: 5px solid #D946EF;">
                     <img src="${o.imagen || 'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=200&q=80'}" class="comercio-avatar" alt="${o.nombre}">
                     <div style="flex:1;">
-                        <span style="font-size:10px; color:var(--secondary); font-weight:800; background:#fff5f0; padding:3px 6px; border-radius:4px;">${o.empresaNombre}</span>
-                        <h4 style="margin:4px 0; color:var(--primary); font-size:15px; font-weight:800;">${o.nombre}</h4>
-                        <p style="margin:0; font-size:14px; font-weight:800; color:var(--success);">$${o.precio} <span style="background:var(--secondary); color:#fff; padding:2px 6px; border-radius:6px; font-size:10px; font-weight:700;">-${o.descuento || 20}%</span></p>
+                        <span style="font-size:10px; color:#E879F9; font-weight:900; background:rgba(217,70,239,0.15); padding:3px 8px; border-radius:6px; border:1px solid rgba(217,70,239,0.3);">${o.empresaNombre}</span>
+                        <h4 style="margin:6px 0 4px 0; color:white; font-size:15px; font-weight:900;">${o.nombre}</h4>
+                        <p style="margin:0; font-size:15px; font-weight:900; color:var(--success);">$${o.precio} <span style="background:#D946EF; color:#fff; padding:2px 6px; border-radius:6px; font-size:10px; font-weight:800;">-${o.descuento || 25}%</span></p>
                     </div>
-                    <button type="button" onclick="iniciarFlujoPago('${o.rutEmpresa}', ${o.id})" style="width:auto; padding:10px 14px; font-size:12px; background:var(--secondary);">Comprar</button>
+                    <button type="button" onclick="iniciarFlujoPago('${o.rutEmpresa}', ${o.id})" style="width:auto; padding:10px 14px; font-size:12px; background:var(--outlet-gradient);">Comprar</button>
                 </div>
-            `).join('') || '<p style="text-align:center; color:var(--text-muted); margin-top:30px;">No hay ofertas flash en la Zona Outlet en este momento.</p>';
+            `).join('') || '<p style="text-align:center; color:var(--text-muted); margin-top:40px;">No hay ofertas flash activas en la Zona Outlet.</p>';
 
             container.innerHTML = `
-                <div style="background: linear-gradient(135deg, var(--primary), #004085); color:white; padding:20px; border-radius:var(--radius-lg); margin-bottom:20px; box-shadow: var(--shadow-sm);">
-                    <h3 style="margin:0 0 6px 0; font-size:18px; font-weight:800;">🔥 Zona Outlet Destacado</h3>
-                    <p style="margin:0; font-size:12px; opacity:0.9; font-weight:500;">Oportunidades únicas de nuestras tiendas aliadas en Montevideo.</p>
+                <div style="background:var(--outlet-gradient); color:white; padding:22px; border-radius:var(--radius-lg); margin-bottom:22px; box-shadow:var(--shadow-outlet);">
+                    <h3 style="margin:0 0 6px 0; font-size:20px; font-weight:900;">⚡ ZONA OUTLET EXCLUSIVA</h3>
+                    <p style="margin:0; font-size:13px; opacity:0.95; font-weight:600;">Liquidaciones con stock limitado en Montevideo.</p>
                 </div>
                 ${html}
             `;
@@ -699,22 +624,20 @@
 
         function mostrarFormularioCadeteria() {
             actualizarMenuActivo(2);
-            const container = document.getElementById('main-content');
+            document.getElementById('main-content').innerHTML = `
+                <h3 style="color:white; margin-top:0; font-size:20px; font-weight:900;">🛵 Cadetería Express</h3>
+                <p style="font-size:13px; color:var(--text-muted); margin-bottom:20px;">Envíos puerta a puerta rápidos.</p>
 
-            container.innerHTML = `
-                <h3 style="color:var(--primary); margin-top:0; font-size:18px; font-weight:800;">🛵 Solicitud de Cadetería Express</h3>
-                <p style="font-size:13px; color:var(--text-muted); margin-bottom:20px;">Envío seguro punto a punto en Montevideo.</p>
-
-                <label>Tipo de Vehículo:</label>
+                <label>Vehículo:</label>
                 <select id="cadVehiculo">
                     <option value="moto">Moto ($220)</option>
                     <option value="camioneta">Camioneta ($480)</option>
                 </select>
-                <label>Punto A (Origen - Retiro):</label>
-                <input type="text" id="cadPuntoA" placeholder="Dirección de retiro">
-                <label>Punto B (Destino - Entrega):</label>
-                <input type="text" id="cadPuntoB" placeholder="Dirección de entrega">
-                <button type="button" onclick="confirmarCadeteriaExpress()" style="background:var(--success); margin-top:10px; font-weight:700;">Solicitar Envío Ahora</button>
+                <label>Origen (Retiro):</label>
+                <input type="text" id="cadPuntoA" placeholder="Dirección de origen">
+                <label>Destino (Entrega):</label>
+                <input type="text" id="cadPuntoB" placeholder="Dirección de destino">
+                <button type="button" onclick="confirmarCadeteriaExpress()" style="background:var(--success); margin-top:10px; font-weight:800;">Solicitar Envío</button>
             `;
         }
 
@@ -734,14 +657,14 @@
                 formaPago: 'mercadopago',
                 total: vehiculo === 'moto' ? 220 : 480,
                 estado: 'Recibido',
-                descripcion: `Envío de Cadetería Express (${vehiculo}) - Origen: ${pa} -> Destino: ${pb}`,
-                items: [{ nombre: `Cadetería Express (${vehiculo})`, precio: vehiculo === 'moto' ? 220 : 480, cantidad: 1 }],
+                descripcion: `Cadetería (${vehiculo})`,
+                items: [{ nombre: `Envío (${vehiculo})`, precio: vehiculo === 'moto' ? 220 : 480, cantidad: 1 }],
                 codigoVerificacion: Math.floor(1000 + Math.random() * 9000).toString(),
                 tiempoInicioEstado: Date.now()
             };
 
             let base = JSON.parse(localStorage.getItem('lt_base_empresas')) || [];
-            if (base.length === 0) { alert("⚠️ No hay empresas/central configurada."); return; }
+            if (base.length === 0) { alert("⚠️ Configurar central primero."); return; }
             let central = base[0];
             if (!central.pedidos) central.pedidos = [];
             central.pedidos.push(nuevoPedido);
@@ -749,7 +672,7 @@
             localStorage.setItem('lt_base_empresas', JSON.stringify(base));
             window.dispatchEvent(new Event('storage'));
 
-            alert(`✅ ¡Cadetería solicitada con éxito!\n🔑 PIN de seguridad: [ ${nuevoPedido.codigoVerificacion} ]`);
+            alert(`✅ ¡Cadetería solicitada!\n🔑 PIN: [ ${nuevoPedido.codigoVerificacion} ]`);
             mostrarPedidosActivos();
         }
 
@@ -766,9 +689,7 @@
 
             base.forEach(emp => {
                 (emp.pedidos || []).forEach(p => {
-                    if (p.cliente === sesion.nombre) {
-                        misPedidos.push({ ...p, empresaNombre: emp.nombre });
-                    }
+                    if (p.cliente === sesion.nombre) misPedidos.push({ ...p, empresaNombre: emp.nombre });
                 });
             });
 
@@ -777,39 +698,36 @@
             let html = misPedidos.map(p => {
                 let estadoActual = p.estado || 'Recibido';
                 let claseEstado = 'estado-recibido';
-                
                 if (estadoActual === 'En Preparación') claseEstado = 'estado-proceso';
-                if (estadoActual.includes('Listo para Retirar')) claseEstado = 'estado-pronto';
+                if (estadoActual.includes('Listo')) claseEstado = 'estado-pronto';
                 if (estadoActual === 'En Camino') claseEstado = 'estado-camino';
 
                 let itemsTexto = (p.items || []).map(i => `${i.cantidad}x ${i.nombre}`).join(', ');
 
                 return `
-                    <div class="comercio-card" style="display:block; border-left: 5px solid var(--primary); margin-bottom: 14px;">
+                    <div class="comercio-card" style="display:block; border-left: 5px solid var(--accent); margin-bottom: 14px;">
                         <div style="display:flex; justify-content:space-between; margin-bottom:8px; align-items:center;">
-                            <strong style="color:var(--primary); font-size:14px; font-weight:800;">Pedido #${p.id.toString().slice(-4)}</strong>
+                            <strong style="color:white; font-size:14px; font-weight:900;">Pedido #${p.id.toString().slice(-4)}</strong>
                             <span class="badge-estado ${claseEstado}">${estadoActual}</span>
                         </div>
-                        <p style="margin:3px 0; font-size:13px; color:var(--text-muted);">🏪 Local: <b>${p.empresaNombre}</b></p>
-                        <p style="margin:3px 0; font-size:13px; color:var(--text-muted);">📦 Ítems: ${itemsTexto}</p>
-                        <p style="margin:3px 0; font-size:13px; color:var(--text-muted);">💳 Pago: <b>${(p.formaPago || 'efectivo').toUpperCase()}</b></p>
-                        <p style="margin:3px 0; font-size:13px; color:var(--text-muted);">📍 Destino: ${p.direccion}</p>
-                        <div style="background:#f8fafc; padding:10px; border-radius:var(--radius-md); text-align:center; margin-top:10px; border: 1.5px solid var(--border);">
-                            <span style="font-size:12px; color:var(--text-main);">🔑 PIN de seguridad para entrega: <b style="color:var(--secondary); font-size:14px;">${p.codigoVerificacion}</b></span>
+                        <p style="margin:4px 0; font-size:13px; color:var(--text-muted);">🏪 Local: <b>${p.empresaNombre}</b></p>
+                        <p style="margin:4px 0; font-size:13px; color:var(--text-muted);">📦 ${itemsTexto}</p>
+                        <p style="margin:4px 0; font-size:13px; color:var(--text-muted);">💳 Pago: <b>${(p.formaPago || 'efectivo').toUpperCase()}</b></p>
+                        <div style="background:#111827; padding:10px; border-radius:var(--radius-md); text-align:center; margin-top:12px; border: 1.5px solid var(--card-border);">
+                            <span style="font-size:12px; color:var(--text-muted);">🔑 PIN de seguridad: <b style="color:#E879F9; font-size:15px;">${p.codigoVerificacion}</b></span>
                         </div>
                     </div>
                 `;
-            }).join('') || '<p style="text-align:center; color:var(--text-muted); margin-top:30px;">No tenés pedidos activos registrados.</p>';
+            }).join('') || '<p style="text-align:center; color:var(--text-muted); margin-top:40px;">No tenés pedidos activos.</p>';
 
             container.innerHTML = `
-                <h3 style="color:var(--primary); margin-top:0; font-size:18px; font-weight:800;">📦 Seguimiento de Mis Pedidos</h3>
+                <h3 style="color:white; margin-top:0; font-size:20px; font-weight:900;">📦 Mis Pedidos</h3>
                 <div id="contenedor-cards-pedidos">${html}</div>
             `;
         }
 
         function actualizarMenuActivo(index) {
-            const botones = document.querySelectorAll('.bottom-nav .nav-item');
-            botones.forEach((btn, idx) => {
+            document.querySelectorAll('.bottom-nav .nav-item').forEach((btn, idx) => {
                 if (idx === index) btn.classList.add('active');
                 else btn.classList.remove('active');
             });
