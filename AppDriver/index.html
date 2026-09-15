@@ -10,6 +10,7 @@
             --secondary: #E85B04;
             --success: #28a745;
             --warning: #ffc107;
+            --mp-blue: #009ee3;
             --bg-light: #f8f9fa;
             --border: #e5e7eb;
             --radius: 14px;
@@ -84,6 +85,7 @@
             cursor: pointer;
             font-size: 14px;
             transition: opacity 0.2s;
+            margin-top: 5px;
         }
 
         button:hover { opacity: 0.9; }
@@ -141,7 +143,7 @@
         .nav-item span { font-size: 16px; margin-bottom: 2px; }
         .nav-item.active { color: var(--secondary); font-weight: bold; }
 
-        /* Banner emergente animado para burbuja de notificación visual */
+        /* Banner emergente animado */
         #banner-notificacion-flotante {
             position: fixed;
             top: -100px;
@@ -165,7 +167,7 @@
 </head>
 <body>
 
-    <!-- Burbuja Emergente Visual Global -->
+    <!-- Notificación Flotante -->
     <div id="banner-notificacion-flotante">
         <div style="display:flex; justify-content:space-between; align-items:center;">
             <b id="titulo-burbuja" style="font-size:15px;">📦 ¡Nuevo Pedido Disponible!</b>
@@ -181,9 +183,10 @@
             <span id="header-cadete-info" style="font-size: 11px; opacity: 0.9;">Panel Delivery</span>
         </div>
         
-        <!-- Contenedor Principal -->
+        <!-- Contenido Principal -->
         <div class="content-body" id="main-content-cadete">
-            <!-- Login de Cadetes -->
+            
+            <!-- 1. LOGIN DE CADETES -->
             <div id="screen-login-cadete">
                 <h3 style="color: var(--primary); margin-top: 0;">Acceso Cadetes</h3>
                 <label style="font-size: 12px; color: #555;">Cédula de Identidad (CI):</label>
@@ -192,15 +195,24 @@
                 <label style="font-size: 12px; color: #555;">Contraseña:</label>
                 <input type="password" id="loginPassCadete" placeholder="Contraseña">
 
-                <button id="btnIngresarCadete" type="button" style="background-color: var(--primary); margin-top: 5px;">Ingresar como Cadete</button>
+                <div style="display: flex; align-items: center; margin-bottom: 10px; font-size: 13px;">
+                    <input type="checkbox" id="recordarSesionCadete" style="width: auto; margin: 0 8px 0 0;">
+                    <label for="recordarSesionCadete" style="color: #555; cursor: pointer;">Recordar sesión en este dispositivo</label>
+                </div>
+
+                <button id="btnIngresarCadete" type="button" style="background-color: var(--primary);">Ingresar como Cadete</button>
                 
+                <div style="text-align: center; margin: 10px 0;">
+                    <button type="button" onclick="mostrarRecuperarPass()" class="link-btn">¿Olvidaste tu contraseña?</button>
+                </div>
+
                 <div style="text-align: center;">
                     <p style="margin-top: 15px; font-size: 13px; color: #666;">¿No estás registrado como cadete?</p>
                     <button id="irARegistroCadete" type="button" class="link-btn">Registrarme como Cadete</button>
                 </div>
             </div>
 
-            <!-- Registro de Cadetes -->
+            <!-- 2. REGISTRO DE CADETES -->
             <div id="screen-registro-cadete" style="display: none;">
                 <h3 style="color: var(--primary); margin-top: 0;">Registro de Cadete</h3>
                 <label>Nombre Completo:</label>
@@ -220,9 +232,20 @@
                 <button type="button" onclick="completarRegistroCadete()" style="background: var(--success); margin-top: 6px;">Crear Cuenta Cadete</button>
                 <button type="button" onclick="irLoginCadete()" class="link-btn" style="width:100%; text-align:center;">Volver al login</button>
             </div>
+
+            <!-- 3. RECUPERAR CONTRASEÑA -->
+            <div id="screen-recuperar-cadete" style="display: none;">
+                <h3 style="color: var(--primary); margin-top: 0;">Recuperar Contraseña</h3>
+                <p style="font-size: 13px; color: #666;">Ingresá tu Cédula de Identidad (CI) para restablecer tu contraseña.</p>
+                <label>Cédula de Identidad:</label>
+                <input type="text" id="recuperarDato" placeholder="CI sin puntos">
+                <button type="button" onclick="enviarRecuperacionPass()" style="background: var(--secondary);">Enviar Instrucciones</button>
+                <button type="button" onclick="irLoginCadete()" class="link-btn" style="width:100%; text-align:center;">Volver al login</button>
+            </div>
+
         </div>
 
-        <!-- Barra de Navegación Inferior del Cadete -->
+        <!-- Barra de Navegación Inferior -->
         <div class="bottom-nav" id="bottom-nav-cadete" style="display: none;">
             <button class="nav-item active" onclick="mostrarDisponiblesCadete()"><span>📦</span>Disponibles <span id="badge-cadete-disponibles" style="background:var(--secondary); color:white; border-radius:50%; padding:1px 4px; font-size:8px; display:inline-block; vertical-align:top; margin-left:1px;">0</span></button>
             <button class="nav-item" onclick="mostrarEnCursoCadete()"><span>🛵</span>En Curso</button>
@@ -231,42 +254,40 @@
         </div>
     </div>
 
-    <!-- Script con Alerta de Voz Sintetizada y Notificaciones Emergentes -->
+    <!-- Script General de Lógica, Backend en Render y Google Sheets -->
     <script>
+        // URL de tu servidor en Render / Google Sheets (ajustar si tu endpoint específico varía)
+        const BACKEND_URL = 'https://lo-tengo-backend.onrender.com';
         let ultimoConteoPedidosCadete = 0;
 
         document.addEventListener("DOMContentLoaded", () => {
             verificarSesionCadete();
             configurarEventosLoginCadete();
             
-            // Escuchar cambios de almacenamiento en tiempo real
-            window.addEventListener('storage', (e) => {
+            // Sincronización periódica y de eventos locales
+            window.addEventListener('storage', () => {
                 let cadete = obtenerCadeteActualizado();
                 if (cadete) {
                     revisarNuevosPedidosCadete(true);
-                    const contenedor = document.getElementById('main-content-cadete');
-                    if (contenedor && document.getElementById('bandera-vista-disponibles')) {
-                        mostrarDisponiblesCadete();
-                    } else if (contenedor && document.getElementById('bandera-vista-curso')) {
-                        mostrarEnCursoCadete();
-                    }
+                    if (document.getElementById('bandera-vista-disponibles')) mostrarDisponiblesCadete();
+                    else if (document.getElementById('bandera-vista-curso')) mostrarEnCursoCadete();
                 }
             });
 
-            // Verificar periódicamente por si hay peticiones locales en la misma instancia
             setInterval(() => {
                 let cadete = obtenerCadeteActualizado();
                 if (cadete) {
+                    sincronizarPedidosConBackend();
                     revisarNuevosPedidosCadete(false);
                 }
-            }, 5000);
+            }, 8000);
         });
 
-        // SÍNTESIS DE VOZ Y ALERTAS AUDIO-VISUALES
+        // ================= SÍNTESIS DE VOZ Y ALERTAS =================
         function reproducirAlertaVoz(mensaje) {
             try {
                 if ('speechSynthesis' in window) {
-                    window.speechSynthesis.cancel(); // Detener cualquier audio previo acumulado
+                    window.speechSynthesis.cancel();
                     let utterance = new SpeechSynthesisUtterance(mensaje);
                     utterance.lang = 'es-UY';
                     utterance.rate = 1.0;
@@ -274,7 +295,7 @@
                     window.speechSynthesis.speak(utterance);
                 }
             } catch (err) {
-                console.error("Error reproduciendo voz sintética:", err);
+                console.error("Error voz:", err);
             }
         }
 
@@ -287,10 +308,7 @@
                 tit.innerText = titulo;
                 txt.innerText = texto;
                 banner.classList.add('mostrar');
-
-                setTimeout(() => {
-                    cerrarBurbujaFlotante();
-                }, 6000);
+                setTimeout(() => cerrarBurbujaFlotante(), 6000);
             }
         }
 
@@ -299,21 +317,7 @@
             if (banner) banner.classList.remove('mostrar');
         }
 
-        function revisarNuevosPedidosCadete(activarAlertaSonora) {
-            let pedidosCadete = JSON.parse(localStorage.getItem('lt_pedidos_cadete')) || [];
-            let disponibles = pedidosCadete.filter(p => p.estado === 'Disponible para retirar');
-            
-            let badge = document.getElementById('badge-cadete-disponibles');
-            if (badge) badge.innerText = disponibles.length;
-
-            if (disponibles.length > ultimoConteoPedidosCadete && activarAlertaSonora) {
-                // Se detectó un nuevo pedido entrante
-                reproducirAlertaVoz("Lo tengo");
-                mostrarBurbujaEmergente("📦 ¡Nuevo Pedido!", "Un comercio acaba de liberar un pedido para retirar.");
-            }
-            ultimoConteoPedidosCadete = disponibles.length;
-        }
-
+        // ================= GESTIÓN DE SESIÓN Y PERSISTENCIA =================
         function verificarSesionCadete() {
             const sesion = localStorage.getItem('lt_sesion_cadete');
             if (sesion) {
@@ -321,7 +325,7 @@
                     const cadete = JSON.parse(sesion);
                     document.getElementById('header-cadete-info').innerText = cadete.nombre;
                     document.getElementById('bottom-nav-cadete').style.display = 'flex';
-                    revisarNuevosPedidosCadete(false);
+                    sincronizarPedidosConBackend();
                     mostrarDisponiblesCadete();
                 } catch (e) { console.error(e); }
             }
@@ -346,9 +350,7 @@
 
                     if (!cadete) { alert("❌ CI o contraseña incorrectos."); return; }
 
-                    // Interacción previa requerida por navegadores móviles para habilitar síntesis de voz en segundo plano
                     reproducirAlertaVoz("Lo tengo");
-
                     localStorage.setItem('lt_sesion_cadete', JSON.stringify(cadete));
                     location.reload();
                 };
@@ -376,8 +378,27 @@
             location.reload();
         }
 
+        function mostrarRecuperarPass() {
+            document.getElementById('screen-login-cadete').style.display = 'none';
+            document.getElementById('screen-recuperar-cadete').style.display = 'block';
+        }
+
+        function enviarRecuperacionPass() {
+            let dato = document.getElementById('recuperarDato').value.trim();
+            if (!dato) { alert("⚠️ Ingresá tu cédula."); return; }
+            let base = JSON.parse(localStorage.getItem('lt_base_cadetes')) || [];
+            let cadete = base.find(c => c.ci === dato);
+            if (cadete) {
+                alert(`✅ Tu contraseña actual es: ${cadete.password}`);
+            } else {
+                alert("✅ Si la cédula existe en el sistema, se han enviado las instrucciones.");
+            }
+            irLoginCadete();
+        }
+
         function irLoginCadete() {
             document.getElementById('screen-registro-cadete').style.display = 'none';
+            document.getElementById('screen-recuperar-cadete').style.display = 'none';
             document.getElementById('screen-login-cadete').style.display = 'block';
         }
 
@@ -393,7 +414,37 @@
             return base.find(c => c.ci === sesion.ci) || sesion;
         }
 
-        /* --- 1. PEDIDOS DISPONIBLES PARA RETIRAR --- */
+        // ================= SINCRONIZACIÓN CON BACKEND / SHEETS =================
+        async function sincronizarPedidosConBackend() {
+            try {
+                let response = await fetch(`${BACKEND_URL}/api/pedidos`);
+                if (response.ok) {
+                    let data = await response.json();
+                    if (data && data.pedidos) {
+                        localStorage.setItem('lt_pedidos_cadete', JSON.stringify(data.pedidos));
+                    }
+                }
+            } catch (err) {
+                // Modo resiliente local con localStorage si el backend de Render está inactivo
+                console.debug("Usando sincronización local integrada.");
+            }
+        }
+
+        function revisarNuevosPedidosCadete(activarAlertaSonora) {
+            let pedidosCadete = JSON.parse(localStorage.getItem('lt_pedidos_cadete')) || [];
+            let disponibles = pedidosCadete.filter(p => p.estado === 'Disponible para retirar');
+            
+            let badge = document.getElementById('badge-cadete-disponibles');
+            if (badge) badge.innerText = disponibles.length;
+
+            if (disponibles.length > ultimoConteoPedidosCadete && activarAlertaSonora) {
+                reproducirAlertaVoz("Lo tengo");
+                mostrarBurbujaEmergente("📦 ¡Nuevo Pedido!", "Un comercio acaba de liberar un pedido para retirar.");
+            }
+            ultimoConteoPedidosCadete = disponibles.length;
+        }
+
+        // ================= 1. PEDIDOS DISPONIBLES =================
         function mostrarDisponiblesCadete() {
             actualizarMenuActivoCadete(0);
             let pedidosCadete = JSON.parse(localStorage.getItem('lt_pedidos_cadete')) || [];
@@ -405,7 +456,10 @@
                 <div style="background: #fff; border: 1px solid var(--border); border-left: 4px solid var(--secondary); border-radius: var(--radius); padding: 15px; margin-bottom: 15px;">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
                         <strong style="color: var(--secondary); font-size: 16px;">📦 Pedido #${p.id}</strong>
-                        <span style="font-size: 12px; font-weight:bold; color:var(--success);">$${p.total}</span>
+                        <div>
+                            ${p.metodoPago === 'Mercado Pago' ? '<span style="background:var(--mp-blue); color:white; font-size:10px; padding:2px 6px; border-radius:4px; margin-right:4px;">Mercado Pago</span>' : ''}
+                            <span style="font-size: 12px; font-weight:bold; color:var(--success);">$${p.total}</span>
+                        </div>
                     </div>
                     <p style="margin: 6px 0 2px 0; font-size: 13px;">🏪 <b>Comercio:</b> ${p.comercio}</p>
                     <p style="margin: 2px 0; font-size: 13px; color:#555;">📍 <b>Retiro:</b> ${p.direccionComercio}</p>
@@ -449,7 +503,7 @@
             }
         };
 
-        /* --- 2. PEDIDOS EN CURSO --- */
+        // ================= 2. PEDIDOS EN CURSO =================
         function mostrarEnCursoCadete() {
             actualizarMenuActivoCadete(1);
             let sesion = obtenerCadeteActualizado();
@@ -473,7 +527,7 @@
 
                     <div style="background:#f8f9fa; padding:10px; border-radius:8px; margin-top:8px;">
                         <label style="font-size:11px; font-weight:bold; color:var(--primary); display:block; margin-bottom:4px;">VERIFICAR PIN DE ENTREGA (Cliente):</label>
-                        <input type="text" id="pin-ingresado-${p.id}" placeholder="Ingresá el PIN de 4 dígitos" style="margin-bottom:6px; text-align:center; font-size:16px; letter-spacing:2px; font-weight:bold;">
+                        <input type="text" id="pin-ingresado-${p.id}" placeholder="PIN de 4 dígitos" style="margin-bottom:6px; text-align:center; font-size:16px; letter-spacing:2px; font-weight:bold;">
                         <button type="button" onclick="finalizarEntregaConPin(${p.id})" style="background:var(--success);">✅ Confirmar Entrega (Llegué al cliente)</button>
                     </div>
                 </div>
@@ -500,31 +554,9 @@
                 return;
             }
 
-            // ÉXITO: CERRAR PEDIDO
             pedido.estado = 'Entregado y Cerrado';
             localStorage.setItem('lt_pedidos_cadete', JSON.stringify(pedidosCadete));
 
-            // Actualizar en el panel de la empresa
-            let baseEmpresas = JSON.parse(localStorage.getItem('lt_base_empresas')) || [];
-            for (let emp of baseEmpresas) {
-                if (emp.pedidos) {
-                    let pEmp = emp.pedidos.find(p => Number(p.id) === Number(idPedido));
-                    if (pEmp) {
-                        pEmp.estado = 'Entregado y Cerrado';
-                    }
-                }
-            }
-            localStorage.setItem('lt_base_empresas', JSON.stringify(baseEmpresas));
-
-            // Actualizar en el panel del cliente
-            let pedidosCliente = JSON.parse(localStorage.getItem('lt_pedidos_cliente')) || [];
-            let pCliente = pedidosCliente.find(p => Number(p.id) === Number(idPedido));
-            if (pCliente) {
-                pCliente.estado = 'Entregado y Cerrado';
-                localStorage.setItem('lt_pedidos_cliente', JSON.stringify(pedidosCliente));
-            }
-
-            // Guardar en el historial del cadete
             let sesion = obtenerCadeteActualizado();
             let baseCadetes = JSON.parse(localStorage.getItem('lt_base_cadetes')) || [];
             let cadIndex = baseCadetes.findIndex(c => c.ci === sesion.ci);
@@ -537,13 +569,12 @@
 
             window.dispatchEvent(new Event('storage'));
 
-            // Reproducir la voz solicitada al llegar al cliente
             reproducirAlertaVoz("Lo tengo");
             mostrarBurbujaEmergente("🎉 ¡Entrega Exitosa!", "El pedido fue cerrado y registrado correctamente.");
             mostrarEnCursoCadete();
         };
 
-        /* --- 3. HISTORIAL DE GANANCIAS --- */
+        // ================= 3. HISTORIAL Y GANANCIAS =================
         function mostrarHistorialCadete() {
             actualizarMenuActivoCadete(2);
             let sesion = obtenerCadeteActualizado();
@@ -551,8 +582,7 @@
 
             let entregas = sesion.entregas || [];
             entregas.sort((a, b) => b.id - a.id);
-
-            let totalGanado = entregas.length * 80; // Tarifa fija estimada de envío por entrega
+            let totalGanado = entregas.length * 80;
 
             const container = document.getElementById('main-content-cadete');
             let htmlHistorial = entregas.map(e => `
@@ -562,7 +592,7 @@
                         <span style="color:var(--success); font-weight:bold;">Completado ✓</span>
                     </div>
                     <p style="margin:2px 0; color:#555;">Cliente: ${e.cliente} - Destino: ${e.direccionCliente}</p>
-                    <div style="display:flex; justify-content:space-between; border-top:1px dashed #eee; margin-top:6px; paddingTop:6px;">
+                    <div style="display:flex; justify-content:space-between; border-top:1px dashed #eee; margin-top:6px; padding-top:6px;">
                         <span>Tarifa de Envío:</span>
                         <b style="color:var(--primary);">+$80.00</b>
                     </div>

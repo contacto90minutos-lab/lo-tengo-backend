@@ -3,23 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LO TENGO - Ultra Pro</title>
+    <title>LO TENGO - Montevideo</title>
     <style>
         :root {
-            --primary: #0F172A;
-            --accent: #FF5722;
-            --accent-gradient: linear-gradient(135deg, #FF5722, #FF9800);
-            --outlet-gradient: linear-gradient(135deg, #D946EF, #8B5CF6);
+            --primary: #FF5722;
+            --primary-gradient: linear-gradient(135deg, #FF5722, #FF7043);
+            --outlet-gradient: linear-gradient(135deg, #7C3AED, #EC4899);
             --success: #10B981;
-            --bg-body: #0B0F19;
-            --card-bg: #1E293B;
-            --card-border: rgba(255, 255, 255, 0.08);
-            --text-main: #F8FAFC;
-            --text-muted: #94A3B8;
-            --radius-lg: 24px;
-            --radius-md: 16px;
-            --shadow-glow: 0 10px 30px -10px rgba(255, 87, 34, 0.3);
-            --shadow-outlet: 0 12px 35px -8px rgba(217, 70, 239, 0.4);
+            --bg-body: #F3F4F6;
+            --card-bg: #FFFFFF;
+            --card-border: #E5E7EB;
+            --text-main: #111827;
+            --text-muted: #6B7280;
+            --radius-lg: 20px;
+            --radius-md: 14px;
+            --shadow-subtle: 0 4px 20px rgba(0, 0, 0, 0.05);
+            --shadow-outlet: 0 10px 25px rgba(124, 58, 237, 0.25);
         }
 
         body {
@@ -35,11 +34,11 @@
         }
 
         #app-container {
-            background: #111827;
+            background: #FFFFFF;
             width: 100%;
             max-width: 480px;
             min-height: 100vh;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
@@ -49,13 +48,16 @@
         }
 
         .header-app {
-            background: linear-gradient(180deg, #1E293B, #111827);
-            color: white;
-            padding: 20px 24px;
+            background: #FFFFFF;
+            color: var(--text-main);
+            padding: 18px 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid var(--card-border);
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
 
         .header-app h1 {
@@ -74,66 +76,68 @@
 
         label {
             font-size: 13px;
-            font-weight: 600;
+            font-weight: 700;
             color: var(--text-muted);
             display: block;
             margin-bottom: 6px;
         }
 
-        input, select {
+        input, select, textarea {
             width: 100%;
-            padding: 15px 18px;
+            padding: 14px 16px;
             margin: 0 0 16px 0;
             border: 1.5px solid var(--card-border);
             border-radius: var(--radius-md);
             box-sizing: border-box;
             font-size: 15px;
-            background: #1F2937;
-            color: white;
+            background: #F9FAFB;
+            color: var(--text-main);
             transition: all 0.2s;
+            font-family: inherit;
         }
-        input:focus, select:focus {
+        input:focus, select:focus, textarea:focus {
             outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 4px rgba(255, 87, 34, 0.15);
+            border-color: var(--primary);
+            background: #FFFFFF;
+            box-shadow: 0 0 0 4px rgba(255, 87, 34, 0.1);
         }
 
         button {
             width: 100%;
             padding: 15px;
-            background: var(--accent-gradient);
+            background: var(--primary-gradient);
             color: white;
             border: none;
             border-radius: var(--radius-md);
             font-weight: 800;
             cursor: pointer;
             font-size: 15px;
-            box-shadow: var(--shadow-glow);
+            box-shadow: 0 4px 14px rgba(255, 87, 34, 0.3);
             transition: all 0.2s;
         }
-        button:hover { opacity: 0.95; transform: translateY(-2px); }
+        button:hover { opacity: 0.95; transform: translateY(-1px); }
         button:active { transform: scale(0.98); }
 
         .link-btn {
             background: none;
-            color: var(--accent);
+            color: var(--primary);
             border: none;
             text-decoration: underline;
             cursor: pointer;
-            margin-top: 10px;
-            font-size: 14px;
+            margin-top: 8px;
+            font-size: 13px;
+            font-weight: 600;
             box-shadow: none;
         }
 
-        /* Buscador Ultra Pro */
         .search-container {
-            background: #1F2937;
-            padding: 14px 20px;
+            background: #F9FAFB;
+            padding: 12px 18px;
             border-radius: var(--radius-md);
             display: flex;
             align-items: center;
             gap: 12px;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
             border: 1.5px solid var(--card-border);
         }
         .search-container input {
@@ -143,44 +147,41 @@
             padding: 0;
             outline: none;
             font-size: 15px;
-            color: white;
+            color: var(--text-main);
         }
 
-        /* Carrusel Categorías Estilizadas */
-        .categorias-scroll {
-            display: flex;
-            gap: 14px;
-            overflow-x: auto;
-            padding-bottom: 10px;
-            margin-bottom: 28px;
-            scrollbar-width: none;
+        .categorias-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 22px;
         }
-        .categorias-scroll::-webkit-scrollbar { display: none; }
 
         .cat-card {
-            min-width: 90px;
-            max-width: 90px;
             background: var(--card-bg);
             border: 1.5px solid var(--card-border);
-            border-radius: var(--radius-lg);
-            padding: 14px 8px;
+            border-radius: var(--radius-md);
+            padding: 12px 4px;
             text-align: center;
             cursor: pointer;
-            flex-shrink: 0;
-            transition: all 0.25s ease;
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow-subtle);
         }
         .cat-card:hover {
-            transform: translateY(-4px);
-            border-color: var(--accent);
+            transform: translateY(-2px);
+            border-color: var(--primary);
         }
-        
-        /* Banner Zona Outlet ultra llamativo */
-        .outlet-super-banner {
+        .cat-card.outlet-cat {
+            border-color: #C084FC;
+            background: linear-gradient(135deg, #FAF5FF, #F3E8FF);
+        }
+
+        .outlet-banner {
             background: var(--outlet-gradient);
             color: white;
-            padding: 24px;
+            padding: 22px;
             border-radius: var(--radius-lg);
-            margin-bottom: 28px;
+            margin-bottom: 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -188,17 +189,10 @@
             cursor: pointer;
             position: relative;
             overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.2);
-            animation: pulse-outlet 3s infinite;
-        }
-        @keyframes pulse-outlet {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.01); box-shadow: 0 15px 40px -5px rgba(217, 70, 239, 0.6); }
-            100% { transform: scale(1); }
         }
 
         .section-title {
-            font-size: 18px;
+            font-size: 17px;
             font-weight: 900;
             color: var(--text-main);
             margin: 0 0 16px 0;
@@ -208,57 +202,116 @@
             letter-spacing: -0.3px;
         }
 
-        /* Tarjetas de Comercios Pro */
+        .vehiculo-selector-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .vehiculo-card-opcion {
+            background: #F9FAFB;
+            border: 2px solid var(--card-border);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .vehiculo-card-opcion.seleccionado {
+            border-color: var(--primary);
+            background: rgba(255, 87, 34, 0.05);
+            box-shadow: 0 0 0 4px rgba(255, 87, 34, 0.1);
+        }
+
         .comercio-card {
             background: var(--card-bg);
             border: 1.5px solid var(--card-border);
             border-radius: var(--radius-lg);
             padding: 16px;
-            margin-bottom: 16px;
+            margin-bottom: 14px;
             display: flex;
             align-items: center;
             gap: 16px;
             transition: all 0.2s;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            box-shadow: var(--shadow-subtle);
         }
         .comercio-card:hover {
-            border-color: rgba(255,255,255,0.2);
+            border-color: #D1D5DB;
             transform: translateY(-2px);
         }
 
         .comercio-avatar {
-            width: 72px;
-            height: 72px;
+            width: 75px;
+            height: 75px;
             border-radius: var(--radius-md);
             object-fit: cover;
-            background: #374151;
+            background: #E5E7EB;
             flex-shrink: 0;
         }
 
         .badge-estado {
-            padding: 6px 12px;
-            border-radius: 8px;
+            padding: 5px 10px;
+            border-radius: 6px;
             font-size: 11px;
             font-weight: 800;
             display: inline-block;
         }
-        .estado-recibido { background: #374151; color: #E5E7EB; }
-        .estado-proceso { background: #78350F; color: #FCD34D; }
-        .estado-pronto { background: #064E3B; color: #6EE7B7; }
-        .estado-camino { background: #1E3A8A; color: #93C5FD; }
+        .estado-recibido { background: #FEF3C7; color: #B45309; }
+        .estado-proceso { background: #FFEDD5; color: #C2410C; }
+        .estado-pronto { background: #D1FAE5; color: #047857; }
+        .estado-camino { background: #DBEAFE; color: #1D4ED8; }
 
-        /* Barra de Navegación Inferior Estilo App Moderna */
+        .mapa-preview-container {
+            width: 100%;
+            height: 180px;
+            border-radius: var(--radius-md);
+            border: 1.5px solid var(--card-border);
+            overflow: hidden;
+            margin-bottom: 16px;
+            background: #E5E7EB;
+        }
+        .mapa-preview-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .autocomplete-suggestions {
+            border: 1.5px solid var(--card-border);
+            background: #FFFFFF;
+            border-top: none;
+            border-radius: 0 0 var(--radius-md) var(--radius-md);
+            max-height: 140px;
+            overflow-y: auto;
+            position: absolute;
+            width: calc(100% - 40px);
+            z-index: 99;
+            box-shadow: 0 10px 15px rgba(0,0,0,0.05);
+            display: none;
+        }
+        .autocomplete-suggestion {
+            padding: 10px 14px;
+            font-size: 13px;
+            cursor: pointer;
+            border-bottom: 1px solid #F3F4F6;
+        }
+        .autocomplete-suggestion:hover {
+            background: #FEF2F2;
+            color: var(--primary);
+            font-weight: 700;
+        }
+
         .bottom-nav {
             position: absolute;
             bottom: 0;
             left: 0;
             width: 100%;
-            background: rgba(17, 24, 39, 0.95);
-            backdrop-filter: blur(12px);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
             border-top: 1px solid var(--card-border);
             display: flex;
             justify-content: space-around;
-            padding: 14px 0;
+            padding: 12px 0;
             z-index: 10;
         }
 
@@ -274,22 +327,23 @@
             font-weight: 600;
             transition: color 0.2s;
         }
-        .nav-item span { font-size: 22px; margin-bottom: 4px; }
-        .nav-item.active { color: var(--accent); font-weight: 800; }
+        .nav-item svg { width: 22px; height: 22px; margin-bottom: 4px; fill: currentColor; }
+        .nav-item.active { color: var(--primary); font-weight: 800; }
     </style>
 </head>
 <body>
 
     <div id="app-container">
         <div class="header-app">
-            <h1><span style="color: var(--accent);">LO</span> TENGO <small style="font-size:10px; opacity:0.7; font-weight: 400;">ULTRA V2</small></h1>
-            <span id="header-user-info" style="font-size: 12px; font-weight: 700; background: rgba(255,255,255,0.08); padding: 6px 14px; border-radius: 20px; border: 1px solid var(--card-border);">📍 Montevideo</span>
+            <h1><span style="color: var(--primary);">LO</span> TENGO</h1>
+            <span id="header-user-info" style="font-size: 12px; font-weight: 700; background: #F3F4F6; padding: 6px 12px; border-radius: 20px; border: 1px solid var(--card-border);">📍 Montevideo</span>
         </div>
         
         <div class="content-body" id="main-content">
+            <!-- Pantalla Login -->
             <div id="screen-login">
                 <h3 style="color: var(--text-main); margin-top: 0; font-size: 22px; font-weight: 900;">Iniciar Sesión</h3>
-                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 24px;">Accede a tu cuenta de LO TENGO.</p>
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 24px;">Ingresá a tu cuenta para pedir en Montevideo.</p>
                 
                 <label>Número de WhatsApp:</label>
                 <input type="tel" id="loginTelefono" placeholder="Ej: 099123456">
@@ -297,52 +351,102 @@
                 <label>Contraseña:</label>
                 <input type="password" id="loginPassword" placeholder="Tu contraseña">
 
-                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px; background: #1F2937; padding: 14px; border-radius: var(--radius-md); border: 1.5px solid var(--card-border);">
-                    <input type="checkbox" id="recordarCredenciales" style="width: 18px; height: 18px; margin: 0; cursor: pointer; accent-color: var(--accent);">
-                    <label for="recordarCredenciales" style="font-size: 13px; color: var(--text-main); cursor: pointer; margin: 0; font-weight: 700;">Recordar credenciales</label>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: #F9FAFB; padding: 12px; border-radius: var(--radius-md); border: 1.5px solid var(--card-border);">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <input type="checkbox" id="recordarCredenciales" style="width: 18px; height: 18px; margin: 0; cursor: pointer; accent-color: var(--primary);">
+                        <label for="recordarCredenciales" style="font-size: 13px; color: var(--text-main); cursor: pointer; margin: 0; font-weight: 700;">Recordar datos</label>
+                    </div>
+                    <button type="button" onclick="recuperarPasswordModal()" class="link-btn" style="margin:0; font-size:12px;">¿Olvidaste tu contraseña?</button>
                 </div>
 
                 <button id="btnIniciarSesion" type="button">Ingresar al Sistema</button>
                 
                 <div style="text-align: center; margin-top: 20px;">
-                    <button id="irARegistro" type="button" class="link-btn">¿No tenés cuenta? Registrate acá</button>
+                    <button id="irARegistro" type="button" class="link-btn" style="font-size:14px; text-decoration:underline;">¿No tenés cuenta? Registrate acá</button>
                 </div>
             </div>
 
+            <!-- Pantalla Registro -->
             <div id="screen-registro" style="display: none;">
                 <h3 style="color: var(--text-main); margin-top: 0; font-size: 22px; font-weight: 900;">Crear Cuenta</h3>
                 <label>Nombre y Apellido:</label>
                 <input type="text" id="regNombre" placeholder="Tu nombre">
                 <label>WhatsApp:</label>
                 <input type="tel" id="regTelefono" placeholder="Ej: 099123456">
-                <label>Dirección en Montevideo:</label>
-                <input type="text" id="regDireccion" placeholder="Calle, número y barrio">
+                <label>Dirección principal en Montevideo:</label>
+                <input type="text" id="regDireccion" placeholder="Calle, número y barrio (ej: Pocitos)">
                 <label>Contraseña:</label>
                 <input type="password" id="regPassword" placeholder="Contraseña segura">
                 <button type="button" onclick="completarRegistroCliente()" style="background: var(--success); margin-top: 10px;">Completar Registro</button>
-                <button type="button" onclick="irLogin()" class="link-btn" style="width:100%; text-align:center;">← Volver al login</button>
+                <button type="button" onclick="irLogin()" class="link-btn" style="width:100%; text-align:center; display:block; margin-top:14px;">← Volver al login</button>
             </div>
         </div>
 
+        <!-- Barra Navegación Inferior -->
         <div class="bottom-nav" id="bottom-nav" style="display: none;">
-            <button class="nav-item active" onclick="mostrarHome()"><span>🏠</span>Inicio</button>
-            <button class="nav-item" onclick="mostrarZonaOutlet()"><span>⚡</span>Outlet</button>
-            <button class="nav-item" onclick="mostrarFormularioCadeteria()"><span>🛵</span>Cadetería</button>
-            <button class="nav-item" onclick="mostrarPedidosActivos()"><span>📦</span>Pedidos</button>
+            <button class="nav-item active" onclick="mostrarHome()">
+                <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>Inicio
+            </button>
+            <button class="nav-item" onclick="mostrarZonaOutlet()">
+                <svg viewBox="0 0 24 24"><path d="M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58.55 0 1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41 0-.55-.23-1.06-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z"/></svg>Outlet
+            </button>
+            <button class="nav-item" onclick="mostrarFormularioCadeteria()">
+                <svg viewBox="0 0 24 24"><path d="M19 7h-3V5.5C16 4.12 14.88 3 13.5 3h-3C9.12 3 8 4.12 8 5.5V7H5c-1.1 0-2 .9-2 2v9c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zm-9-1.5c0-.28.22-.5.5-.5h3c.28 0 .5.22.5.5V7H10V5.5zm9 12.5H5V9h14v9z"/></svg>Cadetería
+            </button>
+            <button class="nav-item" onclick="mostrarPedidosActivos()">
+                <svg viewBox="0 0 24 24"><path d="M20 6h-4V4c0-1.1-.9-2-2-2h-4c-1.1 0-2 .9-2 2v2H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zM10 4h4v2h-4V4zm10 15H4V8h16v11z"/></svg>Pedidos
+            </button>
         </div>
     </div>
-
     <script>
+        const CALLES_MONTEVIDEO = [
+            "Av. 18 de Julio 1200, Centro",
+            "Bv. General Artigas 2500, Tres Cruces",
+            "Av. Italia 4200, Malvín",
+            "Av. Arocena 1600, Carrasco",
+            "Ellauri 350, Punta Carretas",
+            "Av. Dr. Luis Alberto de Herrera 1234, Buceo",
+            "Av. General Flores 3200, La Blanqueada",
+            "Sarandí 450, Ciudad Vieja",
+            "Av. 8 de Octubre 2300, La Blanqueada",
+            "Br. España 2600, Pocitos",
+            "Av. Millán 3800, Prado",
+            "San José 1100, Centro",
+            "Canelones 2100, Cordón",
+            "Durazno 1900, Palermo",
+            "Rambla República de Chile 4500, Malvín"
+        ];
+
         document.addEventListener("DOMContentLoaded", () => {
             verificarSesionCliente();
             configurarEventosLogin();
             cargarCredencialesGuardadas();
+            inicializarDatosDemoSiEsNecesario();
 
             window.addEventListener('storage', () => {
                 const contenedorPedidos = document.getElementById('contenedor-cards-pedidos');
                 if (contenedorPedidos) renderizarListaPedidos();
             });
         });
+
+        function inicializarDatosDemoSiEsNecesario() {
+            let base = JSON.parse(localStorage.getItem('lt_base_empresas')) || [];
+            if (base.length === 0) {
+                base = [{
+                    nombre: "Lo Tengo Central Montevideo",
+                    rut: "219999990012",
+                    telefono: "099000000",
+                    direccion: "Av. 18 de Julio 1300",
+                    giro: "Gastronomía",
+                    pedidos: [],
+                    productos: [
+                        { id: 1, nombre: "Chivito al Plato Clásico", precio: 480, imagen: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=400&q=80" },
+                        { id: 2, nombre: "Empanadas de Carne (Docena)", precio: 520, imagen: "https://images.unsplash.com/photo-1608897013039-887f21d8c804?auto=format&fit=crop&w=400&q=80" }
+                    ]
+                }];
+                localStorage.setItem('lt_base_empresas', JSON.stringify(base));
+            }
+        }
 
         function verificarSesionCliente() {
             const sesion = localStorage.getItem('lt_sesion_activa');
@@ -385,9 +489,14 @@
                     const recordar = document.getElementById('recordarCredenciales').checked;
 
                     const usuarios = JSON.parse(localStorage.getItem('lt_base_usuarios')) || [];
-                    const usr = usuarios.find(u => u.telefono === tel && u.password === pass);
+                    let usr = usuarios.find(u => u.telefono === tel && u.password === pass);
 
-                    if (!usr) { alert("❌ Credenciales incorrectas."); return; }
+                    if (!usr && tel === "099123456" && pass === "1234") {
+                        usr = { nombre: "Cliente Demo Montevideo", telefono: "099123456", direccion: "Bv. General Artigas 2500", password: "1234" };
+                        usuarios.push(usr);
+                        localStorage.setItem('lt_base_usuarios', JSON.stringify(usuarios));
+                    }
+                    if (!usr) { alert("❌ Credenciales incorrectas. (Probá 099123456 / 1234 o registrate)"); return; }
 
                     if (recordar) {
                         localStorage.setItem('lt_credenciales_guardadas', JSON.stringify({ telefono: tel, password: pass }));
@@ -418,6 +527,18 @@
             location.reload();
         }
 
+        function recuperarPasswordModal() {
+            let tel = prompt("Ingresá tu número de WhatsApp registrado para recuperar tu contraseña:");
+            if (!tel) return;
+            let usuarios = JSON.parse(localStorage.getItem('lt_base_usuarios')) || [];
+            let usr = usuarios.find(u => u.telefono === tel);
+            if (usr) {
+                alert(`🔐 Tu contraseña actual es: ${usr.password}`);
+            } else {
+                alert("❌ No se encontró ningún usuario con ese número de WhatsApp.");
+            }
+        }
+
         function irLogin() {
             document.getElementById('screen-registro').style.display = 'none';
             document.getElementById('screen-login').style.display = 'block';
@@ -426,64 +547,89 @@
         function esZonaSeguraEfectivo(direccion) {
             if (!direccion) return false;
             const dirLower = direccion.toLowerCase();
-            const zonasSeguras = ['pocitos', 'punta carretas', 'carrasco', 'buceo', 'malvín', 'tres cruces', 'parque batlle', 'punta gorda', 'centro'];
+            const zonasSeguras = ['pocitos', 'punta carretas', 'carrasco', 'buceo', 'malvín', 'tres cruces', 'parque batlle', 'punta gorda', 'centro', 'cordón'];
             return zonasSeguras.some(z => dirLower.includes(z));
         }
 
-        function mostrarHome() {
+        function mostrarHome(filtroGiro = 'todos') {
             actualizarMenuActivo(0);
             const container = document.getElementById('main-content');
             let baseEmpresas = JSON.parse(localStorage.getItem('lt_base_empresas')) || [];
 
-            let htmlComercios = baseEmpresas.map(emp => {
-                let imagenComercio = (emp.giro === 'Gastronomía' && emp.logo) ? emp.logo : 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=200&q=80';
-                let etiquetaGiro = emp.giro === 'Gastronomía' ? '🍔 Restaurantes' : '🛍️ Tiendas';
+            let comerciosFiltrados = baseEmpresas.filter(emp => {
+                if (filtroGiro === 'todos') return true;
+                return emp.giro === filtroGiro;
+            });
+
+            let htmlComercios = comerciosFiltrados.map(emp => {
+                let imagenComercio = emp.logo || 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=400&q=80';
+                let etiquetaGiro = '🏪 Comercio';
+                if (emp.giro === 'Gastronomía') etiquetaGiro = '🍔 Restaurantes';
+                if (emp.giro === 'Supermercado') etiquetaGiro = '🛒 Supermercados';
+                if (emp.giro === 'Tienda') etiquetaGiro = '🛍️ Tiendas';
+                if (emp.giro === 'Farmacia') etiquetaGiro = '💊 Farmacias';
 
                 return `
                     <div class="comercio-card" onclick="verCatalogoComercio('${emp.rut}')">
                         <img src="${imagenComercio}" class="comercio-avatar" alt="${emp.nombre}">
                         <div style="flex:1;">
-                            <h4 style="margin:0 0 4px 0; color:white; font-size:16px; font-weight:900;">${emp.nombre}</h4>
+                            <h4 style="margin:0 0 4px 0; color:var(--text-main); font-size:16px; font-weight:900;">${emp.nombre}</h4>
                             <p style="margin:0; font-size:12px; color:var(--text-muted);">📍 ${emp.direccion || 'Montevideo'} • ⭐ 4.9</p>
-                            <span style="font-size:10px; color:var(--accent); font-weight:800; background:rgba(255,87,34,0.12); padding:3px 8px; border-radius:6px; display:inline-block; margin-top:6px; border: 1px solid rgba(255,87,34,0.3);">${etiquetaGiro}</span>
+                            <span style="font-size:10px; color:var(--primary); font-weight:800; background:rgba(255,87,34,0.1); padding:3px 8px; border-radius:6px; display:inline-block; margin-top:6px; border: 1px solid rgba(255,87,34,0.2);">${etiquetaGiro}</span>
                         </div>
                         <span style="color:var(--text-muted); font-size:22px; font-weight:bold;">›</span>
                     </div>
                 `;
-            }).join('') || '<p style="text-align:center; color:var(--text-muted); padding:20px;">No hay comercios disponibles.</p>';
+            }).join('') || '<p style="text-align:center; color:var(--text-muted); padding:30px;">No hay comercios disponibles en esta categoría.</p>';
 
             container.innerHTML = `
                 <div class="search-container">
-                    <span>🔍</span>
-                    <input type="text" placeholder="¿Qué estás buscando hoy?">
+                    <span style="font-size:16px;">🔍</span>
+                    <input type="text" placeholder="Buscar hamburguesas, restaurantes, supermercados...">
                 </div>
 
-                <div class="categorias-scroll">
-                    <div class="cat-card" onclick="mostrarHome()">
-                        <div style="font-size:24px; margin-bottom:6px;">🍔</div>
-                        <p style="margin:0; font-size:11px; font-weight:800;">Restaurantes</p>
+                <div class="categorias-grid">
+                    <div class="cat-card" onclick="mostrarHome('Gastronomía')">
+                        <div style="font-size:22px; margin-bottom:4px;">🍔</div>
+                        <p style="margin:0; font-size:11px; font-weight:800; color:var(--text-main);">Comida</p>
                     </div>
-                    <div class="cat-card" onclick="mostrarHome()">
-                        <div style="font-size:24px; margin-bottom:6px;">🛍️</div>
-                        <p style="margin:0; font-size:11px; font-weight:800;">Tiendas</p>
+                    <div class="cat-card" onclick="mostrarHome('Supermercado')">
+                        <div style="font-size:22px; margin-bottom:4px;">🛒</div>
+                        <p style="margin:0; font-size:11px; font-weight:800; color:var(--text-main);">Supermercado</p>
                     </div>
-                    <div class="cat-card" onclick="mostrarZonaOutlet()" style="border-color:#D946EF; background:rgba(217,70,239,0.08);">
-                        <div style="font-size:24px; margin-bottom:6px;">⚡</div>
-                        <p style="margin:0; font-size:11px; font-weight:900; color:#E879F9;">Outlet</p>
+                    <div class="cat-card outlet-cat" onclick="mostrarZonaOutlet()">
+                        <div style="font-size:22px; margin-bottom:4px;">🏷️</div>
+                        <p style="margin:0; font-size:11px; font-weight:900; color:#7C3AED;">Outlet</p>
                     </div>
-                    <div class="cat-card" onclick="mostrarHome()">
-                        <div style="font-size:24px; margin-bottom:6px;">💊</div>
-                        <p style="margin:0; font-size:11px; font-weight:800;">Farmacia</p>
+                    <div class="cat-card" onclick="mostrarHome('Farmacia')">
+                        <div style="font-size:22px; margin-bottom:4px;">💊</div>
+                        <p style="margin:0; font-size:11px; font-weight:800; color:var(--text-main);">Farmacia</p>
+                    </div>
+                    <div class="cat-card" onclick="mostrarHome('Tienda')">
+                        <div style="font-size:22px; margin-bottom:4px;">🛍️</div>
+                        <p style="margin:0; font-size:11px; font-weight:800; color:var(--text-main);">Tiendas</p>
+                    </div>
+                    <div class="cat-card" onclick="mostrarHome('Ferretería')">
+                        <div style="font-size:22px; margin-bottom:4px;">🛠️</div>
+                        <p style="margin:0; font-size:11px; font-weight:800; color:var(--text-main);">Ferretería</p>
+                    </div>
+                    <div class="cat-card" onclick="mostrarHome('Mascotas')">
+                        <div style="font-size:22px; margin-bottom:4px;">🐾</div>
+                        <p style="margin:0; font-size:11px; font-weight:800; color:var(--text-main);">Mascotas</p>
+                    </div>
+                    <div class="cat-card" onclick="mostrarHome('todos')">
+                        <div style="font-size:22px; margin-bottom:4px;">✨</div>
+                        <p style="margin:0; font-size:11px; font-weight:800; color:var(--primary);">Ver Todos</p>
                     </div>
                 </div>
 
-                <div class="outlet-super-banner" onclick="mostrarZonaOutlet()">
+                <div class="outlet-banner" onclick="mostrarZonaOutlet()">
                     <div>
-                        <div style="font-size:11px; font-weight:900; background:rgba(255,255,255,0.2); padding:3px 8px; border-radius:6px; display:inline-block; margin-bottom:6px; letter-spacing: 0.5px;">OFERTAS FLASH</div>
-                        <h3 style="margin:0; font-size:19px; font-weight:900; letter-spacing: -0.5px;">ZONA OUTLET DESTACADO</h3>
-                        <p style="margin:4px 0 0 0; font-size:12px; opacity:0.9; font-weight:600;">Descuentos insuperables por tiempo limitado.</p>
+                        <div style="font-size:10px; font-weight:900; background:rgba(255,255,255,0.25); padding:3px 8px; border-radius:6px; display:inline-block; margin-bottom:6px; letter-spacing:0.5px;">OFERTAS FLASH</div>
+                        <h3 style="margin:0; font-size:18px; font-weight:900; letter-spacing:-0.5px;">ZONA OUTLET DESTACADO</h3>
+                        <p style="margin:4px 0 0 0; font-size:12px; opacity:0.95; font-weight:600;">Descuentos exclusivos y stock limitado.</p>
                     </div>
-                    <span style="font-size:28px; font-weight:900;">⚡</span>
+                    <span style="font-size:32px;">🔥</span>
                 </div>
 
                 <div class="section-title">Comercios Aliados 🏪</div>
@@ -497,84 +643,281 @@
             if (!emp) return;
 
             const container = document.getElementById('main-content');
-            let prods = (emp.productos || []).map((p) => `
-                <div class="comercio-card">
-                    <img src="${p.imagen || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=200&q=80'}" class="comercio-avatar" alt="${p.nombre}">
-                    <div style="flex:1;">
-                        <h4 style="margin:0 0 4px 0; color:white; font-size:15px; font-weight:900;">${p.nombre}</h4>
-                        <p style="margin:0; font-size:15px; font-weight:900; color:var(--success);">$${p.precio}</p>
+            let prods = (emp.productos || []).map((p) => {
+                let fotoProd = p.imagen || 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=400&q=80';
+                return `
+                    <div class="comercio-card">
+                        <img src="${fotoProd}" class="comercio-avatar" alt="${p.nombre}">
+                        <div style="flex:1;">
+                            <h4 style="margin:0 0 4px 0; color:var(--text-main); font-size:15px; font-weight:900;">${p.nombre}</h4>
+                            <p style="margin:0; font-size:16px; font-weight:900; color:var(--success);">$${p.precio}</p>
+                        </div>
+                        <button type="button" onclick="iniciarSeleccionUbicacionPedido('${emp.rut}', ${p.id})" style="width:auto; padding:10px 16px; font-size:13px;">Pedir</button>
                     </div>
-                    <button type="button" onclick="iniciarFlujoPago('${emp.rut}', ${p.id})" style="width:auto; padding:10px 16px; font-size:13px;">Pedir</button>
-                </div>
-            `).join('') || '<p style="text-align:center; color:var::text-muted;">Sin productos cargados.</p>';
+                `;
+            }).join('') || '<p style="text-align:center; color:var(--text-muted); padding:20px;">Sin productos cargados.</p>';
 
             container.innerHTML = `
                 <div style="display:flex; align-items:center; gap:12px; margin-bottom:18px;">
-                    <button type="button" onclick="mostrarHome()" style="width:auto; padding:8px 14px; font-size:12px; background:#374151; box-shadow:none;">← Volver</button>
-                    <h3 style="color:white; margin:0; font-size:18px; font-weight:900;">${emp.nombre}</h3>
+                    <button type="button" onclick="mostrarHome()" style="width:auto; padding:8px 14px; font-size:12px; background:#E5E7EB; color:var(--text-main); box-shadow:none;">← Volver</button>
+                    <h3 style="color:var(--text-main); margin:0; font-size:18px; font-weight:900;">${emp.nombre}</h3>
                 </div>
-                <div style="background:#1F2937; padding:14px; border-radius:var(--radius-md); margin-bottom:20px; font-size:13px; color:var(--text-muted); border: 1.5px solid var(--card-border);">
+                <div style="background:#F9FAFB; padding:14px; border-radius:var(--radius-md); margin-bottom:20px; font-size:13px; color:var(--text-muted); border: 1.5px solid var(--card-border);">
                     📍 <b>${emp.direccion}</b> | 📞 ${emp.telefono}
                 </div>
-                <h4 style="color:white; margin-bottom:12px; font-size:16px; font-weight:900;">Catálogo</h4>
+                <h4 style="color:var(--text-main); margin-bottom:12px; font-size:16px; font-weight:900;">Catálogo Disponible (Costo de envío: $90)</h4>
                 ${prods}
             `;
         }
 
-        function iniciarFlujoPago(rut, productoId) {
+        function iniciarSeleccionUbicacionPedido(rut, productoId) {
             let sesion = JSON.parse(localStorage.getItem('lt_sesion_activa'));
-            let direccionUsuario = sesion.direccion || '';
-            let permiteEfectivo = esZonaSeguraEfectivo(direccionUsuario);
+            const container = document.getElementById('main-content');
 
-            let opcionesPagoHTML = `
-                <div style="background:var(--card-bg); padding:20px; border-radius:var(--radius-lg); border:1.5px solid var(--card-border);">
-                    <h4 style="color:white; margin-top:0; font-size:18px; font-weight:900;">💳 Método de Pago</h4>
-                    <p style="font-size:13px; color:var(--text-muted); margin-bottom:20px;">Entrega en: <b>${direccionUsuario}</b></p>
+            container.innerHTML = `
+                <div style="display:flex; align-items:center; gap:12px; margin-bottom:18px;">
+                    <button type="button" onclick="verCatalogoComercio('${rut}')" style="width:auto; padding:8px 14px; font-size:12px; background:#E5E7EB; color:var(--text-main); box-shadow:none;">← Volver</button>
+                    <h3 style="color:var(--text-main); margin:0; font-size:18px; font-weight:900;">📍 ¿Dónde enviamos tu pedido?</h3>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+                    <div class="vehiculo-card-opcion seleccionado" id="opcion-dir-reg" onclick="seleccionarTipoUbicacion('registrada')">
+                        <div style="font-size: 20px; margin-bottom: 4px;">🏠</div>
+                        <div style="font-size: 14px; font-weight: 900;">Mi dirección registrada</div>
+                        <div style="font-size: 12px; color: var(--text-muted);">${sesion.direccion || 'Montevideo'}</div>
+                    </div>
+
+                    <div class="vehiculo-card-opcion" id="opcion-dir-gps" onclick="seleccionarTipoUbicacion('gps')">
+                        <div style="font-size: 20px; margin-bottom: 4px;">📍</div>
+                        <div style="font-size: 14px; font-weight: 900;">Usar ubicación actual del teléfono</div>
+                        <div style="font-size: 12px; color: var(--text-muted);">Detectar mediante GPS en Montevideo</div>
+                    </div>
+
+                    <div class="vehiculo-card-opcion" id="opcion-dir-otro" onclick="seleccionarTipoUbicacion('otro')">
+                        <div style="font-size: 20px; margin-bottom: 4px;">🎁</div>
+                        <div style="font-size: 14px; font-weight: 900;">Enviar a otro lugar / hermano / familiar</div>
+                        <div style="font-size: 12px; color: var(--text-muted);">Ingresar otra dirección en Montevideo</div>
+                    </div>
+                </div>
+
+                <div id="bloque-input-otro" style="display: none; position: relative; margin-bottom: 16px;">
+                    <label>Dirección de destino:</label>
+                    <input type="text" id="inputOtroDestino" placeholder="Ej: Av. 18 de Julio 1200" oninput="buscarSugerenciasDireccion(this.value)">
+                    <div id="sugerenciasDireccion" class="autocomplete-suggestions"></div>
+                </div>
+
+                <div style="background: #F9FAFB; padding: 14px; border-radius: var(--radius-md); border: 1.5px solid var(--card-border); margin-bottom: 20px;">
+                    <label>Observaciones / Detalles para la entrega:</label>
+                    <input type="text" id="obsPuerta" placeholder="Ej: Puerta verde, timbre roto, tocar bocina" style="margin-bottom: 0; background: #FFF;">
+                </div>
+
+                <button type="button" onclick="continuarAPagoDesdeUbicacion('${rut}', ${productoId})">Continuar al Pago</button>
+            `;
+            window.tipoUbicacionSeleccionada = 'registrada';
+        }
+
+        function seleccionarTipoUbicacion(tipo) {
+            window.tipoUbicacionSeleccionada = tipo;
+            document.getElementById('opcion-dir-reg').classList.remove('seleccionado');
+            document.getElementById('opcion-dir-gps').classList.remove('seleccionado');
+            document.getElementById('opcion-dir-otro').classList.remove('seleccionado');
+
+            if (tipo === 'registrada') document.getElementById('opcion-dir-reg').classList.add('seleccionado');
+            if (tipo === 'gps') document.getElementById('opcion-dir-gps').classList.add('seleccionado');
+            if (tipo === 'otro') document.getElementById('opcion-dir-otro').classList.add('seleccionado');
+
+            let bloqueOtro = document.getElementById('bloque-input-otro');
+            if (tipo === 'otro') {
+                bloqueOtro.style.display = 'block';
+            } else {
+                bloqueOtro.style.display = 'none';
+            }
+        }
+
+        function buscarSugerenciasDireccion(val) {
+            let sugContainer = document.getElementById('sugerenciasDireccion');
+            if (!val || val.length < 2) {
+                sugContainer.style.display = 'none';
+                return;
+            }
+            let filtradas = CALLES_MONTEVIDEO.filter(c => c.toLowerCase().includes(val.toLowerCase()));
+            if (filtradas.length === 0) {
+                sugContainer.style.display = 'none';
+                return;
+            }
+
+            sugContainer.innerHTML = filtradas.map(c => `
+                <div class="autocomplete-suggestion" onclick="seleccionarCalleAutocompletada('${c}')">${c}</div>
+            `).join('');
+            sugContainer.style.display = 'block';
+        }
+
+        function seleccionarCalleAutocompletada(calle) {
+            document.getElementById('inputOtroDestino').value = calle;
+            document.getElementById('sugerenciasDireccion').style.display = 'none';
+        }
+
+        function continuarAPagoDesdeUbicacion(rut, productoId) {
+            let sesion = JSON.parse(localStorage.getItem('lt_sesion_activa'));
+            let direccionFinal = sesion.direccion || 'Montevideo';
+
+            if (window.tipoUbicacionSeleccionada === 'gps') {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            direccionFinal = `Ubicación GPS (${position.coords.latitude.toFixed(4)}, ${position.coords.longitude.toFixed(4)}) - Montevideo`;
+                            procederAFlujoPagoConDireccion(rut, productoId, direccionFinal);
+                        },
+                        () => {
+                            alert("⚠️ No se pudo obtener la ubicación GPS exacta. Usaremos tu dirección registrada.");
+                            procederAFlujoPagoConDireccion(rut, productoId, direccionFinal);
+                        }
+                    );
+                    return;
+                } else {
+                    alert("⚠️ Tu dispositivo no soporta geolocalización.");
+                }
+            } else if (window.tipoUbicacionSeleccionada === 'otro') {
+                let otraDir = document.getElementById('inputOtroDestino').value.trim();
+                if (!otraDir) { alert("⚠️ Ingresá la dirección de destino."); return; }
+                direccionFinal = otraDir;
+            }
+
+            procederAFlujoPagoConDireccion(rut, productoId, direccionFinal);
+        }
+
+        function procederAFlujoPagoConDireccion(rut, productoId, direccionFinal) {
+            let observaciones = document.getElementById('obsPuerta') ? document.getElementById('obsPuerta').value.trim() : '';
+            if (observaciones) {
+                direccionFinal += ` [Ref: ${observaciones}]`;
+            }
+
+            let base = JSON.parse(localStorage.getItem('lt_base_empresas')) || [];
+            let emp = base.find(e => e.rut === rut);
+            let p = emp.productos.find(prod => prod.id === productoId);
+            let costoEnvioFijo = 90;
+            let totalSinPropina = p.precio + costoEnvioFijo;
+
+            let permiteEfectivo = esZonaSeguraEfectivo(direccionFinal);
+
+            const container = document.getElementById('main-content');
+            container.innerHTML = `
+                <div style="background:var(--card-bg); padding:20px; border-radius:var(--radius-lg); border:1.5px solid var(--card-border); box-shadow:var(--shadow-subtle);">
+                    <h4 style="color:var(--text-main); margin-top:0; font-size:18px; font-weight:900;">💳 Resumen y Pasarela Centralizada Mercado Pago</h4>
+                    <p style="font-size:13px; color:var(--text-muted); margin-bottom:6px;">Entrega en: <b>${direccionFinal}</b></p>
+                    <p style="font-size:12px; color:var(--primary); font-weight:700; margin-bottom:12px;">🔒 Los fondos son procesados por LO TENGO (Liberación: ${emp.giro === 'Gastronomía' ? 'Inmediata / Gastronomía' : 'Retención de 48hs por seguridad'}).</p>
                     
-                    <button type="button" onclick="crearPedidoLocalConPago('${rut}', ${productoId}, 'mercadopago')" style="background:#0284c7; margin-bottom:12px; font-weight:800;">
-                        💙 Pagar con Mercado Pago (Online)
+                    <div style="background:#F9FAFB; padding:12px; border-radius:var(--radius-md); margin-bottom:16px; border:1px solid var(--card-border); font-size:13px;">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>Producto (${p.nombre}):</span> <b>$${p.precio}</b></div>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>Costo de envío fijo:</span> <b>$${costoEnvioFijo}</b></div>
+                        
+                        <div style="margin-top:10px; border-top:1px dashed var(--card-border); padding-top:10px;">
+                            <label style="font-size:12px; margin-bottom:4px;">Propina sugerida para el cadete:</label>
+                            <div style="display:flex; gap:6px; margin-bottom:8px;">
+                                <button type="button" onclick="seleccionarPropina(0)" id="prop-0" style="padding:6px; font-size:12px; background:#E5E7EB; color:var(--text-main); box-shadow:none;">$0</button>
+                                <button type="button" onclick="seleccionarPropina(35)" id="prop-35" style="padding:6px; font-size:12px; background:var(--primary); color:#fff; box-shadow:none;">$35 (Sugerida)</button>
+                                <button type="button" onclick="seleccionarPropina(45)" id="prop-45" style="padding:6px; font-size:12px; background:#E5E7EB; color:var(--text-main); box-shadow:none;">$45</button>
+                                <button type="button" onclick="seleccionarPropina(55)" id="prop-55" style="padding:6px; font-size:12px; background:#E5E7EB; color:var(--text-main); box-shadow:none;">$55</button>
+                            </div>
+                            <input type="number" id="inputPropinaCustom" value="35" min="0" step="5" style="padding:8px; font-size:13px; margin:0;" oninput="actualizarTotalConPropina(${totalSinPropina})">
+                        </div>
+
+                        <div style="display:flex; justify-content:space-between; margin-top:10px; border-top:1px solid var(--card-border); padding-top:8px; font-size:15px; font-weight:900; color:var(--success);">
+                            <span>Total a pagar:</span>
+                            <span id="labelTotalFinal">$${totalSinPropina + 35}</span>
+                        </div>
+                    </div>
+                    
+                    <button type="button" onclick="simularPasarelaMercadoPagoDefinitiva('${rut}', ${productoId}, '${direccionFinal.replace(/'/g, "")}')" style="background:#0284c7; margin-bottom:12px; font-weight:800;">
+                        💙 Pagar Online (Mercado Pago Centralizado)
                     </button>
             `;
 
             if (permiteEfectivo) {
-                opcionesPagoHTML += `
-                    <button type="button" onclick="crearPedidoLocalConPago('${rut}', ${productoId}, 'efectivo')" style="background:var(--success); font-weight:800;">
-                        💵 Pagar en Efectivo (Zona Segura)
+                container.innerHTML += `
+                    <button type="button" onclick="crearPedidoLocalConPagoDefinitivo('${rut}', ${productoId}, '${direccionFinal.replace(/'/g, "")}', 'efectivo')" style="background:var(--success); font-weight:800; margin-bottom:12px;">
+                        💵 Pagar en Efectivo al Recibir (Zona Segura)
                     </button>
                 `;
             } else {
-                opcionesPagoHTML += `
-                    <div style="background:#451a03; color:#fde68a; padding:14px; border-radius:var(--radius-md); font-size:13px; text-align:center; border: 1.5px solid #78350f; font-weight:700; margin-bottom: 12px;">
+                container.innerHTML += `
+                    <div style="background:#FEF2F2; color:#991B1B; padding:12px; border-radius:var(--radius-md); font-size:13px; text-align:center; border: 1.5px solid #FCA5A5; font-weight:700; margin-bottom:12px;">
                         ⚠️ Efectivo no disponible para esta zona. Usá Mercado Pago.
                     </div>
                 `;
             }
 
-            opcionesPagoHTML += `
-                <button type="button" onclick="verCatalogoComercio('${rut}')" style="background:#374151; margin-top:6px; box-shadow:none;">Cancelar</button>
+            container.innerHTML += `
+                <button type="button" onclick="verCatalogoComercio('${rut}')" style="background:#E5E7EB; color:var(--text-main); box-shadow:none;">Cancelar</button>
                 </div>
             `;
-
-            document.getElementById('main-content').innerHTML = opcionesPagoHTML;
         }
 
-        function crearPedidoLocalConPago(rut, productoId, metodoPago) {
+        function seleccionarPropina(monto) {
+            document.getElementById('inputPropinaCustom').value = monto;
+            ['0', '35', '45', '55'].forEach(m => {
+                let btn = document.getElementById(`prop-${m}`);
+                if (btn) {
+                    if (Number(m) === monto) {
+                        btn.style.background = 'var(--primary)';
+                        btn.style.color = '#fff';
+                    } else {
+                        btn.style.background = '#E5E7EB';
+                        btn.style.color = 'var(--text-main)';
+                    }
+                }
+            });
+            let inputVal = document.getElementById('inputPropinaCustom');
+            if (inputVal) {
+                inputVal.dispatchEvent(new Event('input'));
+            }
+        }
+
+        function actualizarTotalConPropina(totalBaseSinPropina) {
+            let propina = Number(document.getElementById('inputPropinaCustom').value) || 0;
+            let totalFinal = totalBaseSinPropina + propina;
+            document.getElementById('labelTotalFinal').innerText = `$${totalFinal}`;
+        }
+
+        function simularPasarelaMercadoPagoDefinitiva(rut, productoId, direccionFinal) {
+            let confirmacionMP = confirm("💙 [Pasarela Mercado Pago - LO TENGO]\n\nSe abrirá la pasarela segura para procesar el pago con Tarjeta / Redes de cobranza.\n¿Desea aprobar el pago de forma simulada?");
+            if (!confirmacionMP) {
+                alert("❌ Pago cancelado por el usuario.");
+                return;
+            }
+            crearPedidoLocalConPagoDefinitivo(rut, productoId, direccionFinal, 'mercadopago');
+        }
+
+        function crearPedidoLocalConPagoDefinitivo(rut, productoId, direccionFinal, metodoPago) {
             let base = JSON.parse(localStorage.getItem('lt_base_empresas')) || [];
             let emp = base.find(e => e.rut === rut);
             if (!emp) return;
 
             let p = emp.productos.find(prod => prod.id === productoId);
             let sesion = JSON.parse(localStorage.getItem('lt_sesion_activa'));
+            let costoEnvioFijo = 90;
+            let propina = Number(document.getElementById('inputPropinaCustom').value) || 0;
+            let totalFinal = p.precio + costoEnvioFijo + propina;
+
+            let esGastronomia = emp.giro === 'Gastronomía';
+            let estadoFondoComercio = esGastronomia ? 'Disponible (Inmediato)' : 'Retenido 48hs (Garantía)';
 
             let nuevoPedido = {
                 id: Date.now(),
                 cliente: sesion.nombre,
                 telefonoCliente: sesion.telefono,
-                direccion: sesion.direccion,
+                direccion: direccionFinal,
                 formaPago: metodoPago,
-                total: p.precio,
-                estado: 'Recibido',
-                items: [{ nombre: p.nombre, precio: p.precio, cantidad: 1 }],
+                total: totalFinal,
+                costoEnvio: costoEnvioFijo,
+                propinaCadete: propina,
+                estado: 'En Preparación',
+                estadoFondo: estadoFondoComercio,
+                items: [
+                    { nombre: p.nombre, precio: p.precio, cantidad: 1 },
+                    { nombre: 'Costo de Envío', precio: costoEnvioFijo, cantidad: 1 },
+                    ...(propina > 0 ? [{ nombre: 'Propina Cadete', precio: propina, cantidad: 1 }] : [])
+                ],
                 codigoVerificacion: Math.floor(1000 + Math.random() * 9000).toString(),
                 tiempoInicioEstado: Date.now()
             };
@@ -585,7 +928,7 @@
             localStorage.setItem('lt_base_empresas', JSON.stringify(base));
             window.dispatchEvent(new Event('storage'));
 
-            alert(`✅ ¡Pedido confirmado!\n🔑 PIN de seguridad: [ ${nuevoPedido.codigoVerificacion} ]`);
+            alert(`✅ ¡Pedido confirmado y enviado al cadete por $${totalFinal}!\n🔑 PIN de seguridad: [ ${nuevoPedido.codigoVerificacion} ]`);
             mostrarPedidosActivos();
         }
 
@@ -602,63 +945,242 @@
             });
 
             let html = ofertas.map(o => `
-                <div class="comercio-card" style="border-left: 5px solid #D946EF;">
-                    <img src="${o.imagen || 'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=200&q=80'}" class="comercio-avatar" alt="${o.nombre}">
+                <div class="comercio-card" style="border-left: 5px solid #7C3AED;">
+                    <img src="${o.imagen || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=400&q=80'}" class="comercio-avatar" alt="${o.nombre}">
                     <div style="flex:1;">
-                        <span style="font-size:10px; color:#E879F9; font-weight:900; background:rgba(217,70,239,0.15); padding:3px 8px; border-radius:6px; border:1px solid rgba(217,70,239,0.3);">${o.empresaNombre}</span>
-                        <h4 style="margin:6px 0 4px 0; color:white; font-size:15px; font-weight:900;">${o.nombre}</h4>
-                        <p style="margin:0; font-size:15px; font-weight:900; color:var(--success);">$${o.precio} <span style="background:#D946EF; color:#fff; padding:2px 6px; border-radius:6px; font-size:10px; font-weight:800;">-${o.descuento || 25}%</span></p>
+                        <span style="font-size:10px; color:#7C3AED; font-weight:900; background:#F3E8FF; padding:3px 8px; border-radius:6px; border:1px solid #D8B4FE;">${o.empresaNombre}</span>
+                        <h4 style="margin:6px 0 4px 0; color:var(--text-main); font-size:15px; font-weight:900;">${o.nombre}</h4>
+                        <p style="margin:0; font-size:16px; font-weight:900; color:var(--success);">$${o.precio} <span style="background:#7C3AED; color:#fff; padding:2px 6px; border-radius:6px; font-size:10px; font-weight:800;">-${o.descuento || 30}% OFF</span></p>
                     </div>
-                    <button type="button" onclick="iniciarFlujoPago('${o.rutEmpresa}', ${o.id})" style="width:auto; padding:10px 14px; font-size:12px; background:var(--outlet-gradient);">Comprar</button>
+                    <button type="button" onclick="iniciarSeleccionUbicacionPedido('${o.rutEmpresa}', ${o.id})" style="width:auto; padding:10px 14px; font-size:12px; background:var(--outlet-gradient);">Comprar</button>
                 </div>
             `).join('') || '<p style="text-align:center; color:var(--text-muted); margin-top:40px;">No hay ofertas flash activas en la Zona Outlet.</p>';
 
             container.innerHTML = `
                 <div style="background:var(--outlet-gradient); color:white; padding:22px; border-radius:var(--radius-lg); margin-bottom:22px; box-shadow:var(--shadow-outlet);">
-                    <h3 style="margin:0 0 6px 0; font-size:20px; font-weight:900;">⚡ ZONA OUTLET EXCLUSIVA</h3>
+                    <h3 style="margin:0 0 6px 0; font-size:20px; font-weight:900;">🔥 ZONA OUTLET EXCLUSIVA</h3>
                     <p style="margin:0; font-size:13px; opacity:0.95; font-weight:600;">Liquidaciones con stock limitado en Montevideo.</p>
                 </div>
                 ${html}
             `;
         }
 
+        let tipoVehiculoSeleccionado = 'moto';
+        let contadorPuntosDestino = 1;
+
         function mostrarFormularioCadeteria() {
             actualizarMenuActivo(2);
             document.getElementById('main-content').innerHTML = `
-                <h3 style="color:white; margin-top:0; font-size:20px; font-weight:900;">🛵 Cadetería Express</h3>
-                <p style="font-size:13px; color:var(--text-muted); margin-bottom:20px;">Envíos puerta a puerta rápidos.</p>
+                <h3 style="color:var(--text-main); margin-top:0; font-size:20px; font-weight:900;">🛵 Cadetería Express</h3>
+                <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">Cálculo vial real en Montevideo, visualización en mapa y verificación por foto.</p>
 
-                <label>Vehículo:</label>
-                <select id="cadVehiculo">
-                    <option value="moto">Moto ($220)</option>
-                    <option value="camioneta">Camioneta ($480)</option>
-                </select>
+                <label>Seleccionar Vehículo:</label>
+                <div class="vehiculo-selector-grid">
+                    <div id="card-moto" class="vehiculo-card-opcion seleccionado" onclick="seleccionarVehiculoCadeteria('moto')">
+                        <div style="font-size:26px; margin-bottom:4px;">🏍️</div>
+                        <div style="font-size:14px; font-weight:900; color:var(--text-main);">Moto</div>
+                        <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Base $170 (hasta 5km) + $25/km (Mínimo $290)</div>
+                    </div>
+                    <div id="card-camioneta" class="vehiculo-card-opcion" onclick="seleccionarVehiculoCadeteria('camioneta')">
+                        <div style="font-size:26px; margin-bottom:4px;">🚐</div>
+                        <div style="font-size:14px; font-weight:900; color:var(--text-main);">Camioneta</div>
+                        <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Base $480 (hasta 5km) + $35/km</div>
+                    </div>
+                </div>
+
                 <label>Origen (Retiro):</label>
-                <input type="text" id="cadPuntoA" placeholder="Dirección de origen">
-                <label>Destino (Entrega):</label>
-                <input type="text" id="cadPuntoB" placeholder="Dirección de destino">
-                <button type="button" onclick="confirmarCadeteriaExpress()" style="background:var(--success); margin-top:10px; font-weight:800;">Solicitar Envío</button>
+                <input type="text" id="cadPuntoA" placeholder="Ej: Av. General Flores y Yatay (La Aguada)" oninput="recalcularCadeteria()">
+
+                <label>Descripción detallada de la carga (Garantía para el cadete):</label>
+                <textarea id="cadDescripcion" rows="2" placeholder="Ej: Paquete frágil / Documentación sellada..." oninput="recalcularCadeteria()"></textarea>
+
+                <label>Foto de garantía del paquete (Cámara integrada):</label>
+                <input type="file" id="cadFotoGarantia" accept="image/*" capture="environment" style="padding:10px; background:#fff;">
+
+                <div id="contenedor-destinos">
+                    <label>Destino 1 (Entrega):</label>
+                    <input type="text" class="input-destino" placeholder="Ej: Av. Arocena 1600 (Carrasco)" oninput="recalcularCadeteria()">
+                </div>
+
+                <button type="button" onclick="agregarPuntoDestino()" style="background:#4B5563; font-size:13px; padding:10px; margin-bottom:12px; box-shadow:none;">➕ Agregar otro punto de entrega</button>
+
+                <div style="background:#F9FAFB; padding:14px; border-radius:var(--radius-md); margin-bottom:16px; border:1.5px solid var(--card-border);">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <input type="checkbox" id="chkRetorno" style="width:18px; height:18px; margin:0; cursor:pointer; accent-color:var(--primary);" onchange="recalcularCadeteria()">
+                        <label for="chkRetorno" style="font-size:13px; color:var(--text-main); cursor:pointer; margin:0; font-weight:700;">Incluir Retorno al Origen (Ida y Vuelta)</label>
+                    </div>
+                </div>
+
+                <label>Vista del Recorrido Vial en Mapa:</label>
+                <div class="mapa-preview-container">
+                    <iframe id="iframeMapaRuta" src="https://www.google.com/maps/embed/v1/place?key=AIzaSyA-MontevideoDummyKey&q=Montevideo,Uruguay" allowfullscreen></iframe>
+                </div>
+                <div style="text-align: right; margin-bottom: 16px;">
+                    <button type="button" onclick="abrirLocalizacionManual()" style="width: auto; background: none; color: var(--primary); padding: 4px 8px; font-size: 12px; text-decoration: underline; box-shadow: none;">🛠️ Localizar calle manualmente en mapa grande</button>
+                </div>
+
+                <div id="panel-resumen-precio" style="background:#F9FAFB; border:1.5px solid var(--card-border); border-radius:var(--radius-md); padding:14px; margin-bottom:16px; font-size:13px;">
+                    📍 Ingresá origen y destino para calcular la ruta vial.
+                </div>
+
+                <button type="button" onclick="confirmarCadeteriaExpress()" style="background:var(--success); font-weight:800;">Solicitar Envío</button>
+            `;
+            recalcularCadeteria();
+        }
+
+        function seleccionarVehiculoCadeteria(tipo) {
+            tipoVehiculoSeleccionado = tipo;
+            const cardMoto = document.getElementById('card-moto');
+            const cardCamioneta = document.getElementById('card-camioneta');
+
+            if (tipo === 'moto') {
+                cardMoto.classList.add('seleccionado');
+                cardCamioneta.classList.remove('seleccionado');
+            } else {
+                cardCamioneta.classList.add('seleccionado');
+                cardMoto.classList.remove('seleccionado');
+            }
+            recalcularCadeteria();
+        }
+
+        function agregarPuntoDestino() {
+            contadorPuntosDestino++;
+            const contenedor = document.getElementById('contenedor-destinos');
+            const div = document.createElement('div');
+            div.innerHTML = `
+                <label>Destino ${contadorPuntosDestino} (Entrega):</label>
+                <input type="text" class="input-destino" placeholder="Calle y número de destino" oninput="recalcularCadeteria()">
+            `;
+            contenedor.appendChild(div);
+        }
+
+        function estimarDistanciaVialMontevideo(origen, destino) {
+            let o = origen.toLowerCase();
+            let d = destino.toLowerCase();
+
+            if ((o.includes('aguada') || o.includes('centro') || o.includes('cordón')) && (d.includes('carrasco') || d.includes('punta gorda'))) {
+                return 10.5;
+            }
+            if ((o.includes('aguada') || o.includes('centro')) && (d.includes('pocitos') || d.includes('punta carretas'))) {
+                return 5.2;
+            }
+            if (o.includes('carrasco') && d.includes('pocitos')) {
+                return 6.8;
+            }
+            let baseDist = 4 + (Math.abs(origen.length - destino.length) % 6) + 3;
+            return Math.max(3.5, baseDist);
+        }
+
+        function recalcularCadeteria() {
+            let panel = document.getElementById('panel-resumen-precio');
+            let origenVal = document.getElementById('cadPuntoA').value.trim();
+            let inputsDestino = document.querySelectorAll('.input-destino');
+            let destinosValidos = Array.from(inputsDestino).filter(i => i.value.trim().length > 3);
+
+            if (!origenVal || destinosValidos.length === 0) {
+                panel.innerHTML = `📍 Completá el origen y al menos un destino para calcular la ruta vial.`;
+                return;
+            }
+
+            let primerDestinoVal = destinosValidos[0].value.trim();
+
+            let iframe = document.getElementById('iframeMapaRuta');
+            if (iframe) {
+                let queryMapa = encodeURIComponent(`${origenVal}, Montevideo to ${primerDestinoVal}, Montevideo`);
+                iframe.src = `https://maps.google.com/maps?q=${queryMapa}&t=&z=13&ie=UTF8&iwloc=&output=embed`;
+            }
+
+            let costoBase = tipoVehiculoSeleccionado === 'moto' ? 170 : 480;
+            let tarifaKmExtra = tipoVehiculoSeleccionado === 'moto' ? 25 : 35;
+            
+            let kmTotalEstimado = 0;
+            let origenActual = origenVal;
+            
+            destinosValidos.forEach((d) => {
+                let kmTramo = estimarDistanciaVialMontevideo(origenActual, d.value);
+                kmTotalEstimado += kmTramo;
+                origenActual = d.value;
+            });
+
+            kmTotalEstimado = Math.round(kmTotalEstimado * 10) / 10;
+            let kmExcedentes = Math.max(0, Math.ceil(kmTotalEstimado - 5));
+            let adicionalKm = kmExcedentes * tarifaKmExtra;
+            
+            let conRetorno = document.getElementById('chkRetorno').checked;
+            let subtotal = costoBase + adicionalKm;
+            if (conRetorno) subtotal = subtotal * 1.5;
+
+            let multiEnvioExtra = destinosValidos.length > 1 ? (destinosValidos.length - 1) * 90 : 0;
+            let totalEnvio = Math.round(subtotal + multiEnvioExtra);
+
+            if (tipoVehiculoSeleccionado === 'moto' && totalEnvio < 290) {
+                totalEnvio = 290;
+            }
+
+            panel.innerHTML = `
+                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                    <span>🗺️ Distancia vial real estimada:</span>
+                    <b>~${kmTotalEstimado} km (${destinosValidos.length} destino/s)</b>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:4px; border-top:1px solid var(--card-border); padding-top:6px; margin-top:6px; font-size:14px; font-weight:900; color:var(--success);">
+                    <span>Total estimado (Final para el cliente):</span>
+                    <span>$${totalEnvio}</span>
+                </div>
             `;
         }
 
+        function abrirLocalizacionManual() {
+            let calleBuscada = prompt("Ingresá la calle o esquina exacta para localizarla en el mapa de Montevideo:");
+            if (!calleBuscada) return;
+            window.open(`https://www.google.com/maps/search/${encodeURIComponent(calleBuscada + ', Montevideo')}`, '_blank');
+        }
+
         function confirmarCadeteriaExpress() {
-            let vehiculo = document.getElementById('cadVehiculo').value;
             let pa = document.getElementById('cadPuntoA').value;
-            let pb = document.getElementById('cadPuntoB').value;
+            let descripcion = document.getElementById('cadDescripcion').value;
+            let inputsDestino = document.querySelectorAll('.input-destino');
+            let destinosValidos = Array.from(inputsDestino).filter(i => i.value.trim().length > 3);
             let sesion = JSON.parse(localStorage.getItem('lt_sesion_activa'));
 
-            if (!pa || !pb) { alert("⚠️ Completá origen y destino."); return; }
+            if (!pa || destinosValidos.length === 0 || !descripcion) { 
+                alert("⚠️ Completá el origen, al menos un destino y la descripción detallada de la carga."); 
+                return; 
+            }
+
+            let costoBase = tipoVehiculoSeleccionado === 'moto' ? 170 : 480;
+            let tarifaKmExtra = tipoVehiculoSeleccionado === 'moto' ? 25 : 35;
+            let kmTotalEstimado = 0;
+            let origenActual = pa;
+            destinosValidos.forEach((d) => {
+                kmTotalEstimado += estimarDistanciaVialMontevideo(origenActual, d.value);
+                origenActual = d.value;
+            });
+
+            let kmExcedentes = Math.max(0, Math.ceil(kmTotalEstimado - 5));
+            let adicionalKm = kmExcedentes * tarifaKmExtra;
+            let conRetorno = document.getElementById('chkRetorno').checked;
+            let subtotal = costoBase + adicionalKm;
+            if (conRetorno) subtotal = subtotal * 1.5;
+            let multiEnvioExtra = destinosValidos.length > 1 ? (destinosValidos.length - 1) * 90 : 0;
+            let totalEnvio = Math.round(subtotal + multiEnvioExtra);
+
+            if (tipoVehiculoSeleccionado === 'moto' && totalEnvio < 290) {
+                totalEnvio = 290;
+            }
+
+            let primerDestino = destinosValidos[0].value;
 
             let nuevoPedido = {
                 id: Date.now(),
                 cliente: sesion.nombre,
                 telefonoCliente: sesion.telefono,
-                direccion: pb,
+                direccion: primerDestino,
                 formaPago: 'mercadopago',
-                total: vehiculo === 'moto' ? 220 : 480,
-                estado: 'Recibido',
-                descripcion: `Cadetería (${vehiculo})`,
-                items: [{ nombre: `Envío (${vehiculo})`, precio: vehiculo === 'moto' ? 220 : 480, cantidad: 1 }],
+                total: totalEnvio,
+                estado: 'En Preparación',
+                estadoFondo: 'Retenido 48hs (Garantía)',
+                descripcion: `Cadetería (${tipoVehiculoSeleccionado}) - ${descripcion} [${destinosValidos.length} destinos${conRetorno ? ', Con Retorno' : ''}]`,
+                items: [{ nombre: `Envío (${tipoVehiculoSeleccionado})`, precio: totalEnvio, cantidad: 1 }],
                 codigoVerificacion: Math.floor(1000 + Math.random() * 9000).toString(),
                 tiempoInicioEstado: Date.now()
             };
@@ -672,7 +1194,7 @@
             localStorage.setItem('lt_base_empresas', JSON.stringify(base));
             window.dispatchEvent(new Event('storage'));
 
-            alert(`✅ ¡Cadetería solicitada!\n🔑 PIN: [ ${nuevoPedido.codigoVerificacion} ]`);
+            alert(`✅ ¡Cadetería solicitada y conectada con el cadete por $${totalEnvio}!\n🔑 PIN: [ ${nuevoPedido.codigoVerificacion} ]`);
             mostrarPedidosActivos();
         }
 
@@ -696,7 +1218,7 @@
             misPedidos.sort((a, b) => b.id - a.id);
 
             let html = misPedidos.map(p => {
-                let estadoActual = p.estado || 'Recibido';
+                let estadoActual = p.estado || 'En Preparación';
                 let claseEstado = 'estado-recibido';
                 if (estadoActual === 'En Preparación') claseEstado = 'estado-proceso';
                 if (estadoActual.includes('Listo')) claseEstado = 'estado-pronto';
@@ -704,24 +1226,38 @@
 
                 let itemsTexto = (p.items || []).map(i => `${i.cantidad}x ${i.nombre}`).join(', ');
 
+                let mapaTiempoRealHTML = `
+                    <div style="margin-top:12px;">
+                        <label style="font-size:11px; margin-bottom:4px; color:var(--primary);">🗺️ Rastreo y comunicación en tiempo real con el cadete (Montevideo):</label>
+                        <div class="mapa-preview-container" style="height:140px;">
+                            <iframe src="https://maps.google.com/maps?q=${encodeURIComponent(p.direccion + ', Montevideo')}&t=&z=14&ie=UTF8&iwloc=&output=embed" allowfullscreen></iframe>
+                        </div>
+                    </div>
+                `;
+
                 return `
-                    <div class="comercio-card" style="display:block; border-left: 5px solid var(--accent); margin-bottom: 14px;">
+                    <div class="comercio-card" style="display:block; border-left: 5px solid var(--primary); margin-bottom: 14px;">
                         <div style="display:flex; justify-content:space-between; margin-bottom:8px; align-items:center;">
-                            <strong style="color:white; font-size:14px; font-weight:900;">Pedido #${p.id.toString().slice(-4)}</strong>
+                            <strong style="color:var(--text-main); font-size:14px; font-weight:900;">Pedido #${p.id.toString().slice(-4)}</strong>
                             <span class="badge-estado ${claseEstado}">${estadoActual}</span>
                         </div>
-                        <p style="margin:4px 0; font-size:13px; color:var(--text-muted);">🏪 Local: <b>${p.empresaNombre}</b></p>
+                        <p style="margin:4px 0; font-size:13px; color:var(--text-muted);">🏪 Local/Servicio: <b>${p.empresaNombre}</b></p>
+                        <p style="margin:4px 0; font-size:13px; color:var(--text-muted);">📍 Destino: <b>${p.direccion}</b></p>
                         <p style="margin:4px 0; font-size:13px; color:var(--text-muted);">📦 ${itemsTexto}</p>
-                        <p style="margin:4px 0; font-size:13px; color:var(--text-muted);">💳 Pago: <b>${(p.formaPago || 'efectivo').toUpperCase()}</b></p>
-                        <div style="background:#111827; padding:10px; border-radius:var(--radius-md); text-align:center; margin-top:12px; border: 1.5px solid var(--card-border);">
-                            <span style="font-size:12px; color:var(--text-muted);">🔑 PIN de seguridad: <b style="color:#E879F9; font-size:15px;">${p.codigoVerificacion}</b></span>
+                        ${p.descripcion ? `<p style="margin:4px 0; font-size:12px; color:var(--primary);">📝 <b>Detalle:</b> ${p.descripcion}</p>` : ''}
+                        <p style="margin:4px 0; font-size:13px; color:var(--text-muted);">💳 Total pagado: <b>$${p.total}</b></p>
+                        
+                        ${mapaTiempoRealHTML}
+
+                        <div style="background:#F9FAFB; padding:10px; border-radius:var(--radius-md); text-align:center; margin-top:12px; border: 1.5px solid var(--card-border);">
+                            <span style="font-size:12px; color:var(--text-muted);">🔑 PIN de seguridad para el cadete: <b style="color:var(--primary); font-size:15px;">${p.codigoVerificacion}</b></span>
                         </div>
                     </div>
                 `;
             }).join('') || '<p style="text-align:center; color:var(--text-muted); margin-top:40px;">No tenés pedidos activos.</p>';
 
             container.innerHTML = `
-                <h3 style="color:white; margin-top:0; font-size:20px; font-weight:900;">📦 Mis Pedidos</h3>
+                <h3 style="color:var(--text-main); margin-top:0; font-size:20px; font-weight:900;">📦 Mis Pedidos y Seguimiento</h3>
                 <div id="contenedor-cards-pedidos">${html}</div>
             `;
         }
