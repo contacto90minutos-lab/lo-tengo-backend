@@ -225,6 +225,7 @@
                 <select id="regCadVehiculo">
                     <option value="Moto">🏍️ Moto</option>
                     <option value="Bicicleta">🚲 Bicicleta</option>
+                    <option value="Camioneta">🚐 Camioneta</option>
                     <option value="Auto">🚗 Automóvil</option>
                 </select>
                 <label>Contraseña:</label>
@@ -256,7 +257,6 @@
 
     <!-- Script General de Lógica, Backend en Render y Google Sheets -->
     <script>
-        // URL de tu servidor en Render / Google Sheets (ajustar si tu endpoint específico varía)
         const BACKEND_URL = 'https://lo-tengo-backend.onrender.com';
         let ultimoConteoPedidosCadete = 0;
 
@@ -264,7 +264,6 @@
             verificarSesionCadete();
             configurarEventosLoginCadete();
             
-            // Sincronización periódica y de eventos locales
             window.addEventListener('storage', () => {
                 let cadete = obtenerCadeteActualizado();
                 if (cadete) {
@@ -425,7 +424,6 @@
                     }
                 }
             } catch (err) {
-                // Modo resiliente local con localStorage si el backend de Render está inactivo
                 console.debug("Usando sincronización local integrada.");
             }
         }

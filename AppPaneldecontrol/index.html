@@ -27,6 +27,10 @@
         .btn-success { background-color: var(--success); color: white; }
         .section-title { font-size: 17px; margin: 25px 0 10px 0; font-weight: 600; color: var(--accent); }
         .badge-socket { font-size: 11px; background: rgba(56, 189, 248, 0.2); padding: 4px 8px; border-radius: 6px; border: 1px solid var(--accent); }
+        /* Modal estilos */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); align-items: center; justify-content: center; }
+        .modal-content { background-color: var(--card); padding: 25px; border-radius: 12px; width: 400px; border: 1px solid #334155; display: flex; flex-direction: column; gap: 15px; }
+        .modal-content h3 { margin: 0; color: var(--accent); }
     </style>
 </head>
 <body>
@@ -82,6 +86,21 @@
         </div>
     </div>
 
+    <div class="section-title">💳 Acreditación de Pagos y Desglose por Pedido</div>
+    <table>
+        <thead>
+            <tr>
+                <th>ID Pedido</th>
+                <th>Comercio (RUT)</th>
+                <th>Total Bruto</th>
+                <th>Comisión App</th>
+                <th>Cadete (80%)</th>
+                <th>Estado de Pago</th>
+            </tr>
+        </thead>
+        <tbody id="tabla-acreditaciones"></tbody>
+    </table>
+
     <div class="section-title">👤 Control, Sanciones y Rendimiento de Cadetes</div>
     <table>
         <thead>
@@ -116,16 +135,33 @@
     <table>
         <thead>
             <tr>
-                <th>Comercio</th>
+                <th>Comercio / RUT</th>
                 <th>Ventas Brutas (UYU)</th>
                 <th>Comisión App (10%)</th>
-                <th>Garantía (48h)</th>
+                <th>Garantía / Estado</th>
                 <th>Neto a Abonar (UYU)</th>
                 <th>Acción Financiera</th>
             </tr>
         </thead>
         <tbody id="tabla-empresas"></tbody>
     </table>
+
+    <!-- MODAL DE LIBERACIÓN DE FONDOS -->
+    <div id="modalLiberar" class="modal">
+        <div class="modal-content">
+            <h3>💸 Liberar Fondos a Comercio</h3>
+            <p id="modal-info-comercio" style="font-size: 13px; color: var(--text-muted); margin: 0;"></p>
+            <input type="hidden" id="modal-rut-empresa">
+            <div>
+                <label style="font-size: 12px; color: var(--accent);">Monto a liberar (UYU):</label>
+                <input type="number" id="modal-monto" style="width: 100%; padding: 8px; margin-top: 5px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 6px;" />
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
+                <button class="btn" style="background: #334155; color: white;" onclick="cerrarModalLiberar()">Cancelar</button>
+                <button class="btn btn-success" onclick="confirmarLiberacionFondos()">Confirmar Liberación</button>
+            </div>
+        </div>
+    </div>
 
     <script>
         let socket = null;
@@ -164,11 +200,14 @@
 
             let todosLosPedidos = [];
             baseEmpresas.forEach(empresa => {
+                let rutEmpresa = empresa.rut || 'Sin RUT';
+                let nombreEmpresa = empresa.name || empresa.nombre || 'Comercio';
                 (empresa.pedidos || []).forEach(ped => {
                     todosLosPedidos.push({
                         ...ped,
-                        rutEmpresa: empresa.rut,
-                        nombreEmpresa: empresa.name || empresa.nombre || 'Comercio'
+                        rutEmpresa: rutEmpresa,
+                        nombreEmpresa: nombreEmpresa,
+                        fondosLiberados: empresa.fondosLiberados || false
                     });
                 });
             });
@@ -192,6 +231,39 @@
             document.getElementById('stat-comision-empresas').innerText = `$${comisionApp.toLocaleString('es-UY')}`;
             document.getElementById('stat-retenido').innerText = `$${retenido.toLocaleString('es-UY')}`;
             document.getElementById('stat-neto-empresas').innerText = `$${retenido.toLocaleString('es-UY')}`;
+
+            // Tabla Acreditaciones por Pedido
+            let tbodyAcreditaciones = document.getElementById('tabla-acreditaciones');
+            tbodyAcreditaciones.innerHTML = '';
+            let pedidosFiltrados = datos.pedidos.filter(p => {
+                let coincideEmpresa = (empresaSel === 'TODAS' || p.nombreEmpresa === empresaSel);
+                let coincideBusqueda = (textoBusqueda === '' || 
+                    String(p.id).toLowerCase().includes(textoBusqueda) || 
+                    (p.cliente && p.cliente.toLowerCase().includes(textoBusqueda)) || 
+                    p.nombreEmpresa.toLowerCase().includes(textoBusqueda));
+                return coincideEmpresa && coincideBusqueda;
+            });
+
+            if (pedidosFiltrados.length === 0) {
+                tbodyAcreditaciones.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">No hay registros de pagos.</td></tr>`;
+            } else {
+                pedidosFiltrados.forEach(p => {
+                    let totalP = parseFloat(p.total) || 1500;
+                    let comApp = totalP * 0.10;
+                    let pagoCadete = totalP * 0.80; // Ejemplo estimativo de la porción del cadete por entrega
+                    let estadoPago = p.estado === 'entregado' ? '<span style="color:var(--success);">Acreditado ✅</span>' : '<span style="color:#fbbf24;">Pendiente ⏳</span>';
+                    tbodyAcreditaciones.innerHTML += `
+                        <tr>
+                            <td><b>#${p.id}</b></td>
+                            <td>${p.nombreEmpresa}<br><span style="font-size:11px; color:var(--text-muted);">RUT: ${p.rutEmpresa}</span></td>
+                            <td>$${totalP.toLocaleString('es-UY')}</td>
+                            <td>$${comApp.toLocaleString('es-UY')}</td>
+                            <td>$${pagoCadete.toLocaleString('es-UY')}</td>
+                            <td>${estadoPago}</td>
+                        </tr>
+                    `;
+                });
+            }
 
             // Tabla Cadetes
             let tbodyCadetes = document.getElementById('tabla-cadetes');
@@ -226,15 +298,6 @@
             // Tabla Envíos
             let tbodyEnvios = document.getElementById('tabla-envios');
             tbodyEnvios.innerHTML = '';
-            let pedidosFiltrados = datos.pedidos.filter(p => {
-                let coincideEmpresa = (empresaSel === 'TODAS' || p.nombreEmpresa === empresaSel);
-                let coincideBusqueda = (textoBusqueda === '' || 
-                    String(p.id).toLowerCase().includes(textoBusqueda) || 
-                    (p.cliente && p.cliente.toLowerCase().includes(textoBusqueda)) || 
-                    p.nombreEmpresa.toLowerCase().includes(textoBusqueda));
-                return coincideEmpresa && coincideBusqueda;
-            });
-
             if (pedidosFiltrados.length === 0) {
                 tbodyEnvios.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">No hay pedidos activos.</td></tr>`;
             } else {
@@ -258,13 +321,15 @@
                 });
             }
 
-            // Tabla Empresas
+            // Tabla Empresas y Datos Fiscales
             let tbodyEmpresas = document.getElementById('tabla-empresas');
             tbodyEmpresas.innerHTML = '';
             let resumenEmp = {};
             datos.pedidos.forEach(p => {
                 if (empresaSel !== 'TODAS' && p.nombreEmpresa !== empresaSel) return;
-                if (!resumenEmp[p.nombreEmpresa]) resumenEmp[p.nombreEmpresa] = { total: 0 };
+                if (!resumenEmp[p.nombreEmpresa]) {
+                    resumenEmp[p.nombreEmpresa] = { total: 0, rut: p.rutEmpresa };
+                }
                 resumenEmp[p.nombreEmpresa].total += (parseFloat(p.total) || 1500);
             });
 
@@ -273,17 +338,30 @@
                 tbodyEmpresas.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">Sin datos de comercios.</td></tr>`;
             } else {
                 keysEmp.forEach(empName => {
-                    let totalV = resumenEmp[empName].total;
+                    let dataEmp = resumenEmp[empName];
+                    let totalV = dataEmp.total;
                     let com = totalV * 0.10;
                     let neto = totalV - com;
+                    
+                    let empresaObj = datos.empresas.find(e => (e.name === empName || e.nombre === empName));
+                    let liberado = empresaObj && empresaObj.fondosLiberados;
+
+                    let estadoFondo = liberado 
+                        ? `<span style="color:var(--success);">Liberado 🟢</span>` 
+                        : `<span style="color:#fbbf24;">⏳ Retenido</span>`;
+
+                    let btnLiberarHtml = liberado
+                        ? `<button class="btn" style="background:#334155; color:white;" disabled>Liberado</button>`
+                        : `<button class="btn" onclick="abrirModalLiberar('${empName}', '${dataEmp.rut}', ${neto})">Liberar</button>`;
+
                     tbodyEmpresas.innerHTML += `
                         <tr>
-                            <td><b>${empName}</b></td>
+                            <td><b>${empName}</b><br><span style="font-size:11px; color:var(--text-muted);">RUT: ${dataEmp.rut}</span></td>
                             <td>$${totalV.toLocaleString('es-UY')}</td>
                             <td>$${com.toLocaleString('es-UY')} (10%)</td>
-                            <td><span style="color:#fbbf24;">⏳ Retenido</span></td>
+                            <td>${estadoFondo}</td>
                             <td><strong style="color:var(--success);">$${neto.toLocaleString('es-UY')}</strong></td>
-                            <td><button class="btn" onclick="alert('✅ Pago liberado para ${empName}')">Liberar</button></td>
+                            <td>${btnLiberarHtml}</td>
                         </tr>
                     `;
                 });
@@ -331,6 +409,35 @@
                     if (socket) socket.emit('sincronizar_plataforma');
                     renderizarPanelCompleto();
                 }
+            }
+        }
+
+        function abrirModalLiberar(nombreComercio, rutComercio, montoNeto) {
+            document.getElementById('modal-info-comercioinnerText', `Comercio: ${nombreComercio} (RUT: ${rutComercio})`);
+            document.getElementById('modal-rut-empresa').value = rutComercio;
+            document.getElementById('modal-monto').value = montoNeto.toFixed(2);
+            document.getElementById('modal-info-comercio').innerHTML = `Comercio: <b>${nombreComercio}</b><br>RUT: <b>${rutComercio}</b>`;
+            document.getElementById('modalLiberar').style.display = 'flex';
+        }
+
+        function cerrarModalLiberar() {
+            document.getElementById('modalLiberar').style.display = 'none';
+        }
+
+        function confirmarLiberacionFondos() {
+            let rut = document.getElementById('modal-rut-empresa').value;
+            let baseEmpresas = JSON.parse(localStorage.getItem('lt_base_empresas')) || [];
+            let empresa = baseEmpresas.find(e => e.rut === rut);
+            
+            if (empresa) {
+                empresa.fondosLiberados = true;
+                localStorage.setItem('lt_base_empresas', JSON.stringify(baseEmpresas));
+                if (socket) socket.emit('sincronizar_plataforma');
+                alert("✅ Fondos liberados y acreditados correctamente al comercio.");
+                cerrarModalLiberar();
+                renderizarPanelCompleto();
+            } else {
+                alert("❌ No se encontró la empresa en la base de datos.");
             }
         }
 
