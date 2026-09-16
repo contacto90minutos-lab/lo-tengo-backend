@@ -137,7 +137,7 @@ app.post('/api/pedidos/validar-retiro', (req, res) => {
         pedido.estado = "En Camino";
         return res.json({ success: true, message: "PIN de retiro validado con éxito. Pedido en camino." });
     } else {
-        return.status(400).json({ success: false, message: "PIN de retiro incorrecto." });
+        return res.status(400).json({ success: false, message: "PIN de retiro incorrecto." });
     }
 });
 
@@ -147,7 +147,7 @@ app.post('/api/pedidos/validar-entrega', (req, res) => {
     const pedido = pedidosGlobales.find(p => Number(p.id) === Number(idPedido));
 
     if (!pedido) {
-        return.status(404).json({ success: false, message: "Pedido no encontrado" });
+        return res.status(404).json({ success: false, message: "Pedido no encontrado" });
     }
 
     if (pedido.pinEntrega === pinIngresado) {
