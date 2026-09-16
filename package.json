@@ -8,10 +8,11 @@
   },
   "dependencies": {
     "cors": "^2.8.5",
-    "express": "^4.19.2"
+    "express": "^4.19.2",
+    "mercadopago": "^2.3.0"
   },
   "engines": {
-    "node": "18.x"
+    "node": ">=18.0.0"
   },
   "private": true
 }
