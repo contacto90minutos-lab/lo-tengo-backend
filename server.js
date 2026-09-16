@@ -130,7 +130,7 @@ app.post('/api/pedidos/validar-retiro', (req, res) => {
     const pedido = pedidosGlobales.find(p => Number(p.id) === Number(idPedido));
 
     if (!pedido) {
-        return.status(404).json({ success: false, message: "Pedido no encontrado" });
+      return res.status(404).json({ success: false, message: "Pedido no encontrado" });
     }
 
     if (pedido.pinRetiro === pinIngresado) {
@@ -154,7 +154,7 @@ app.post('/api/pedidos/validar-entrega', (req, res) => {
         pedido.estado = "Entregado";
         return res.json({ success: true, message: "PIN de entrega validado con éxito. Pedido completado." });
     } else {
-        return.status(400).json({ success: false, message: "PIN de entrega incorrecto." });
+        return res.status(400).json({ success: false, message: "PIN de entrega incorrecto." });
     }
 });
 
