@@ -25,36 +25,74 @@ let pedidosGlobales = [
         total: 1250,
         estado: "Disponible para retirar",
         metodoPago: "Mercado Pago",
-        pinRetiro: "4821",   // PIN requerido para que el comercio se lo entregue al cadete
-        pinEntrega: "7823",  // PIN requerido para que el cadete se lo entregue al cliente
+        pinRetiro: "4821",   
+        pinEntrega: "7823",  
         cadeteAsignado: null,
         ciCadete: null,
-        init_point: null     // Link real de pago de Mercado Pago Sandbox
+        init_point: null     
     }
 ];
 
-// Almacén en memoria para sesiones de usuarios (Login con Google)
+// Almacén de Productos (Sincronización App Comercios <-> Cliente)
+let productosGlobales = [];
+
+// Almacén para Bolsa de Horarios de Cadetes (Disponibilidad por demanda)
+let bolsaHorariosGlobal = [];
+
+// Almacén para Calificaciones y Comentarios (Cadetes y Comercios)
+let calificacionesGlobales = [];
+
+// Almacén en memoria para sesiones de usuarios (Login con Google y Perfiles extendidos ej. foto obligatoria cadetes)
 let usuariosSesion = {};
 
-// Endpoint para consultar pedidos
+// ==========================================
+// ENDPOINTS DE PEDIDOS Y CATÁLOGO
+// ==========================================
+
 app.get('/api/pedidos', (req, res) => {
     res.json({ success: true, pedidos: pedidosGlobales });
 });
 
-// Endpoint para Autenticación con Google y persistencia de sesión
+// Endpoints para Gestión de Productos / Catálogo
+app.get('/api/productos', (req, res) => {
+    res.json({ success: true, productos: productosGlobales });
+});
+
+app.post('/api/productos', (req, res) => {
+    const nuevoProducto = req.body;
+    if (!nuevoProducto.id) nuevoProducto.id = Date.now();
+    
+    const index = productosGlobales.findIndex(p => Number(p.id) === Number(nuevoProducto.id));
+    if (index !== -1) {
+        productosGlobales[index] = { ...productosGlobales[index], ...nuevoProducto };
+    } else {
+        productosGlobales.push(nuevoProducto);
+    }
+    res.json({ success: true, productos: productosGlobales });
+});
+
+// ==========================================
+// ENDPOINT DE AUTENTICACIÓN Y PERFILES (Google)
+// ==========================================
+
 app.post('/api/auth/google', (req, res) => {
-    const { token, email, name, picture, deviceId } = req.body;
+    const { token, email, name, picture, deviceId, rol, fotoCadeteObligatoria } = req.body;
     
     if (!email) {
         return res.status(400).json({ success: false, message: "Datos de usuario inválidos" });
     }
 
-    // Guardar sesión asociada al dispositivo o token local
+    // Validación estricta para cadetes: si es rol driver, exigimos foto de perfil
+    if (rol === 'driver' && !picture && !fotoCadeteObligatoria) {
+        return res.status(400).json({ success: false, message: "La foto de perfil es obligatoria para los cadetes." });
+    }
+
     const sessionToken = token || 'session_' + Date.now();
     usuariosSesion[sessionToken] = {
         email,
         name,
-        picture,
+        picture: picture || fotoCadeteObligatoria || '',
+        rol: rol || 'cliente',
         deviceId: deviceId || 'default_device',
         lastLogin: new Date()
     };
@@ -63,11 +101,61 @@ app.post('/api/auth/google', (req, res) => {
         success: true,
         message: "Sesión iniciada correctamente",
         sessionToken,
-        user: { email, name, picture }
+        user: { email, name, picture: usuariosSesion[sessionToken].picture, rol: usuariosSesion[sessionToken].rol }
     });
 });
 
-// Endpoint para crear o actualizar pedidos (incluye creación de preferencia real en Mercado Pago Sandbox)
+// ==========================================
+// ENDPOINTS DE LOGÍSTICA Y BOLSA DE HORARIOS
+// ==========================================
+
+app.get('/api/horarios', (req, res) => {
+    res.json({ success: true, horarios: bolsaHorariosGlobal });
+});
+
+// Los cadetes se anotan en la bolsa de turnos según demanda
+app.post('/api/horarios', (req, res) => {
+    const turno = req.body; // { cadeteEmail, cadeteNombre, horaInicio, horaFin, zona }
+    turno.id = Date.now();
+    bolsaHorariosGlobal.push(turno);
+    res.json({ success: true, message: "Turno registrado en la bolsa de horarios con éxito", bolsa: bolsaHorariosGlobal });
+});
+
+// ==========================================
+// ENDPOINTS DE CALIFICACIONES Y COMENTARIOS
+// ==========================================
+
+app.get('/api/calificaciones', (req, res) => {
+    res.json({ success: true, calificaciones: calificacionesGlobales });
+});
+
+// Permite dejar estrellas y comentarios escritos a cadetes o empresas
+app.post('/api/calificaciones', (req, res) => {
+    const { tipo, objetivoId, evaluadorEmail, estrellas, comentario } = req.body; 
+    // tipo: 'cadete' o 'comercio'
+    
+    if (!estrellas || !objetivoId) {
+        return res.status(400).json({ success: false, message: "Faltan datos en la calificación" });
+    }
+
+    const nuevaCalificacion = {
+        id: Date.now(),
+        tipo,
+        objetivoId,
+        evaluadorEmail,
+        estrellas: Number(estrellas),
+        comentario: comentario || "",
+        fecha: new Date()
+    };
+
+    calificacionesGlobales.push(nuevaCalificacion);
+    res.json({ success: true, message: "Calificación registrada correctamente", calificaciones: calificacionesGlobales });
+});
+
+// ==========================================
+// ENDPOINTS DE PEDIDOS Y MERCADO PAGO
+// ==========================================
+
 app.post('/api/pedidos', async (req, res) => {
     const nuevoPedido = req.body;
     
@@ -75,7 +163,6 @@ app.post('/api/pedidos', async (req, res) => {
         nuevoPedido.id = Date.now();
     }
 
-    // Si es un pedido nuevo o requiere actualizar pago con Mercado Pago, generamos preferencia real
     if (nuevoPedido.metodoPago === "Mercado Pago" && (!nuevoPedido.init_point || nuevoPedido.forzarPreferencia)) {
         try {
             const preference = new Preference(mpClient);
@@ -97,16 +184,13 @@ app.post('/api/pedidos', async (req, res) => {
                     auto_return: "approved",
                 }
             });
-            // Guardamos el init_point real de Sandbox devuelto por Mercado Pago
             nuevoPedido.init_point = preferenceResponse.init_point;
         } catch (error) {
             console.error("Error al crear preferencia en Mercado Pago:", error);
-            // Fallback en caso de error de red con la API de MP
             nuevoPedido.init_point = `https://sandbox.mercadopago.com.uy/checkout/v1/redirect?pref_id=fallback_${nuevoPedido.id}`;
         }
     }
 
-    // Generar PINs de seguridad automáticamente si es gastronomía y no los tiene
     if (!nuevoPedido.pinRetiro) {
         nuevoPedido.pinRetiro = Math.floor(1000 + Math.random() * 9000).toString();
     }
@@ -124,7 +208,6 @@ app.post('/api/pedidos', async (req, res) => {
     res.json({ success: true, pedidos: pedidosGlobales, pedidoActualizado: nuevoPedido });
 });
 
-// Endpoint para validar PIN de Retiro (Comercio -> Cadete)
 app.post('/api/pedidos/validar-retiro', (req, res) => {
     const { idPedido, pinIngresado } = req.body;
     const pedido = pedidosGlobales.find(p => Number(p.id) === Number(idPedido));
@@ -141,7 +224,6 @@ app.post('/api/pedidos/validar-retiro', (req, res) => {
     }
 });
 
-// Endpoint para validar PIN de Entrega (Cadete -> Cliente)
 app.post('/api/pedidos/validar-entrega', (req, res) => {
     const { idPedido, pinIngresado } = req.body;
     const pedido = pedidosGlobales.find(p => Number(p.id) === Number(idPedido));
