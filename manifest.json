@@ -1,13 +1,16 @@
 {
-  "background_color": "#0f172a",
-  "dir": "ltr",
-  "display": "standalone",
   "name": "LO TENGO",
-  "orientation": "any",
-  "scope": "/",
   "short_name": "LO TENGO",
-  "start_url": "/",
-  "theme_color": "#38bdf8",
-  "id": "com.lotengo.app",
-  "description": "ecosistema de delivery y comercio en tiempo real en montevideo"
+  "start_url": "https://lo-tengo-backend.onrender.com/",
+  "display": "standalone",
+  "background_color": "#0F172A",
+  "theme_color": "#38BDF8",
+  "description": "Ecosistema de delivery y comercio en tiempo real de Montevideo",
+  "icons": [
+    {
+      "src": "https://lo-tengo-backend.onrender.com/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ]
 }
