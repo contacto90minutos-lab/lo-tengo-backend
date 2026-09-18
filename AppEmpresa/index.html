@@ -186,11 +186,18 @@
             <!-- Login de Empresas -->
             <div id="screen-login-empresa">
                 <h3 style="color: var(--primary); margin-top: 0;">Acceso Comercios</h3>
-                <label style="font-size: 12px; color: #555;">RUT de la Empresa:</label>
-                <input type="text" id="loginRutEmpresa" placeholder="Ej: 210000000018">
+                
+                <label style="font-size: 12px; color: #555;">Nombre de Fantasía o Usuario:</label>
+                <input type="text" id="loginRutEmpresa" placeholder="Ej: Hamburguesas El Mono">
 
                 <label style="font-size: 12px; color: #555;">Contraseña:</label>
                 <input type="password" id="loginPassEmpresa" placeholder="Contraseña">
+
+                <!-- Checkbox Recordar Usuario -->
+                <div style="display: flex; align-items: center; gap: 8px; margin: 10px 0;">
+                    <input type="checkbox" id="recordarUsuarioEmpresa" style="width: auto; margin: 0;">
+                    <label for="recordarUsuarioEmpresa" style="font-size: 12px; color: #555; margin: 0; cursor: pointer;">Recordar mi usuario en este dispositivo</label>
+                </div>
 
                 <button id="btnIngresarEmpresa" type="button" style="background-color: var(--primary); margin-top: 5px;">Ingresar al Panel</button>
                 
@@ -200,33 +207,58 @@
                 </div>
             </div>
 
-            <!-- Registro de Empresas con Selector de Giro y Carga de Logo -->
+            <!-- Registro de Empresas Actualizado -->
             <div id="screen-registro-empresa" style="display: none;">
                 <h3 style="color: var(--primary); margin-top: 0;">Registro de Local</h3>
-                <label>Nombre del Comercio:</label>
+                
+                <label>Nombre de Fantasía:</label>
                 <input type="text" id="regEmpNombre" placeholder="Ej: Tienda Pepito">
-                <label>RUT:</label>
+                
+                <label>Razón Social:</label>
+                <input type="text" id="regEmpRazon" placeholder="Ej: Pepito S.R.L.">
+
+                <label>RUT (Uso interno):</label>
                 <input type="text" id="regEmpRut" placeholder="RUT de 12 dígitos">
                 
                 <label>Giro Comercial (Rubro):</label>
-                <select id="regEmpGiro">
-                    <option value="Gastronomía">🍔 Gastronomía / Alimentos</option>
-                    <option value="Farmacia y Estética">💊 Farmacia y Estética</option>
-                    <option value="Electrónica y Tecnología">⚡ Electrónica y Tecnología</option>
-                    <option value="Servicios y Ferretería">🔧 Servicios y Ferretería</option>
+                <select id="regEmpGiro" onchange="verificarRubroAdultosRegistro()">
+                    <option value="Gastronomía">🍔 Gastronomía / Restaurante</option>
+                    <option value="Electrónica y Tecnología">⚡ Electrodomésticos y Tecnología</option>
+                    <option value="Celulares y Accesorios">📱 Celulares y Accesorios</option>
+                    <option value="Ferretería">🔧 Ferretería y Herramientas</option>
+                    <option value="Pet Shop">🐾 Alimentos de Mascotas (Pet Shop)</option>
                     <option value="Indumentaria y Moda">👕 Indumentaria y Moda</option>
-                    <option value="Otro">📦 Otro Rubro</option>
+                    <option value="Adultos (+18)">🔞 Sector Adultos (+18 / Sex Shop)</option>
+                    <option value="Otro">📦 Otro Rubro / Agregar Nuevo</option>
                 </select>
+
+                <div id="contenedor-nuevo-rubro" style="display:none;">
+                    <label>Especificar Nuevo Rubro:</label>
+                    <input type="text" id="regEmpNuevoRubroTexto" placeholder="Nombre del nuevo rubro">
+                </div>
+
+                <div id="aviso-adultos-registro" style="display:none; background:#fff3cd; border:1px solid #ffeeba; padding:10px; border-radius:8px; font-size:12px; color:#856404; margin-bottom:10px;">
+                    🔒 Este rubro requiere que los clientes ingresen un **Código de Seguridad de 4 dígitos** para acceder a su tienda.
+                </div>
 
                 <label>Logo de la Empresa (Cámara o Archivo):</label>
                 <input type="file" id="regEmpLogoFile" accept="image/*" capture="environment">
 
+                <label>Correo Electrónico:</label>
+                <input type="email" id="regEmpEmail" placeholder="contacto@comercio.com">
+
                 <label>Teléfono de Contacto:</label>
                 <input type="tel" id="regEmpTel" placeholder="099123456">
-                <label>Dirección del Local:</label>
-                <input type="text" id="regEmpDir" placeholder="Av. 18 de Julio 1234">
+
+                <label>Dirección Fiscal:</label>
+                <input type="text" id="regEmpDirFiscal" placeholder="Av. 18 de Julio 1234">
+
+                <label>Dirección de Retiro de Productos (Depósito / Local):</label>
+                <input type="text" id="regEmpDirRetiro" placeholder="Depósito trasero / Mismo local">
+
                 <label>Contraseña:</label>
                 <input type="password" id="regEmpPass" placeholder="Contraseña de acceso">
+
                 <button type="button" onclick="completarRegistroEmpresa()" style="background: var(--success); margin-top: 6px;">Crear Cuenta Empresa</button>
                 <button type="button" onclick="irLoginEmpresa()" class="link-btn" style="width:100%; text-align:center;">Volver al login</button>
             </div>
@@ -243,19 +275,42 @@
         </div>
     </div>
 
-    <!-- Script Completo con Filtro Estricto de Pedidos Entregados -->
+    <!-- Script Completo Sincronizado y Actualizado para el Panel de Empresas -->
     <script>
         let temporizadoresGlobales = {};
+        let ultimoHashPedidos = "";
 
         document.addEventListener("DOMContentLoaded", () => {
             inicializarBaseDatosEmpresasPorDefecto();
             verificarSesionEmpresa();
             configurarEventosLoginEmpresa();
             
+            // Sincronización automática cada 2 segundos
+            setInterval(() => {
+                let sesion = localStorage.getItem('lt_sesion_empresa');
+                if (sesion) {
+                    let empActual = obtenerEmpresaActualizada();
+                    if (empActual) {
+                        actualizarContadorPedidosBadge(empActual.rut || empActual.nombre);
+                        
+                        let stringPedidos = JSON.stringify(empActual.pedidos || []);
+                        if (stringPedidos !== ultimoHashPedidos) {
+                            ultimoHashPedidos = stringPedidos;
+                            const contenedor = document.getElementById('main-content-empresa');
+                            if (contenedor && document.getElementById('bandera-vista-pedidos')) {
+                                mostrarPedidosEntrantesComercio();
+                            } else if (contenedor && document.getElementById('bandera-vista-envios')) {
+                                mostrarPedidosEnRutaComercio();
+                            }
+                        }
+                    }
+                }
+            }, 2000);
+
             window.addEventListener('storage', (e) => {
                 let emp = obtenerEmpresaActualizada();
                 if (emp) {
-                    actualizarContadorPedidosBadge(emp.rut);
+                    actualizarContadorPedidosBadge(emp.rut || emp.nombre);
                     const contenedor = document.getElementById('main-content-empresa');
                     if (contenedor && document.getElementById('bandera-vista-pedidos')) {
                         mostrarPedidosEntrantesComercio();
@@ -273,10 +328,13 @@
                     {
                         rut: '210000000018',
                         nombre: 'Hamburguesas El Mono',
+                        razonSocial: 'El Mono S.R.L.',
                         giro: 'Gastronomía',
                         logo: '',
                         telefono: '099887766',
                         direccion: 'Bulevar Artigas 4521',
+                        direccionRetiro: 'Bulevar Artigas 4521',
+                        email: 'mono@hamburguesas.com',
                         password: '123',
                         productos: [
                             { id: 1, nombre: 'Hamburguesa Doble Cheddar Real', precio: 380, stock: 25, enOutlet: false, descuento: 0, imagen: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=400&q=80' }
@@ -293,11 +351,11 @@
             if (sesion) {
                 try {
                     const empresa = JSON.parse(sesion);
-                    let empresaReal = obtenerEmpresaActualizadaPorRut(empresa.rut);
+                    let empresaReal = obtenerEmpresaActualizadaPorIdentificador(empresa.nombre || empresa.rut);
                     if (empresaReal) {
                         document.getElementById('header-empresa-info').innerText = empresaReal.nombre;
                         document.getElementById('bottom-nav-empresa').style.display = 'flex';
-                        actualizarContadorPedidosBadge(empresaReal.rut);
+                        actualizarContadorPedidosBadge(empresaReal.rut || empresaReal.nombre);
                         mostrarDashboardEmpresa();
                     }
                 } catch (e) { console.error(e); }
@@ -313,44 +371,126 @@
                 };
             }
 
+            const rutGuardado = localStorage.getItem('lt_recordar_rut_empresa');
+            if (rutGuardado) {
+                const inputRut = document.getElementById('loginRutEmpresa');
+                const checkRecordar = document.getElementById('recordarUsuarioEmpresa');
+                if (inputRut) inputRut.value = rutGuardado;
+                if (checkRecordar) checkRecordar.checked = true;
+            }
+
             const btnIng = document.getElementById('btnIngresarEmpresa');
             if (btnIng) {
                 btnIng.onclick = () => {
-                    const rut = document.getElementById('loginRutEmpresa').value.trim();
-                    const pass = document.getElementById('loginPassEmpresa').value.trim();
-                    const base = JSON.parse(localStorage.getItem('lt_base_empresas')) || [];
-                    const emp = base.find(e => e.rut === rut && e.password === pass);
-
-                    if (!emp) { alert("❌ RUT o contraseña incorrectos."); return; }
-
-                    localStorage.setItem('lt_sesion_empresa', JSON.stringify(emp));
-                    location.reload();
+                    ejecutarLoginEmpresa();
                 };
             }
         }
 
+        function verificarRubroAdultosRegistro() {
+            let giro = document.getElementById('regEmpGiro').value;
+            let avisoAdultos = document.getElementById('aviso-adultos-registro');
+            let contenedorNuevo = document.getElementById('contenedor-nuevo-rubro');
+            
+            if (giro === 'Adultos (+18)') {
+                avisoAdultos.style.display = 'block';
+            } else {
+                avisoAdultos.style.display = 'none';
+            }
+
+            if (giro === 'Otro') {
+                contenedorNuevo.style.display = 'block';
+            } else {
+                contenedorNuevo.style.display = 'none';
+            }
+        }
+
+        function ejecutarLoginEmpresa() {
+            const userInput = document.getElementById('loginRutEmpresa').value.trim();
+            const passInput = document.getElementById('loginPassEmpresa').value.trim();
+            const recordar = document.getElementById('recordarUsuarioEmpresa').checked;
+
+            if (!userInput || !passInput) {
+                alert("⚠️ Ingresá tu nombre de fantasía o usuario y contraseña.");
+                return;
+            }
+
+            let base = JSON.parse(localStorage.getItem('lt_base_empresas')) || [];
+            let emp = base.find(e => 
+                (String(e.nombre).trim().toLowerCase() === userInput.toLowerCase() || String(e.rut).trim() === userInput) && 
+                String(e.password).trim() === passInput
+            );
+
+            if (!emp) {
+                if ((userInput === '210000000018' || userInput.toLowerCase() === 'hamburguesas el mono') && passInput === '123') {
+                    inicializarBaseDatosEmpresasPorDefecto();
+                    base = JSON.parse(localStorage.getItem('lt_base_empresas')) || [];
+                    emp = base.find(e => String(e.rut).trim() === '210000000018');
+                } else {
+                    alert("❌ Usuario o contraseña incorrectos. Verificá los datos ingresados.");
+                    return;
+                }
+            }
+
+            if (recordar) {
+                localStorage.setItem('lt_recordar_rut_empresa', userInput);
+            } else {
+                localStorage.removeItem('lt_recordar_rut_empresa');
+            }
+
+            localStorage.setItem('lt_sesion_empresa', JSON.stringify(emp));
+            location.reload();
+        }
+
         function completarRegistroEmpresa() {
             let nombre = document.getElementById('regEmpNombre').value.trim();
+            let razonSocial = document.getElementById('regEmpRazon').value.trim();
             let rut = document.getElementById('regEmpRut').value.trim();
             let giro = document.getElementById('regEmpGiro').value;
+            let nuevoRubroTexto = document.getElementById('regEmpNuevoRubroTexto').value.trim();
+            let email = document.getElementById('regEmpEmail').value.trim();
             let telefono = document.getElementById('regEmpTel').value.trim();
-            let direccion = document.getElementById('regEmpDir').value.trim();
+            let direccionFiscal = document.getElementById('regEmpDirFiscal').value.trim();
+            let direccionRetiro = document.getElementById('regEmpDirRetiro').value.trim();
             let password = document.getElementById('regEmpPass').value.trim();
             let fileInput = document.getElementById('regEmpLogoFile');
 
-            if (!nombre || !rut || !password) { alert("⚠️ Completá los campos obligatorios."); return; }
+            if (giro === 'Otro' && nuevoRubroTexto) {
+                giro = nuevoRubroTexto;
+            }
+
+            if (!nombre || !password) { alert("⚠️ Completá al menos el nombre de fantasía y la contraseña."); return; }
 
             let base = JSON.parse(localStorage.getItem('lt_base_empresas')) || [];
-            if (base.some(e => e.rut === rut)) { alert("⚠️ Ya existe un local registrado con este RUT."); return; }
+            if (base.some(e => String(e.nombre).trim().toLowerCase() === nombre.toLowerCase())) { 
+                alert("⚠️ Ya existe un local registrado con este Nombre de Fantasía."); 
+                return; 
+            }
+
+            let datosNuevaEmpresa = {
+                rut: rut || 'SIN_RUT_' + Date.now(),
+                nombre,
+                razonSocial,
+                giro,
+                email,
+                telefono,
+                direccion: direccionFiscal || 'Montevideo',
+                direccionRetiro: direccionRetiro || direccionFiscal || 'Montevideo',
+                password,
+                productos: [],
+                pedidos: []
+            };
 
             if (fileInput.files && fileInput.files[0]) {
                 let reader = new FileReader();
                 reader.onload = function(e) {
-                    guardarEmpresaConLogo(base, { rut, nombre, giro, logo: e.target.result, telefono, direccion, password, productos: [], pedidos: [] });
+                    datosNuevaEmpresa.logo = e.target.result;
+                    guardarEmpresaConLogo(base, datosNuevaEmpresa);
                 };
                 reader.readAsDataURL(fileInput.files[0]);
             } else {
-                guardarEmpresaConLogo(base, { rut, nombre, giro, logo: '', telefono, direccion, password, productos: [], pedidos: [] });
+                datosNuevaEmpresa.logo = '';
+                guardarEmpresaConLogo(base, datosNuevaEmpresa);
             }
         }
 
@@ -375,22 +515,21 @@
         function obtenerEmpresaActualizada() {
             let sesion = JSON.parse(localStorage.getItem('lt_sesion_empresa'));
             if (!sesion) return null;
-            return obtenerEmpresaActualizadaPorRut(sesion.rut);
+            return obtenerEmpresaActualizadaPorIdentificador(sesion.nombre || sesion.rut);
         }
 
-        function obtenerEmpresaActualizadaPorRut(rut) {
+        function obtenerEmpresaActualizadaPorIdentificador(identificador) {
             let base = JSON.parse(localStorage.getItem('lt_base_empresas')) || [];
-            let emp = base.find(e => e.rut === rut);
+            let emp = base.find(e => String(e.nombre).trim().toLowerCase() === String(identificador).trim().toLowerCase() || String(e.rut).trim() === String(identificador).trim());
             if (emp) {
                 localStorage.setItem('lt_sesion_empresa', JSON.stringify(emp));
             }
             return emp;
         }
 
-        function actualizarContadorPedidosBadge(rut) {
-            let emp = obtenerEmpresaActualizadaPorRut(rut);
+        function actualizarContadorPedidosBadge(identificador) {
+            let emp = obtenerEmpresaActualizadaPorIdentificador(identificador);
             if (emp && emp.pedidos) {
-                // Filtro estricto excluyendo cualquier variante de entregado/cerrado
                 let pendientes = emp.pedidos.filter(p => {
                     let st = (p.estado || '').toLowerCase().trim();
                     return st !== 'listo para retirar (en ruta/cadete)' && 
@@ -414,7 +553,7 @@
             }).length;
             let totalEnRuta = (emp.pedidos || []).filter(p => p.estado === 'Listo para Retirar (En Ruta/Cadete)').length;
 
-            let mostrarLogoEnDashboard = (emp.giro === 'Gastronomía' && emp.logo);
+            let mostrarLogoEnDashboard = (emp.logo);
 
             container.innerHTML = `
                 <div style="background: linear-gradient(135deg, var(--primary), #004080); color:white; padding:20px; border-radius:var(--radius); margin-bottom:18px; display:flex; align-items:center; gap:15px;">
@@ -422,7 +561,7 @@
                     <div style="flex:1;">
                         <h3 style="margin:0 0 5px 0;">🏪 ${emp.nombre}</h3>
                         <p style="margin:0 0 4px 0; font-size:12px; opacity:0.9;">🏷️ Giro: <b>${emp.giro || 'No especificado'}</b></p>
-                        <p style="margin:0; font-size:12px; opacity:0.9;">📍 ${emp.direccion} | RUT: ${emp.rut}</p>
+                        <p style="margin:0; font-size:12px; opacity:0.9;">📍 Retiro: ${emp.direccionRetiro || emp.direccion}</p>
                     </div>
                 </div>
 
@@ -448,13 +587,15 @@
             let emp = obtenerEmpresaActualizada();
             if (!emp) return;
 
+            const esGastronomia = (emp.giro || '').toLowerCase().includes('gastronomía');
+
             const container = document.getElementById('main-content-empresa');
             let prodsHtml = (emp.productos || []).map(p => `
                 <div class="gestion-card">
                     <img src="${p.imagen || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=200&q=80'}" class="gestion-avatar" alt="${p.nombre}">
                     <div style="flex:1;">
                         <h4 style="margin:0 0 2px 0; color:var(--primary); font-size:14px;">${p.nombre}</h4>
-                        <p style="margin:0; font-size:13px; font-weight:bold; color:var(--success);">$${p.precio} ${p.enOutlet ? '<span class="badge-outlet">Outlet -'+p.descuento+'%</span>' : ''}</p>
+                        <p style="margin:0; font-size:13px; font-weight:bold; color:var(--success);">$${p.precio} | Stock: ${p.stock !== undefined ? p.stock : 10} un. ${p.enOutlet ? '<span class="badge-outlet">Outlet -'+p.descuento+'%</span>' : ''}</p>
                     </div>
                     <button type="button" onclick="eliminarProductoComercio(${p.id})" style="width:auto; padding:8px 10px; font-size:11px; background:#dc3545;">Eliminar</button>
                 </div>
@@ -462,57 +603,93 @@
 
             container.innerHTML = `
                 <div class="section-title"><span>📦 Mi Catálogo Exclusivo</span></div>
+                
+                <!-- Sección Potencia tus Ventas -->
+                <div style="background: linear-gradient(135deg, #002855, #004080); color:white; padding:12px 15px; border-radius:var(--radius); margin-bottom:15px;">
+                    <h4 style="margin:0 0 4px 0; font-size:14px;">🚀 Potencia tus Ventas / Máxima Exposición</h4>
+                    <p style="margin:0 0 8px 0; font-size:11px; opacity:0.9;">Destacá hasta 5 productos por semana para duplicar tus ventas ($300 semanales por producto, sin compromiso, cancelable cuando quieras).</p>
+                    <button type="button" onclick="contratarPotenciaVentas()" style="background:var(--secondary); font-size:12px; padding:8px;">Contratar Exposición Semanal ($300)</button>
+                </div>
+
                 <div style="background:#fff; border:1px solid var(--border); padding:15px; border-radius:var(--radius); margin-bottom:15px;">
                     <h4 style="margin:0 0 10px 0; color:var(--primary); font-size:14px;">Agregar Nuevo Artículo</h4>
+                    
                     <input type="text" id="nuevoProdNombre" placeholder="Nombre del producto o artículo">
                     <input type="number" id="nuevoProdPrecio" placeholder="Precio en $ (ej: 450)">
+                    <input type="number" id="nuevoProdStock" placeholder="Stock disponible (Obligatorio)" min="1" value="10">
                     
-                    <label style="font-size: 12px; color: #555; display:block; margin-top:6px;">Foto del Producto (Cámara o Archivo):</label>
+                    <label style="font-size: 12px; color: #555; display:block; margin-top:6px;">Foto del Producto (Hasta 5 fotos - Cámara o Archivo):</label>
                     <input type="file" id="nuevoProdFile" accept="image/*" capture="environment">
 
-                    <label style="font-size: 12px; display:flex; align-items:center; gap:8px; margin: 8px 0;">
-                        <input type="checkbox" id="nuevoProdOutlet" style="width:auto; margin:0;"> Publicar en Zona Outlet con descuento
-                    </label>
-                    <input type="number" id="nuevoProdDescuento" placeholder="% de Descuento (si va a Outlet)" style="margin-bottom:10px;">
+                    ${!esGastronomia ? `
+                        <label style="font-size: 12px; display:flex; align-items:center; gap:8px; margin: 8px 0;">
+                            <input type="checkbox" id="nuevoProdOutlet" style="width:auto; margin:0;" onclick="toggleOutletCampos()"> Publicar en Zona Outlet con descuento
+                        </label>
+                        <div id="contenedor-outlet-extra" style="display:none;">
+                            <input type="number" id="nuevoProdDescuento" placeholder="% de Descuento (ej: 20)" style="margin-bottom:6px;">
+                            <input type="number" id="nuevoProdHorasOutlet" placeholder="Duración cuenta regresiva (en horas, ej: 24)" style="margin-bottom:10px;">
+                        </div>
+                    ` : ''}
+
                     <button type="button" onclick="guardarNuevoProducto()" style="background:var(--success);">Guardar en Catálogo</button>
                 </div>
                 ${prodsHtml}
             `;
         }
 
+        function toggleOutletCampos() {
+            let check = document.getElementById('nuevoProdOutlet');
+            let contenedorExtra = document.getElementById('contenedor-outlet-extra');
+            if (check && contenedorExtra) {
+                contenedorExtra.style.display = check.checked ? 'block' : 'none';
+            }
+        }
+
+        function contratarPotenciaVentas() {
+            alert("🚀 ¡Solicitud de 'Potencia tus Ventas' enviada con éxito! Se debitarán $300 de tu próxima liquidación semanal para darte máxima exposición rotativa.");
+        }
+
         function guardarNuevoProducto() {
             let nombre = document.getElementById('nuevoProdNombre').value.trim();
             let precio = parseFloat(document.getElementById('nuevoProdPrecio').value);
+            let stock = parseInt(document.getElementById('nuevoProdStock').value);
             let fileInput = document.getElementById('nuevoProdFile');
-            let enOutlet = document.getElementById('nuevoProdOutlet').checked;
-            let descuento = parseFloat(document.getElementById('nuevoProdDescuento').value) || 0;
+            
+            let chkOutlet = document.getElementById('nuevoProdOutlet');
+            let enOutlet = chkOutlet ? chkOutlet.checked : false;
+            let descuento = parseFloat(document.getElementById('nuevoProdDescuento') ? document.getElementById('nuevoProdDescuento').value : 0) || 0;
+            let horasOutlet = parseInt(document.getElementById('nuevoProdHorasOutlet') ? document.getElementById('nuevoProdHorasOutlet').value : 24) || 24;
 
-            if (!nombre || !precio) { alert("⚠️ Completá el nombre y el precio."); return; }
+            if (!nombre || isNaN(precio) || isNaN(stock)) { 
+                alert("⚠️ Completá el nombre, el precio y el stock obligatorio."); 
+                return; 
+            }
 
             if (fileInput.files && fileInput.files[0]) {
                 let reader = new FileReader();
                 reader.onload = function(e) {
-                    procesarGuardadoProducto(nombre, precio, e.target.result, enOutlet, descuento);
+                    procesarGuardadoProducto(nombre, precio, stock, e.target.result, enOutlet, descuento, horasOutlet);
                 };
                 reader.readAsDataURL(fileInput.files[0]);
             } else {
-                procesarGuardadoProducto(nombre, precio, 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80', enOutlet, descuento);
+                procesarGuardadoProducto(nombre, precio, stock, 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80', enOutlet, descuento, horasOutlet);
             }
         }
 
-        function procesarGuardadoProducto(nombre, precio, imagen, enOutlet, descuento) {
+        function procesarGuardadoProducto(nombre, precio, stock, imagen, enOutlet, descuento, horasOutlet) {
             let base = JSON.parse(localStorage.getItem('lt_base_empresas')) || [];
             let sesion = JSON.parse(localStorage.getItem('lt_sesion_empresa'));
-            let emp = base.find(e => e.rut === sesion.rut);
+            let emp = base.find(e => String(e.nombre).trim().toLowerCase() === String(sesion.nombre).trim().toLowerCase() || String(e.rut).trim() === String(sesion.rut).trim());
 
             if (!emp.productos) emp.productos = [];
             let nuevoP = {
                 id: Date.now(),
                 nombre,
                 precio,
-                stock: 10,
+                stock,
                 enOutlet,
                 descuento,
+                tiempoFinOutlet: enOutlet ? (Date.now() + (horasOutlet * 3600 * 1000)) : null,
                 imagen
             };
 
@@ -520,7 +697,7 @@
             localStorage.setItem('lt_base_empresas', JSON.stringify(base));
             localStorage.setItem('lt_sesion_empresa', JSON.stringify(emp));
 
-            alert("✅ ¡Producto agregado con éxito!");
+            alert("✅ ¡Producto agregado con éxito con control de stock!");
             mostrarGestionCatalogo();
         }
 
@@ -528,7 +705,7 @@
             if (!confirm("¿Estás seguro de eliminar este producto?")) return;
             let base = JSON.parse(localStorage.getItem('lt_base_empresas')) || [];
             let sesion = JSON.parse(localStorage.getItem('lt_sesion_empresa'));
-            let emp = base.find(e => e.rut === sesion.rut);
+            let emp = base.find(e => String(e.nombre).trim().toLowerCase() === String(sesion.nombre).trim().toLowerCase() || String(e.rut).trim() === String(sesion.rut).trim());
 
             emp.productos = emp.productos.filter(p => p.id !== idProd);
             localStorage.setItem('lt_base_empresas', JSON.stringify(base));
@@ -537,26 +714,24 @@
             mostrarGestionCatalogo();
         }
 
-        /* --- 1. COCINA: PEDIDOS ACTIVOS (FILTRO ESTRICTO CONTRA ENTREGADOS) --- */
         function mostrarPedidosEntrantesComercio() {
             actualizarMenuActivoEmpresa(2);
             let emp = obtenerEmpresaActualizada();
             if (!emp) return;
 
-            actualizarContadorPedidosBadge(emp.rut);
+            actualizarContadorPedidosBadge(emp.rut || emp.nombre);
             const container = document.getElementById('main-content-empresa');
             
             Object.values(temporizadoresGlobales).forEach(t => clearInterval(t));
             temporizadoresGlobales = {};
 
-            // FILTRADO ESTRICTO: Excluir terminantemente cualquier pedido entregado o cerrado
             let pedidosActivos = (emp.pedidos || []).filter(p => {
                 let st = (p.estado || '').toLowerCase().trim();
                 return st !== 'listo para retirar (en ruta/cadete)' && 
                        !st.includes('entregado') && 
                        !st.includes('cerrado');
             });
-            pedidosActivos.sort((a, b) => b.id - a.id); // Nuevos arriba
+            pedidosActivos.sort((a, b) => b.id - a.id);
 
             let htmlPedidos = pedidosActivos.map(p => {
                 let textoQr = `PEDIDO:#${p.id}|CLIENTE:${p.cliente}|PIN:${p.codigoVerificacion}|TOTAL:$${p.total}`;
@@ -600,13 +775,11 @@
                             </div>
                         </div>
 
-                        <!-- CRONÓMETRO -->
                         <div style="background: #fff3cd; border: 1px solid #ffeeba; padding: 8px 12px; border-radius: 8px; margin-top: 8px; display: flex; justify-content: space-between; align-items: center;">
                             <span style="font-size: 12px; color: #856404; font-weight: bold;">⏱️ Tiempo en (${estadoActual}):</span>
                             <span id="cronometro-${p.id}" style="font-family: monospace; font-size: 16px; font-weight: bold; color: #856404;">00:00</span>
                         </div>
 
-                        <!-- BOTONES DE ESTADO -->
                         <div style="background: #eef2f6; padding: 10px; border-radius: 8px; margin-top: 10px;">
                             <span style="font-size: 11px; color: #333; font-weight: bold; display:block; margin-bottom:6px;">⚡ GESTIÓN:</span>
                             <div style="display: flex; gap: 6px; flex-wrap: wrap;">
@@ -615,7 +788,6 @@
                             </div>
                         </div>
 
-                        <!-- PIN Y TICKET -->
                         <div style="display: flex; gap: 10px; align-items: center; background: #f8f9fa; border: 1px solid var(--border); padding: 10px; border-radius: 8px; margin-top: 10px;">
                             <div style="flex: 1; text-align: center;">
                                 <span style="font-size: 11px; color: #137333; font-weight: bold; display:block;">🔑 PIN de Seguridad:</span>
@@ -641,7 +813,7 @@
             `;
 
             let base = JSON.parse(localStorage.getItem('lt_base_empresas')) || [];
-            let indexEmp = base.findIndex(e => e.rut === emp.rut);
+            let indexEmp = base.findIndex(e => String(e.nombre).trim().toLowerCase() === String(emp.nombre).trim().toLowerCase() || String(e.rut).trim() === String(emp.rut).trim());
             if (indexEmp !== -1) {
                 base[indexEmp] = emp;
                 localStorage.setItem('lt_base_empresas', JSON.stringify(base));
@@ -651,7 +823,6 @@
             pedidosActivos.forEach(p => iniciarCronometroEnVivo(p.id, p.tiempoInicioEstado));
         }
 
-        /* --- 2. SECCIÓN: PEDIDOS EN RUTA --- */
         function mostrarPedidosEnRutaComercio() {
             actualizarMenuActivoEmpresa(3);
             let emp = obtenerEmpresaActualizada();
@@ -685,14 +856,12 @@
             `;
         }
 
-        /* --- 3. SECCIÓN: HISTORIAL FINANCIERO Y COMISIONES (FILTRO DE ENTREGADOS) --- */
         function mostrarHistorialFinancieroComercio() {
             actualizarMenuActivoEmpresa(4);
             let emp = obtenerEmpresaActualizada();
             if (!emp) return;
 
             const container = document.getElementById('main-content-empresa');
-            // Incluir cualquier variante de entregado/cerrado en el historial de caja
             let pedidosCerrados = (emp.pedidos || []).filter(p => {
                 let st = (p.estado || '').toLowerCase().trim();
                 return st.includes('entregado') || st.includes('cerrado');
@@ -763,7 +932,7 @@
             let sesion = JSON.parse(localStorage.getItem('lt_sesion_empresa'));
             if (!sesion) return;
 
-            let empIndex = base.findIndex(e => e.rut === sesion.rut);
+            let empIndex = base.findIndex(e => String(e.nombre).trim().toLowerCase() === String(sesion.nombre).trim().toLowerCase() || String(e.rut).trim() === String(sesion.rut).trim());
             if (empIndex === -1) return;
 
             let emp = base[empIndex];
@@ -791,7 +960,7 @@
                             id: pedido.id,
                             comercio: emp.nombre,
                             rutComercio: emp.rut,
-                            direccionComercio: emp.direccion,
+                            direccionComercio: emp.direccionRetiro || emp.direccion,
                             telefonoComercio: emp.telefono,
                             cliente: pedido.cliente,
                             direccionCliente: pedido.direccion,

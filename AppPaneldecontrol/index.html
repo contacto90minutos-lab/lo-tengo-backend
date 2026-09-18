@@ -3,48 +3,120 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LO TENGO — Panel de Administración Central</title>
+    <title>LO TENGO — Panel de Administración y Configuración Central</title>
     <script src="/socket.io/socket.io.js"></script>
     <style>
-        :root { --bg: #0f172a; --card: #1e293b; --accent: #38bdf8; --text: #f8fafc; --text-muted: #94a3b8; --danger: #ef4444; --success: #22c55e; }
+        :root { 
+            --bg: #0f172a; 
+            --card: #1e293b; 
+            --accent: #38bdf8; 
+            --text: #f8fafc; 
+            --text-muted: #94a3b8; 
+            --danger: #ef4444; 
+            --success: #22c55e; 
+            --warning: #f59e0b;
+        }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 20px; }
-        header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; padding-bottom: 15px; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
-        h1 { margin: 0; font-size: 22px; color: var(--accent); }
+        
+        /* Insignia y Encabezado */
+        header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #334155; padding-bottom: 15px; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
+        .logo-container { display: flex; align-items: center; gap: 12px; }
+        .logo-badge { background: linear-gradient(135deg, #0284c7, #38bdf8); color: #fff; width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 900; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.4); }
+        h1 { margin: 0; font-size: 22px; color: var(--text); font-weight: 900; letter-spacing: 0.5px; }
+        h1 span { color: var(--accent); display: block; font-size: 13px; font-weight: 600; text-transform: uppercase; margin-top: 2px; }
+
+        /* Notificación Flotante (Toast) */
+        #toast-notificacion {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            background: #0284c7;
+            color: white;
+            padding: 14px 20px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            z-index: 9999;
+            display: none;
+            font-size: 13px;
+            font-weight: 700;
+            border: 1px solid #38bdf8;
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateY(100px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Alerta Parpadeante Emergencia */
+        @keyframes parpadeoAlerta {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.98); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        .banner-alerta-critica { background: rgba(239, 68, 68, 0.15); border: 2px solid var(--danger); padding: 12px 18px; border-radius: 10px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; animation: parpadeoAlerta 1.5s infinite; }
+        .banner-alerta-critica div { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 700; color: #fca5a5; }
+
         .grid-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 15px; margin-bottom: 25px; }
-        .card { background-color: var(--card); padding: 18px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        .card { background-color: var(--card); padding: 18px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); border: 1px solid #334155; }
         .card h3 { margin: 0 0 10px 0; font-size: 13px; color: var(--text-muted); }
         .card .value { font-size: 22px; font-weight: bold; }
-        .filters-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-bottom: 20px; }
-        .filter-box { background-color: var(--card); padding: 15px; border-radius: 12px; display: flex; flex-direction: column; gap: 8px; }
+        
+        .filters-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .filter-box { background-color: var(--card); padding: 15px; border-radius: 12px; display: flex; flex-direction: column; gap: 8px; border: 1px solid #334155; }
         .filter-box label { font-size: 13px; font-weight: bold; color: var(--accent); }
         .filter-box select, .filter-box input { padding: 9px 12px; border-radius: 8px; background: #0f172a; color: white; border: 1px solid #334155; font-size: 13px; }
-        table { width: 100%; border-collapse: collapse; background-color: var(--card); border-radius: 12px; overflow: hidden; margin-bottom: 20px; }
+        
+        table { width: 100%; border-collapse: collapse; background-color: var(--card); border-radius: 12px; overflow: hidden; margin-bottom: 25px; border: 1px solid #334155; }
         th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #334155; font-size: 13px; }
         th { background-color: #0f172a; color: var(--accent); }
+        
         .btn { background-color: var(--accent); color: #0f172a; border: none; padding: 8px 14px; font-weight: bold; border-radius: 6px; cursor: pointer; transition: 0.2s; font-size: 12px; }
-        .btn:hover { opacity: 0.9; }
+        .btn:hover { opacity: 0.9; transform: translateY(-1px); }
         .btn-danger { background-color: var(--danger); color: white; }
         .btn-success { background-color: var(--success); color: white; }
-        .section-title { font-size: 17px; margin: 25px 0 10px 0; font-weight: 600; color: var(--accent); }
-        .badge-socket { font-size: 11px; background: rgba(56, 189, 248, 0.2); padding: 4px 8px; border-radius: 6px; border: 1px solid var(--accent); }
-        /* Modal estilos */
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); align-items: center; justify-content: center; }
-        .modal-content { background-color: var(--card); padding: 25px; border-radius: 12px; width: 400px; border: 1px solid #334155; display: flex; flex-direction: column; gap: 15px; }
+        .btn-warning { background-color: var(--warning); color: #0f172a; }
+        
+        .section-title { font-size: 17px; margin: 25px 0 12px 0; font-weight: 700; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+        .badge-socket { font-size: 11px; background: rgba(56, 189, 248, 0.2); padding: 4px 8px; border-radius: 6px; border: 1px solid var(--accent); font-weight: 600; }
+        
+        /* Modales Interactivos */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); align-items: center; justify-content: center; }
+        .modal-content { background-color: var(--card); padding: 25px; border-radius: 12px; width: 450px; border: 1px solid #334155; display: flex; flex-direction: column; gap: 15px; max-height: 90vh; overflow-y: auto; }
         .modal-content h3 { margin: 0; color: var(--accent); }
+        .chat-mensajes-box { background: #0f172a; border: 1px solid #334155; border-radius: 8px; height: 200px; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; font-size: 12px; }
+        .msg-bubble { padding: 6px 10px; border-radius: 6px; max-width: 80%; }
+        .msg-admin { background: #0284c7; color: white; align-self: flex-end; }
+        .msg-user { background: #334155; color: white; align-self: flex-start; }
     </style>
 </head>
 <body>
 
+    <!-- NOTIFICACIÓN FLOTANTE EN TIEMPO REAL -->
+    <div id="toast-notificacion">🔔 <b>Nuevo Movimiento:</b> <span id="toast-texto">Plataforma sincronizada</span></div>
+
     <header>
-        <div>
-            <h1>LO TENGO — Panel de Control Central</h1>
-            <span id="socket-status" class="badge-socket">🔴 Desconectado</span>
+        <div class="logo-container">
+            <div class="logo-badge">LT</div>
+            <div>
+                <h1>LO TENGO <span>Central de Administración, Soporte y Finanzas</span></h1>
+            </div>
         </div>
-        <div>
-            <button class="btn" style="background:var(--accent); padding:10px 16px;" onclick="ejecutarCierreCadetes()">🔒 Cierre Semanal Cadetes</button>
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <span id="socket-status" class="badge-socket">🔴 Desconectado</span>
+            <button class="btn btn-warning" onclick="ejecutarCierreCadetes()">🔒 Ejecutar Cierre Semanal</button>
         </div>
     </header>
 
+    <!-- SECTOR DE ALERTAS CRÍTICAS (PARPADEANTE) -->
+    <div id="contenedor-alerta-critica" class="banner-alerta-critica" style="display: none;">
+        <div>
+            <span style="font-size: 20px;">🚨</span>
+            <span id="texto-alerta-critica">Atención: Hay pedidos demorados o con alertas de incidentes reportados en Montevideo.</span>
+        </div>
+        <button class="btn btn-danger" onclick="revisarPedidosCriticos()">Revisar Urgente</button>
+    </div>
+
+    <!-- TARJETAS DE ESTADÍSTICAS -->
     <div class="grid-stats">
         <div class="card">
             <h3>Ventas Totales Plataforma</h3>
@@ -55,123 +127,155 @@
             <div class="value" id="stat-comision-empresas">$0</div>
         </div>
         <div class="card">
-            <h3>Fondo Retenido Garantía</h3>
-            <div class="value" style="color: #fbbf24;" id="stat-retenido">$0</div>
+            <h3>Fondo Retenido Garantía (48hs)</h3>
+            <div class="value" style="color: var(--warning);" id="stat-retenido">$0</div>
         </div>
         <div class="card">
-            <h3>Neto a Abonar Empresas</h3>
-            <div class="value" style="color: #34d399;" id="stat-neto-empresas">$0</div>
+            <h3>Neto a Liquidar Empresas</h3>
+            <div class="value" style="color: var(--success);" id="stat-neto-empresas">$0</div>
         </div>
     </div>
 
-    <!-- FILTROS -->
+    <!-- FILTROS AVANZADOS MULTICRITERIO -->
     <div class="filters-container">
         <div class="filter-box">
-            <label for="filtroEmpresa">🏪 Filtrar por Comercio:</label>
-            <select id="filtroEmpresa" onchange="renderizarPanelCompleto()">
-                <option value="TODAS">Todas las empresas</option>
-            </select>
+            <label for="filtroEmpresa">🏪 Filtrar Comercio (Nombre, RUT o Tel):</label>
+            <input type="text" id="filtroEmpresa" placeholder="Ej: Super / RUT / 099..." oninput="renderizarPanelCompleto()">
         </div>
 
         <div class="filter-box">
-            <label for="filtroCadete">🛵 Filtrar por Cadete:</label>
-            <select id="filtroCadete" onchange="renderizarPanelCompleto()">
-                <option value="TODOS">Todos los cadetes</option>
-            </select>
+            <label for="filtroCadete">🛵 Filtrar Cadete (Nombre o Cédula/Tel):</label>
+            <input type="text" id="filtroCadete" placeholder="Ej: Mathías / 098..." oninput="renderizarPanelCompleto()">
         </div>
 
         <div class="filter-box">
-            <label for="busquedaPedido">🔍 Buscar Pedido (ID, Cliente o Local):</label>
-            <input type="text" id="busquedaPedido" placeholder="Ej: 1001 o Juan" oninput="renderizarPanelCompleto()">
+            <label for="busquedaPedido">📦 Filtrar por Categoría / Local / ID:</label>
+            <input type="text" id="busquedaPedido" placeholder="Ej: Outlet, Moto, ID 1042..." oninput="renderizarPanelCompleto()">
         </div>
     </div>
 
-    <div class="section-title">💳 Acreditación de Pagos y Desglose por Pedido</div>
+    <!-- SECCIÓN 1: MONITOREO Y ACCIONES FORZADAS DE ENVÍOS (ANTI-TRANQUEO) -->
+    <div class="section-title">📦 Monitoreo de Envíos en Tiempo Real (Anti-Tranqueos)</div>
     <table>
         <thead>
             <tr>
                 <th>ID Pedido</th>
-                <th>Comercio (RUT)</th>
-                <th>Total Bruto</th>
-                <th>Comisión App</th>
-                <th>Cadete (80%)</th>
-                <th>Estado de Pago</th>
-            </tr>
-        </thead>
-        <tbody id="tabla-acreditaciones"></tbody>
-    </table>
-
-    <div class="section-title">👤 Control, Sanciones y Rendimiento de Cadetes</div>
-    <table>
-        <thead>
-            <tr>
-                <th>ID Cadete</th>
-                <th>Nombre y Teléfono</th>
-                <th>Vehículo</th>
-                <th>Comisión</th>
-                <th>Estado Operativo</th>
-                <th>Acciones de Emergencia</th>
-            </tr>
-        </thead>
-        <tbody id="tabla-cadetes"></tbody>
-    </table>
-
-    <div class="section-title">📦 Monitoreo y Manipulación Forzada de Envíos (Anti-Tranqueos)</div>
-    <table>
-        <thead>
-            <tr>
-                <th>ID Pedido</th>
-                <th>Comercio</th>
+                <th>Comercio Asociado</th>
                 <th>Cliente / Destino</th>
                 <th>Cadete Asignado</th>
                 <th>Estado Actual</th>
-                <th>Acciones Manuales (Desatascar)</th>
+                <th>Acciones Manuales / Forzar Cierre</th>
             </tr>
         </thead>
         <tbody id="tabla-envios"></tbody>
     </table>
 
-    <div class="section-title">📊 Estado de Cuentas y Liquidación a Empresas</div>
+    <!-- SECCIÓN 2: CONTROL Y SANCIONES DE CADETES -->
+    <div class="section-title">👤 Control, Sanciones y Soporte de Cadetes</div>
     <table>
         <thead>
             <tr>
-                <th>Comercio / RUT</th>
-                <th>Ventas Brutas (UYU)</th>
+                <th>ID / Cédula</th>
+                <th>Nombre y Teléfono</th>
+                <th>Vehículo y Matrícula</th>
+                <th>Comisión Operativa</th>
+                <th>Estado Operativo</th>
+                <th>Acciones / Soporte</th>
+            </tr>
+        </thead>
+        <tbody id="tabla-cadetes"></tbody>
+    </table>
+
+    <!-- SECCIÓN 3: GESTIÓN DE PRODUCTOS DESTACADOS Y EXPOSICIONES -->
+    <div class="section-title">⭐ Exposición y Productos Destacados en Plataforma</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Comercio</th>
+                <th>Producto / Oferta</th>
+                <th>Precio Actual</th>
+                <th>Estado Destacado</th>
+                <th>Acción Comercial</th>
+            </tr>
+        </thead>
+        <tbody id="tabla-destacados"></tbody>
+    </table>
+
+    <!-- SECCIÓN 4: GESTIÓN FINANCIERA Y LIQUIDACIONES -->
+    <div class="section-title">💳 Estado de Cuentas, Transferencias y Liquidación a Empresas / Cadetes</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Comercio / RUT / Datos Bancarios</th>
+                <th>Ventas Brutas</th>
                 <th>Comisión App (10%)</th>
                 <th>Garantía / Estado</th>
-                <th>Neto a Abonar (UYU)</th>
-                <th>Acción Financiera</th>
+                <th>Neto a Transferir</th>
+                <th>Acción Financiera (Banco / Mercado Pago)</th>
             </tr>
         </thead>
         <tbody id="tabla-empresas"></tbody>
     </table>
 
-    <!-- MODAL DE LIBERACIÓN DE FONDOS -->
+    <!-- MODAL DE LIBERACIÓN DE FONDOS Y DATOS BANCARIOS / MP -->
     <div id="modalLiberar" class="modal">
         <div class="modal-content">
-            <h3>💸 Liberar Fondos a Comercio</h3>
-            <p id="modal-info-comercio" style="font-size: 13px; color: var(--text-muted); margin: 0;"></p>
+            <h3>💸 Liquidación y Transferencia Financiera</h3>
+            <div id="modal-info-comercio" style="font-size: 13px; color: var(--text-muted);"></div>
             <input type="hidden" id="modal-rut-empresa">
+            
             <div>
-                <label style="font-size: 12px; color: var(--accent);">Monto a liberar (UYU):</label>
+                <label style="font-size: 12px; color: var(--accent);">Método de Pago / Transferencia:</label>
+                <select id="modal-metodo-pago" style="width: 100%; padding: 8px; margin-top: 5px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 6px;">
+                    <option value="banco">Transferencia Bancaria (BROU / Itaú / Santander)</option>
+                    <option value="mercadopago">Pasarela Mercado Pago (Automático)</option>
+                    <option value="efectivo">Retiro en Oficina Central / Abitab</option>
+                </select>
+            </div>
+
+            <div>
+                <label style="font-size: 12px; color: var(--accent);">Monto Neto a Abonar (UYU):</label>
                 <input type="number" id="modal-monto" style="width: 100%; padding: 8px; margin-top: 5px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 6px;" />
             </div>
+
+            <div style="background: rgba(34, 197, 94, 0.1); border: 1px solid var(--success); padding: 10px; border-radius: 6px; font-size: 12px; color: #86efac;">
+                ℹ️ Al confirmar, se emitirá el comprobante fiscal y se actualizará el estado de la cuenta del comercio a <b>Liquidado</b>.
+            </div>
+
             <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
                 <button class="btn" style="background: #334155; color: white;" onclick="cerrarModalLiberar()">Cancelar</button>
-                <button class="btn btn-success" onclick="confirmarLiberacionFondos()">Confirmar Liberación</button>
+                <button class="btn btn-success" onclick="confirmarLiberacionFondos()">Ejecutar Transferencia / Liberar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE CHAT INTERACTIVO DE SOPORTE -->
+    <div id="modalChatSoporte" class="modal">
+        <div class="modal-content">
+            <h3 id="chat-titulo-modal">💬 Centro de Soporte Interactivo</h3>
+            <div class="chat-mensajes-box" id="chat-mensajes-container"></div>
+            <div style="display: flex; gap: 8px;">
+                <input type="text" id="input-mensaje-soporte" placeholder="Escribir respuesta al usuario..." style="flex:1; padding: 8px; border-radius: 6px; background: #0f172a; border: 1px solid #334155; color: white; font-size: 12px;" />
+                <button class="btn" onclick="enviarMensajeSoporte()">Enviar</button>
+            </div>
+            <div style="display: flex; justify-content: flex-end;">
+                <button class="btn" style="background: #334155; color: white;" onclick="cerrarModalChat()">Cerrar Chat</button>
             </div>
         </div>
     </div>
 
     <script>
         let socket = null;
+        let usuarioChatActual = null;
 
         document.addEventListener("DOMContentLoaded", () => {
             inicializarSocket();
             renderizarPanelCompleto();
 
-            window.addEventListener('storage', () => {
+            // Sincronización automática ante cualquier cambio en localStorage (otras solapas/apps)
+            window.addEventListener('storage', (e) => {
                 renderizarPanelCompleto();
+                mostrarToastNotificacion("Actualización detectada en el ecosistema.");
             });
         });
 
@@ -188,20 +292,37 @@
                     document.getElementById('socket-status').style.background = "rgba(217, 83, 79, 0.2)";
                     document.getElementById('socket-status').style.borderColor = "#d9534f";
                 });
-                socket.on('actualizar_panel', () => renderizarPanelCompleto());
+                socket.on('actualizar_panel', () => {
+                    renderizarPanelCompleto();
+                    mostrarToastNotificacion("¡Nuevo pedido o evento recibido en tiempo real!");
+                });
             } catch (e) {
-                console.warn("Socket no disponible.");
+                console.warn("Socket local no activo.");
             }
+        }
+
+        function mostrarToastNotificacion(mensaje) {
+            let toast = document.getElementById('toast-notificacion');
+            document.getElementById('toast-texto').innerText = mensaje;
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 4000);
         }
 
         function obtenerDatosPlataforma() {
             let baseEmpresas = JSON.parse(localStorage.getItem('lt_base_empresas')) || [];
-            let baseCadetes = JSON.parse(localStorage.getItem('lt_base_cadetes')) || [];
+            let baseCadetes = JSON.parse(localStorage.getItem('lt_base_cadetes')) || [
+                { id: "CAD-01", nombre: "Mathías Silva", telefono: "099888777", tipoVehiculo: "moto", matricula: "SDA 4512", suspendido: false }
+            ];
 
             let todosLosPedidos = [];
+            let todosLosProductos = [];
+
             baseEmpresas.forEach(empresa => {
                 let rutEmpresa = empresa.rut || 'Sin RUT';
-                let nombreEmpresa = empresa.name || empresa.nombre || 'Comercio';
+                let nombreEmpresa = empresa.name || empresa.nombre || 'Comercio Aliado';
+                
                 (empresa.pedidos || []).forEach(ped => {
                     todosLosPedidos.push({
                         ...ped,
@@ -210,17 +331,24 @@
                         fondosLiberados: empresa.fondosLiberados || false
                     });
                 });
+
+                (empresa.productos || []).forEach(prod => {
+                    todosLosProductos.push({
+                        ...prod,
+                        empresaNombre: nombreEmpresa,
+                        rutEmpresa: rutEmpresa
+                    });
+                });
             });
 
-            return { empresas: baseEmpresas, cadetes: baseCadetes, pedidos: todosLosPedidos };
+            return { empresas: baseEmpresas, cadetes: baseCadetes, pedidos: todosLosPedidos, productos: todosLosProductos };
         }
 
         function renderizarPanelCompleto() {
             const datos = obtenerDatosPlataforma();
-            poblarFiltros(datos);
 
-            let empresaSel = document.getElementById('filtroEmpresa').value;
-            let cadeteSel = document.getElementById('filtroCadete').value;
+            let filtroEmpresaTxt = document.getElementById('filtroEmpresa').value.toLowerCase().trim();
+            let filtroCadeteTxt = document.getElementById('filtroCadete').value.toLowerCase().trim();
             let textoBusqueda = document.getElementById('busquedaPedido').value.toLowerCase().trim();
 
             let ventasTotales = datos.pedidos.reduce((acc, p) => acc + (parseFloat(p.total) || 1500), 0);
@@ -232,88 +360,38 @@
             document.getElementById('stat-retenido').innerText = `$${retenido.toLocaleString('es-UY')}`;
             document.getElementById('stat-neto-empresas').innerText = `$${retenido.toLocaleString('es-UY')}`;
 
-            // Tabla Acreditaciones por Pedido
-            let tbodyAcreditaciones = document.getElementById('tabla-acreditaciones');
-            tbodyAcreditaciones.innerHTML = '';
+            // Validar Alertas Críticas (Pedidos demorados o sin cadete > 20 mins)
+            let hayDemorados = datos.pedidos.some(p => p.estado === 'En Preparación' && (Date.now() - (p.tiempoInicioEstado || Date.now()) > 1200000));
+            document.getElementById('contenedor-alerta-critica').style.display = hayDemorados ? 'flex' : 'none';
+
+            // 1. Tabla Envíos
+            let tbodyEnvios = document.getElementById('tabla-envios');
+            tbodyEnvios.innerHTML = '';
             let pedidosFiltrados = datos.pedidos.filter(p => {
-                let coincideEmpresa = (empresaSel === 'TODAS' || p.nombreEmpresa === empresaSel);
-                let coincideBusqueda = (textoBusqueda === '' || 
-                    String(p.id).toLowerCase().includes(textoBusqueda) || 
-                    (p.cliente && p.cliente.toLowerCase().includes(textoBusqueda)) || 
-                    p.nombreEmpresa.toLowerCase().includes(textoBusqueda));
-                return coincideEmpresa && coincideBusqueda;
+                let coincideEmp = filtroEmpresaTxt === '' || p.nombreEmpresa.toLowerCase().includes(filtroEmpresaTxt) || p.rutEmpresa.toLowerCase().includes(filtroEmpresaTxt);
+                let coincideBusq = textoBusqueda === '' || String(p.id).toLowerCase().includes(textoBusqueda) || (p.cliente && p.cliente.toLowerCase().includes(textoBusqueda)) || (p.descripcion && p.descripcion.toLowerCase().includes(textoBusqueda));
+                return coincideEmp && coincideBusq;
             });
 
             if (pedidosFiltrados.length === 0) {
-                tbodyAcreditaciones.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">No hay registros de pagos.</td></tr>`;
+                tbodyEnvios.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">No hay envíos registrados con estos criterios.</td></tr>`;
             } else {
                 pedidosFiltrados.forEach(p => {
-                    let totalP = parseFloat(p.total) || 1500;
-                    let comApp = totalP * 0.10;
-                    let pagoCadete = totalP * 0.80; // Ejemplo estimativo de la porción del cadete por entrega
-                    let estadoPago = p.estado === 'entregado' ? '<span style="color:var(--success);">Acreditado ✅</span>' : '<span style="color:#fbbf24;">Pendiente ⏳</span>';
-                    tbodyAcreditaciones.innerHTML += `
-                        <tr>
-                            <td><b>#${p.id}</b></td>
-                            <td>${p.nombreEmpresa}<br><span style="font-size:11px; color:var(--text-muted);">RUT: ${p.rutEmpresa}</span></td>
-                            <td>$${totalP.toLocaleString('es-UY')}</td>
-                            <td>$${comApp.toLocaleString('es-UY')}</td>
-                            <td>$${pagoCadete.toLocaleString('es-UY')}</td>
-                            <td>${estadoPago}</td>
-                        </tr>
-                    `;
-                });
-            }
-
-            // Tabla Cadetes
-            let tbodyCadetes = document.getElementById('tabla-cadetes');
-            tbodyCadetes.innerHTML = '';
-            if (datos.cadetes.length === 0) {
-                tbodyCadetes.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">No hay cadetes registrados.</td></tr>`;
-            } else {
-                datos.cadetes.forEach(c => {
-                    if (cadeteSel !== 'TODOS' && c.nombre !== cadeteSel) return;
-                    let suspendido = c.suspendido || false;
-                    let estadoHtml = suspendido 
-                        ? `<span style="color:var(--danger); font-weight:bold;">🚫 Suspendido / Sancionado</span>` 
-                        : `<span style="color:var(--success); font-weight:bold;">🟢 Activo Operativo</span>`;
+                    let estadoLabel = p.estado === 'entregado' ? '<span style="color:var(--success); font-weight:bold;">Entregado ✅</span>' : '<span style="color:var(--warning); font-weight:bold;">En Ruta 🚚</span>';
+                    let nombreCadeteStr = p.cadeteAsignado ? (typeof p.cadeteAsignado === 'object' ? p.cadeteAsignado.nombre : p.cadeteAsignado) : 'Sin asignar';
                     
-                    let btnAccionCadete = suspendido
-                        ? `<button class="btn btn-success" onclick="cambiarEstadoCadete('${c.id}', false)">Reactivar</button>`
-                        : `<button class="btn btn-danger" onclick="cambiarEstadoCadete('${c.id}', true)">Suspender / Sancionar</button>`;
-
-                    tbodyCadetes.innerHTML += `
-                        <tr>
-                            <td>${c.id}</td>
-                            <td><b>${c.nombre}</b><br><span style="font-size:11px; color:var(--text-muted);">${c.telefono || ''}</span></td>
-                            <td>${c.tipoVehiculo ? c.tipoVehiculo.toUpperCase() : 'MOTO'}</td>
-                            <td>${suspendido ? '0% (Sancionado)' : '80% (Normal)'}</td>
-                            <td>${estadoHtml}</td>
-                            <td>${btnAccionCadete}</td>
-                        </tr>
-                    `;
-                });
-            }
-
-            // Tabla Envíos
-            let tbodyEnvios = document.getElementById('tabla-envios');
-            tbodyEnvios.innerHTML = '';
-            if (pedidosFiltrados.length === 0) {
-                tbodyEnvios.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">No hay pedidos activos.</td></tr>`;
-            } else {
-                pedidosFiltrados.forEach(p => {
-                    let estadoLabel = p.estado === 'entregado' ? '<span style="color:var(--success); font-weight:bold;">Entregado ✅</span>' : '<span style="color:#fbbf24; font-weight:bold;">En Ruta 🚚</span>';
                     tbodyEnvios.innerHTML += `
                         <tr>
-                            <td><b>#${p.id}</b></td>
+                            <td><b>#${String(p.id).slice(-4)}</b></td>
                             <td>${p.nombreEmpresa}</td>
-                            <td>${p.cliente || 'Consumidor'}</td>
-                            <td>${p.cadeteAsignado || 'Sin asignar'}</td>
+                            <td>${p.cliente || 'Particular'} <br><span style="font-size:11px; color:var(--text-muted);">${p.direccion || ''}</span></td>
+                            <td>${nombreCadeteStr}</td>
                             <td>${estadoLabel}</td>
                             <td>
-                                <div style="display:flex; gap:5px;">
+                                <div style="display:flex; gap:5px; flex-wrap:wrap;">
                                     <button class="btn btn-success" style="padding:4px 8px; font-size:11px;" onclick="forzarEstadoPedido('${p.id}', '${p.rutEmpresa}', 'entregado')">Forzar Entregado</button>
-                                    <button class="btn btn-danger" style="padding:4px 8px; font-size:11px;" onclick="forzarEstadoPedido('${p.id}', '${p.rutEmpresa}', 'cancelado')">Cancelar</button>
+                                    <button class="btn btn-danger" style="padding:4px 8px; font-size:11px;" onclick="forzarEstadoPedido('${p.id}', '${p.rutEmpresa}', 'cancelado')">Cancelar / Desatascar</button>
+                                    <button class="btn" style="padding:4px 8px; font-size:11px; background:#475569; color:#fff;" onclick="abrirChatSoporte('${p.cliente || 'Cliente'}')">💬 Chat</button>
                                 </div>
                             </td>
                         </tr>
@@ -321,12 +399,65 @@
                 });
             }
 
-            // Tabla Empresas y Datos Fiscales
+            // 2. Tabla Cadetes
+            let tbodyCadetes = document.getElementById('tabla-cadetes');
+            tbodyCadetes.innerHTML = '';
+            let cadetesFiltrados = datos.cadetes.filter(c => {
+                if (!filtroCadeteTxt) return true;
+                return c.nombre.toLowerCase().includes(filtroCadeteTxt) || (c.telefono && c.telefono.includes(filtroCadeteTxt)) || (c.id && c.id.toLowerCase().includes(filtroCadeteTxt));
+            });
+
+            if (cadetesFiltrados.length === 0) {
+                tbodyCadetes.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">No se encontraron cadetes.</td></tr>`;
+            } else {
+                cadetesFiltrados.forEach(c => {
+                    let suspendido = c.suspendido || false;
+                    let estadoHtml = suspendido ? `<span style="color:var(--danger); font-weight:bold;">🚫 Suspendido</span>` : `<span style="color:var(--success); font-weight:bold;">🟢 Activo</span>`;
+                    let btnAccion = suspendido ? `<button class="btn btn-success" onclick="cambiarEstadoCadete('${c.id}', false)">Reactivar</button>` : `<button class="btn btn-danger" onclick="cambiarEstadoCadete('${c.id}', true)">Suspender</button>`;
+
+                    tbodyCadetes.innerHTML += `
+                        <tr>
+                            <td><b>${c.id}</b></td>
+                            <td>${c.nombre}<br><span style="font-size:11px; color:var(--text-muted);">${c.telefono || 'Sin tel'}</span></td>
+                            <td>${c.tipoVehiculo ? c.tipoVehiculo.toUpperCase() : 'MOTO'} • Chapa: ${c.matricula || 'S/D'}</td>
+                            <td>${suspendido ? '0%' : '80%'}</td>
+                            <td>${estadoHtml}</td>
+                            <td>
+                                <div style="display:flex; gap:6px;">
+                                    ${btnAccion}
+                                    <button class="btn" style="padding:4px 8px; font-size:11px; background:#475569; color:#fff;" onclick="abrirChatSoporte('${c.nombre}')">💬 Chat</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+
+            // 3. Tabla Productos Destacados
+            let tbodyDestacados = document.getElementById('tabla-destacados');
+            tbodyDestacados.innerHTML = '';
+            if (datos.productos.length === 0) {
+                tbodyDestacados.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">No hay productos o ofertas registradas.</td></tr>`;
+            } else {
+                datos.productos.slice(0, 5).forEach(prod => {
+                    tbodyDestacados.innerHTML += `
+                        <tr>
+                            <td><b>${prod.empresaNombre}</b></td>
+                            <td>${prod.nombre}</td>
+                            <td>$${prod.precio}</td>
+                            <td><span style="color:var(--accent);">⭐ Destacado Flash</span></td>
+                            <td><button class="btn" style="padding:4px 8px; font-size:11px;" onclick="alert('Gestión de exposición actualizada para ${prod.nombre}')">Modificar Exposición</button></td>
+                        </tr>
+                    `;
+                });
+            }
+
+            // 4. Tabla Empresas y Finanzas
             let tbodyEmpresas = document.getElementById('tabla-empresas');
             tbodyEmpresas.innerHTML = '';
             let resumenEmp = {};
             datos.pedidos.forEach(p => {
-                if (empresaSel !== 'TODAS' && p.nombreEmpresa !== empresaSel) return;
+                if (filtroEmpresaTxt && !p.nombreEmpresa.toLowerCase().includes(filtroEmpresaTxt) && !p.rutEmpresa.toLowerCase().includes(filtroEmpresaTxt)) return;
                 if (!resumenEmp[p.nombreEmpresa]) {
                     resumenEmp[p.nombreEmpresa] = { total: 0, rut: p.rutEmpresa };
                 }
@@ -335,7 +466,7 @@
 
             let keysEmp = Object.keys(resumenEmp);
             if (keysEmp.length === 0) {
-                tbodyEmpresas.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">Sin datos de comercios.</td></tr>`;
+                tbodyEmpresas.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">Sin datos financieros de comercios.</td></tr>`;
             } else {
                 keysEmp.forEach(empName => {
                     let dataEmp = resumenEmp[empName];
@@ -346,17 +477,12 @@
                     let empresaObj = datos.empresas.find(e => (e.name === empName || e.nombre === empName));
                     let liberado = empresaObj && empresaObj.fondosLiberados;
 
-                    let estadoFondo = liberado 
-                        ? `<span style="color:var(--success);">Liberado 🟢</span>` 
-                        : `<span style="color:#fbbf24;">⏳ Retenido</span>`;
-
-                    let btnLiberarHtml = liberado
-                        ? `<button class="btn" style="background:#334155; color:white;" disabled>Liberado</button>`
-                        : `<button class="btn" onclick="abrirModalLiberar('${empName}', '${dataEmp.rut}', ${neto})">Liberar</button>`;
+                    let estadoFondo = liberado ? `<span style="color:var(--success);">Liquidado 🟢</span>` : `<span style="color:var(--warning);">⏳ Retenido (48hs)</span>`;
+                    let btnLiberarHtml = liberado ? `<button class="btn" style="background:#334155; color:white;" disabled>Transferido</button>` : `<button class="btn btn-success" onclick="abrirModalLiberar('${empName}', '${dataEmp.rut}', ${neto})">Pagar / Transferir</button>`;
 
                     tbodyEmpresas.innerHTML += `
                         <tr>
-                            <td><b>${empName}</b><br><span style="font-size:11px; color:var(--text-muted);">RUT: ${dataEmp.rut}</span></td>
+                            <td><b>${empName}</b><br><span style="font-size:11px; color:var(--text-muted);">RUT: ${dataEmp.rut} | Banco: BROU UY</span></td>
                             <td>$${totalV.toLocaleString('es-UY')}</td>
                             <td>$${com.toLocaleString('es-UY')} (10%)</td>
                             <td>${estadoFondo}</td>
@@ -366,25 +492,6 @@
                     `;
                 });
             }
-        }
-
-        function poblarFiltros(datos) {
-            const selEmp = document.getElementById('filtroEmpresa');
-            let valAntEmp = selEmp.value;
-            selEmp.innerHTML = '<option value="TODAS">Todas las empresas</option>';
-            datos.empresas.forEach(e => {
-                let nom = e.name || e.nombre;
-                selEmp.innerHTML += `<option value="${nom}">${nom}</option>`;
-            });
-            if ([...selEmp.options].some(o => o.value === valAntEmp)) selEmp.value = valAntEmp;
-
-            const selCad = document.getElementById('filtroCadete');
-            let valAntCad = selCad.value;
-            selCad.innerHTML = '<option value="TODOS">Todos los cadetes</option>';
-            datos.cadetes.forEach(c => {
-                selCad.innerHTML += `<option value="${c.nombre}">${c.nombre}</option>`;
-            });
-            if ([...selCad.options].some(o => o.value === valAntCad)) selCad.value = valAntCad;
         }
 
         function cambiarEstadoCadete(idCadete, suspender) {
@@ -407,13 +514,18 @@
                     pedido.estado = nuevoEstado;
                     localStorage.setItem('lt_base_empresas', JSON.stringify(baseEmpresas));
                     if (socket) socket.emit('sincronizar_plataforma');
+                    alert(`✅ Pedido #${idPedido} actualizado correctamente a estado: ${nuevoEstado}`);
                     renderizarPanelCompleto();
                 }
             }
         }
 
+        function revisarPedidosCriticos() {
+            document.getElementById('busquedaPedido').value = "En Preparación";
+            renderizarPanelCompleto();
+        }
+
         function abrirModalLiberar(nombreComercio, rutComercio, montoNeto) {
-            document.getElementById('modal-info-comercioinnerText', `Comercio: ${nombreComercio} (RUT: ${rutComercio})`);
             document.getElementById('modal-rut-empresa').value = rutComercio;
             document.getElementById('modal-monto').value = montoNeto.toFixed(2);
             document.getElementById('modal-info-comercio').innerHTML = `Comercio: <b>${nombreComercio}</b><br>RUT: <b>${rutComercio}</b>`;
@@ -426,6 +538,7 @@
 
         function confirmarLiberacionFondos() {
             let rut = document.getElementById('modal-rut-empresa').value;
+            let metodo = document.getElementById('modal-metodo-pago').value;
             let baseEmpresas = JSON.parse(localStorage.getItem('lt_base_empresas')) || [];
             let empresa = baseEmpresas.find(e => e.rut === rut);
             
@@ -433,17 +546,59 @@
                 empresa.fondosLiberados = true;
                 localStorage.setItem('lt_base_empresas', JSON.stringify(baseEmpresas));
                 if (socket) socket.emit('sincronizar_plataforma');
-                alert("✅ Fondos liberados y acreditados correctamente al comercio.");
+                alert(`✅ Transferencia ejecutada exitosamente vía [ ${metodo.toUpperCase()} ] al comercio con RUT ${rut}. Fondos acreditados.`);
                 cerrarModalLiberar();
                 renderizarPanelCompleto();
             } else {
-                alert("❌ No se encontró la empresa en la base de datos.");
+                alert("❌ No se encontró la empresa asociada en la base de datos.");
             }
         }
 
+        function abrirChatSoporte(nombreUsuario) {
+            usuarioChatActual = nombreUsuario;
+            document.getElementById('chat-titulo-modal').innerText = `💬 Soporte en línea con: ${nombreUsuario}`;
+            
+            // Cargar historial de chat persistente desde localStorage
+            let chats = JSON.parse(localStorage.getItem('lt_historial_chats')) || {};
+            let mensajesUser = chats[nombreUsuario] || [
+                { remitente: 'user', texto: `Hola soporte, necesito asistencia en Montevideo.` }
+            ];
+
+            let container = document.getElementById('chat-mensajes-container');
+            container.innerHTML = mensajesUser.map(m => `
+                <div class="msg-bubble ${m.remitente === 'admin' ? 'msg-admin' : 'msg-user'}">
+                    <b>${m.remitente === 'admin' ? 'Soporte Central' : nombreUsuario}:</b> ${m.texto}
+                </div>
+            `).join('');
+            container.scrollTop = container.scrollHeight;
+
+            document.getElementById('modalChatSoporte').style.display = 'flex';
+        }
+
+        function cerrarModalChat() {
+            document.getElementById('modalChatSoporte').style.display = 'none';
+        }
+
+        function enviarMensajeSoporte() {
+            let input = document.getElementById('input-mensaje-soporte');
+            let txt = input.value.trim();
+            if (!txt || !usuarioChatActual) return;
+
+            let chats = JSON.parse(localStorage.getItem('lt_historial_chats')) || {};
+            if (!chats[usuarioChatActual]) chats[usuarioChatActual] = [];
+            
+            chats[usuarioChatActual].push({ remitente: 'admin', texto: txt });
+            localStorage.setItem('lt_historial_chats', JSON.stringify(chats));
+
+            let container = document.getElementById('chat-mensajes-container');
+            container.innerHTML += `<div class="msg-bubble msg-admin"><b>Soporte Central:</b> ${txt}</div>`;
+            input.value = '';
+            container.scrollTop = container.scrollHeight;
+        }
+
         function ejecutarCierreCadetes() {
-            if(confirm("¿Estás seguro de realizar el cierre semanal?")) {
-                alert("🔒 Cierre ejecutado con éxito.");
+            if(confirm("¿Estás seguro de realizar el cierre semanal de cuentas y comisiones de cadetes en Montevideo?")) {
+                alert("🔒 Cierre semanal ejecutado con éxito. Reportes de liquidación generados.");
             }
         }
     </script>
