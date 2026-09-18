@@ -5,16 +5,16 @@
   "display": "standalone",
   "background_color": "#FFFFFF",
   "theme_color": "#0B2545",
-  "description": "Ecosistema de delivery y comercio en tiempo real de Montevideo",
+  "description": "Ecosistema de delivery y comercio en tiempo real",
   "icons": [
     {
-      "src": "https://raw.githubusercontent.com/contacto90minutos-lab/lo-tengo-backend/main/www/icon-192.png",
+      "src": "/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "https://raw.githubusercontent.com/contacto90minutos-lab/lo-tengo-backend/main/www/icon-512.png",
+      "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
