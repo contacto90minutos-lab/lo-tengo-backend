@@ -1,16 +1,23 @@
 {
   "name": "LO TENGO",
-  "short_name": "LO TENGO",
-  "start_url": "https://lo-tengo-backend.onrender.com/",
+  "short_name": "LoTengo",
+  "start_url": "/",
   "display": "standalone",
-  "background_color": "#0F172A",
-  "theme_color": "#38BDF8",
+  "background_color": "#FFFFFF",
+  "theme_color": "#0B2545",
   "description": "Ecosistema de delivery y comercio en tiempo real de Montevideo",
   "icons": [
     {
-      "src": "https://lo-tengo-backend.onrender.com/favicon.ico",
-      "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
