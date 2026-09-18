@@ -6,7 +6,9 @@ const { MercadoPagoConfig, Preference } = require('mercadopago');
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use(express.static(__dirname));
+
+// Servir la carpeta 'www' como el directorio estático principal de la raíz
+app.use(express.static(path.join(__dirname, 'www')));
 
 // Endpoint explícito para asegurar que el manifiesto se sirva correctamente sin errores
 app.get('/manifest.json', (req, res) => {
@@ -246,7 +248,7 @@ app.post('/api/pedidos/validar-entrega', (req, res) => {
     }
 });
 
-// Servir archivos estáticos de las apps
+// Servir archivos estáticos de las sub-apps adicionales
 app.use('/cliente', express.static(path.join(__dirname, 'AppCliente')));
 app.use('/driver', express.static(path.join(__dirname, 'AppDriver')));
 app.use('/empresa', express.static(path.join(__dirname, 'AppEmpresa')));
