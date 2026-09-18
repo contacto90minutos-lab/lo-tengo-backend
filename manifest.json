@@ -1,0 +1,13 @@
+{
+  "background_color": "#0f172a",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "LO TENGO",
+  "orientation": "any",
+  "scope": "/",
+  "short_name": "LO TENGO",
+  "start_url": "/",
+  "theme_color": "#38bdf8",
+  "id": "com.lotengo.app",
+  "description": "ecosistema de delivery y comercio en tiempo real en montevideo"
+}
