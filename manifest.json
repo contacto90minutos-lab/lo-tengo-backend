@@ -8,13 +8,13 @@
   "description": "Ecosistema de delivery y comercio en tiempo real de Montevideo",
   "icons": [
     {
-      "src": "/icon-192.png",
+      "src": "https://via.placeholder.com/192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/icon-512.png",
+      "src": "https://via.placeholder.com/512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
