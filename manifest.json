@@ -8,15 +8,15 @@
   "description": "Ecosistema de delivery y comercio en tiempo real de Montevideo",
   "icons": [
     {
-      "src": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=192&h=192&fit=crop",
+      "src": "https://raw.githubusercontent.com/contacto90minutos-lab/lo-tengo-backend/main/www/icon-192.png",
       "sizes": "192x192",
-      "type": "image/jpeg",
+      "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=512&h=512&fit=crop",
+      "src": "https://raw.githubusercontent.com/contacto90minutos-lab/lo-tengo-backend/main/www/icon-512.png",
       "sizes": "512x512",
-      "type": "image/jpeg",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ]
