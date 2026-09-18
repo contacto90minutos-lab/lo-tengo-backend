@@ -321,7 +321,10 @@
     <div id="app-container">
         <div class="header-app">
             <h1><span style="color: var(--primary);">LO</span> TENGO</h1>
-            <span id="header-user-info" style="font-size: 12px; font-weight: 700; background: #F3F4F6; padding: 6px 12px; border-radius: 20px; border: 1px solid var(--card-border);">📍 Montevideo</span>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span id="header-user-info" style="font-size: 12px; font-weight: 700; background: #F3F4F6; padding: 6px 12px; border-radius: 20px; border: 1px solid var(--card-border);">📍 Montevideo</span>
+                <button type="button" onclick="cerrarSesionLoTengo()" style="width: auto; padding: 6px 10px; background: #EF4444; font-size: 11px; margin: 0; box-shadow: none; display: none;" id="btn-salir-header">🚪 Salir</button>
+            </div>
         </div>
         
         <div class="content-body" id="main-content">
@@ -396,6 +399,7 @@
         </div>
     </div>
     <script>
+        const BACKEND_URL = 'https://lo-tengo-backen.onrender.com';
         const CALLES_MONTEVIDEO = [
             "Av. 18 de Julio 1200, Centro",
             "Bv. General Artigas 2500, Tres Cruces",
@@ -426,6 +430,14 @@
             });
         });
 
+        function cerrarSesionLoTengo() {
+            if (confirm("¿Estás seguro de que deseas salir de tu sesión?")) {
+                localStorage.removeItem('lt_sesion_activa');
+                alert("🚪 Sesión finalizada.");
+                window.location.reload();
+            }
+        }
+
         function inicializarDatosDemoSiEsNecesario() {
             let base = JSON.parse(localStorage.getItem('lt_base_empresas')) || [];
             if (base.length === 0) {
@@ -450,7 +462,9 @@
             if (sesion) {
                 try {
                     const usuario = JSON.parse(sesion);
-                    document.getElementById('header-user-info').innerText = `📍 ${usuario.direccion || 'Montevideo'}`;
+                    document.getElementById('header-user-info').innerText = `📍 ${usuario.nombre || usuario.direccion || 'Montevideo'}`;
+                    let btnSalir = document.getElementById('btn-salir-header');
+                    if(btnSalir) btnSalir.style.display = 'inline-block';
                     document.getElementById('bottom-nav').style.display = 'flex';
                     mostrarHome();
                 } catch (e) { console.error(e); }
@@ -968,6 +982,7 @@
             alert(`✅ ¡Pedido confirmado por $${totalFinal}!\n🔑 PIN de seguridad: [ ${nuevoPedido.codigoVerificacion} ]`);
             mostrarPedidosActivos();
         }
+
         function mostrarZonaOutlet() {
             actualizarMenuActivo(1);
             const container = document.getElementById('main-content');
@@ -997,16 +1012,27 @@
                 </div>
             `).join('') || '<p style="text-align:center; color:var(--text-muted); padding:30px;">No hay productos en la Zona Outlet en este momento.</p>';
 
-            container.innerHTML = `
-                <div style="background:var(--outlet-gradient); color:white; padding:20px; border-radius:var(--radius-lg); margin-bottom:20px; box-shadow:var(--shadow-outlet);">
-                    <h3 style="margin:0 0 6px 0; font-size:20px; font-weight:900;">🏷️ Zona Outlet Montevideo</h3>
-                    <p style="margin:0; font-size:13px; opacity:0.95;">Productos seleccionados de comercios aliados a precio rebajado.</p>
-                </div>
-                ${htmlOutlet}
-            `;
+            if(container) {
+                container.innerHTML = `
+                    <div style="background:var(--outlet-gradient); color:white; padding:20px; border-radius:var(--radius-lg); margin-bottom:20px; box-shadow:var(--shadow-outlet);">
+                        <h3 style="margin:0 0 6px 0; font-size:20px; font-weight:900;">🏷️ Zona Outlet Montevideo</h3>
+                        <p style="margin:0; font-size:13px; opacity:0.95;">Productos seleccionados de comercios aliados a precio rebajado.</p>
+                    </div>
+                    ${htmlOutlet}
+                `;
+            }
         }
 
-        let tipoVehiculoSeleccionado = 'moto';
+        function actualizarMenuActivo(index) {
+            document.querySelectorAll('.bottom-nav .nav-item').forEach((btn, idx) => {
+                if (idx === index) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+        }
+    </script>
+</body>
+</html>
+let tipoVehiculoSeleccionado = 'moto';
         let contadorPuntosDestino = 1;
 
         function mostrarFormularioCadeteria() {
@@ -1028,7 +1054,7 @@
                     <div class="vehiculo-card-opcion" id="card-camioneta" onclick="seleccionarVehiculoCadeteria('camioneta')">
                         <div style="font-size:24px; margin-bottom:4px;">🚐</div>
                         <div style="font-size:14px; font-weight:900;">Camioneta</div>
-                        <div style="font-size:11px; color:var(--text-muted);">Base $480 (hasta 5km)</div>
+                        <div style="font-size:11px; color:var(--text-muted);">Base $390 (hasta 10km)</div>
                     </div>
                 </div>
 
@@ -1037,6 +1063,9 @@
 
                 <label>Descripción detallada de la carga o paquete:</label>
                 <input type="text" id="cadDescripcion" placeholder="Ej: Caja mediana frágil / Documentación firmada">
+
+                <label>📸 Foto de la carga (Cámara o Galería):</label>
+                <input type="file" id="cadFotoCarga" accept="image/*" style="margin-bottom: 12px; font-size: 13px; padding: 6px; border: 1.5px solid var(--card-border); border-radius: var(--radius-md); width: 100%; background: #fff;">
 
                 <div id="contenedor-destinos">
                     <label>Destino 1 (Entrega):</label>
@@ -1136,7 +1165,8 @@
                 iframe.src = `https://maps.google.com/maps?q=${queryMapa}&t=&z=13&ie=UTF8&iwloc=&output=embed`;
             }
 
-            let costoBase = tipoVehiculoSeleccionado === 'moto' ? 170 : 480;
+            let costoBase = tipoVehiculoSeleccionado === 'moto' ? 170 : 390;
+            let kmIncluidosBase = tipoVehiculoSeleccionado === 'moto' ? 5 : 10;
             let tarifaKmExtra = tipoVehiculoSeleccionado === 'moto' ? 25 : 35;
             
             let kmTotalEstimado = 0;
@@ -1149,7 +1179,7 @@
             });
 
             kmTotalEstimado = Math.round(kmTotalEstimado * 10) / 10;
-            let kmExcedentes = Math.max(0, Math.ceil(kmTotalEstimado - 5));
+            let kmExcedentes = Math.max(0, Math.ceil(kmTotalEstimado - kmIncluidosBase));
             let adicionalKm = kmExcedentes * tarifaKmExtra;
             
             let conRetorno = document.getElementById('chkRetorno') ? document.getElementById('chkRetorno').checked : false;
@@ -1186,6 +1216,7 @@
         function confirmarCadeteriaExpress() {
             let pa = document.getElementById('cadPuntoA').value;
             let descripcion = document.getElementById('cadDescripcion').value;
+            let inputFoto = document.getElementById('cadFotoCarga');
             let inputsDestino = document.querySelectorAll('.input-destino');
             let destinosValidos = Array.from(inputsDestino).filter(i => i.value.trim().length > 3);
             let sesion = JSON.parse(localStorage.getItem('lt_sesion_activa')) || {};
@@ -1195,161 +1226,76 @@
                 return; 
             }
 
-            let costoBase = tipoVehiculoSeleccionado === 'moto' ? 170 : 480;
-            let tarifaKmExtra = tipoVehiculoSeleccionado === 'moto' ? 25 : 35;
-            let kmTotalEstimado = 0;
-            let origenActual = pa;
-            destinosValidos.forEach((d) => {
-                kmTotalEstimado += estimarDistanciaVialMontevideo(origenActual, d.value);
-                origenActual = d.value;
-            });
+            let procesarPedidoConFoto = (fotoBase64) => {
+                let costoBase = tipoVehiculoSeleccionado === 'moto' ? 170 : 390;
+                let kmIncluidosBase = tipoVehiculoSeleccionado === 'moto' ? 5 : 10;
+                let tarifaKmExtra = tipoVehiculoSeleccionado === 'moto' ? 25 : 35;
+                
+                let kmTotalEstimado = 0;
+                let origenActual = pa;
+                destinosValidos.forEach((d) => {
+                    kmTotalEstimado += estimarDistanciaVialMontevideo(origenActual, d.value);
+                    origenActual = d.value;
+                });
 
-            let kmExcedentes = Math.max(0, Math.ceil(kmTotalEstimado - 5));
-            let adicionalKm = kmExcedentes * tarifaKmExtra;
-            let conRetorno = document.getElementById('chkRetorno').checked;
-            let subtotal = costoBase + adicionalKm;
-            if (conRetorno) subtotal = subtotal * 1.5;
-            let multiEnvioExtra = destinosValidos.length > 1 ? (destinosValidos.length - 1) * 90 : 0;
-            let totalEnvio = Math.round(subtotal + multiEnvioExtra);
+                let kmExcedentes = Math.max(0, Math.ceil(kmTotalEstimado - kmIncluidosBase));
+                let adicionalKm = kmExcedentes * tarifaKmExtra;
+                let conRetorno = document.getElementById('chkRetorno').checked;
+                let subtotal = costoBase + adicionalKm;
+                if (conRetorno) subtotal = subtotal * 1.5;
+                let multiEnvioExtra = destinosValidos.length > 1 ? (destinosValidos.length - 1) * 90 : 0;
+                let totalEnvio = Math.round(subtotal + multiEnvioExtra);
 
-            if (tipoVehiculoSeleccionado === 'moto' && totalEnvio < 290) {
-                totalEnvio = 290;
-            }
-
-            let primerDestino = destinosValidos[0].value;
-
-            let nuevoPedido = {
-                id: Date.now(),
-                cliente: sesion.nombre || 'Cliente Particular',
-                telefonoCliente: sesion.telefono || '099000000',
-                direccion: primerDestino,
-                formaPago: 'mercadopago',
-                total: totalEnvio,
-                estado: 'En Preparación',
-                estadoFondo: 'Retenido 48hs (Garantía)',
-                descripcion: `Cadetería (${tipoVehiculoSeleccionado}) - ${descripcion} [${destinosValidos.length} destinos${conRetorno ? ', Con Retorno' : ''}]`,
-                items: [{ nombre: `Envío (${tipoVehiculoSeleccionado})`, precio: totalEnvio, cantidad: 1 }],
-                codigoVerificacion: Math.floor(1000 + Math.random() * 9000).toString(),
-                tiempoInicioEstado: Date.now(),
-                cadeteAsignado: {
-                    nombre: "Mathías Silva",
-                    telefono: "099888777",
-                    calificacion: "4.9 ⭐",
-                    vehiculo: tipoVehiculoSeleccionado === 'moto' ? "Moto Honda CG 125" : "Camioneta Fiat Fiorino Blanca",
-                    matricula: "SDA 4512",
-                    foto: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80"
+                if (tipoVehiculoSeleccionado === 'moto' && totalEnvio < 290) {
+                    totalEnvio = 290;
                 }
+
+                let primerDestino = destinosValidos[0].value;
+
+                let nuevoPedido = {
+                    id: Date.now(),
+                    cliente: sesion.nombre || 'Cliente Particular',
+                    telefonoCliente: sesion.telefono || '099000000',
+                    direccion: primerDestino,
+                    formaPago: 'mercadopago',
+                    total: totalEnvio,
+                    estado: 'En Preparación',
+                    estadoFondo: 'Retenido 48hs (Garantía)',
+                    descripcion: `Cadetería (${tipoVehiculoSeleccionado}) - ${descripcion} [${destinosValidos.length} destinos${conRetorno ? ', Con Retorno' : ''}]`,
+                    fotoCarga: fotoBase64 || null,
+                    items: [{ nombre: `Envío (${tipoVehiculoSeleccionado})`, precio: totalEnvio, cantidad: 1 }],
+                    codigoVerificacion: Math.floor(1000 + Math.random() * 9000).toString(),
+                    tiempoInicioEstado: Date.now(),
+                    cadeteAsignado: {
+                        nombre: "Mathías Silva",
+                        telefono: "099888777",
+                        calificacion: "4.9 ⭐",
+                        vehiculo: tipoVehiculoSeleccionado === 'moto' ? "Moto Honda CG 125" : "Camioneta Fiat Fiorino Blanca",
+                        matricula: "SDA 4512",
+                        foto: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80"
+                    }
+                };
+
+                let base = JSON.parse(localStorage.getItem('lt_base_empresas')) || [];
+                if (base.length === 0) { alert("⚠️ Configurar central primero."); return; }
+                let central = base[0];
+                if (!central.pedidos) central.pedidos = [];
+                central.pedidos.push(nuevoPedido);
+                
+                localStorage.setItem('lt_base_empresas', JSON.stringify(base));
+                window.dispatchEvent(new Event('storage'));
+
+                alert(`✅ ¡Cadetería solicitada y conectada con el cadete por $${totalEnvio}!\n🔑 PIN obligatorio: [ ${nuevoPedido.codigoVerificacion} ]`);
+                mostrarPedidosActivos();
             };
 
-            let base = JSON.parse(localStorage.getItem('lt_base_empresas')) || [];
-            if (base.length === 0) { alert("⚠️ Configurar central primero."); return; }
-            let central = base[0];
-            if (!central.pedidos) central.pedidos = [];
-            central.pedidos.push(nuevoPedido);
-            
-            localStorage.setItem('lt_base_empresas', JSON.stringify(base));
-            window.dispatchEvent(new Event('storage'));
-
-            alert(`✅ ¡Cadetería solicitada y conectada con el cadete por $${totalEnvio}!\n🔑 PIN obligatorio: [ ${nuevoPedido.codigoVerificacion} ]`);
-            mostrarPedidosActivos();
-        }
-
-        function mostrarPedidosActivos() {
-            actualizarMenuActivo(3);
-            renderizarListaPedidos();
-        }
-
-        function renderizarListaPedidos() {
-            const container = document.getElementById('main-content');
-            let base = JSON.parse(localStorage.getItem('lt_base_empresas')) || [];
-            let misPedidos = [];
-            let sesion = JSON.parse(localStorage.getItem('lt_sesion_activa')) || {};
-
-            base.forEach(emp => {
-                (emp.pedidos || []).forEach(p => {
-                    if (p.cliente === sesion.nombre) misPedidos.push({ ...p, empresaNombre: emp.nombre });
-                });
-            });
-
-            misPedidos.sort((a, b) => b.id - a.id);
-
-            let html = misPedidos.map(p => {
-                let estadoActual = p.estado || 'En Preparación';
-                let claseEstado = 'estado-recibido';
-                if (estadoActual === 'En Preparación') claseEstado = 'estado-proceso';
-                if (estadoActual.includes('Listo')) claseEstado = 'estado-pronto';
-                if (estadoActual === 'En Camino') claseEstado = 'estado-camino';
-
-                let itemsTexto = (p.items || []).map(i => `${i.cantidad}x ${i.nombre}`).join(', ');
-
-                let carnetCadeteHTML = '';
-                if (p.cadeteAsignado) {
-                    let c = p.cadeteAsignado;
-                    carnetCadeteHTML = `
-                        <div style="background:#F0FDF4; border:1.5px solid #86EFAC; border-radius:var(--radius-md); padding:14px; margin-top:12px;">
-                            <div style="font-size:11px; font-weight:800; color:#166534; text-transform:uppercase; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
-                                <span>🪪 CREDENCIAL DE CADETE ASIGNADO</span>
-                                <span style="background:#22C55E; color:#fff; padding:2px 6px; border-radius:4px; font-size:10px;">${c.calificacion}</span>
-                            </div>
-                            <div style="display:flex; align-items:center; gap:12px;">
-                                <img src="${c.foto}" style="width:55px; height:55px; border-radius:50%; object-fit:cover; border:2px solid #22C55E;" alt="${c.nombre}">
-                                <div style="flex:1;">
-                                    <h5 style="margin:0 0 2px 0; font-size:15px; font-weight:900; color:#14532D;">${c.nombre}</h5>
-                                    <p style="margin:0; font-size:12px; color:#166534;">🏍️ ${c.vehiculo} • <b>Chapa: ${c.matricula}</b></p>
-                                </div>
-                                <a href="https://wa.me/598${c.telefono}" target="_blank" style="background:#25D366; color:#fff; padding:8px 12px; border-radius:var(--radius-md); text-decoration:none; font-size:12px; font-weight:800; display:flex; align-items:center; gap:4px;">💬 Chat</a>
-                            </div>
-                        </div>
-                    `;
-                }
-
-                let mapaTiempoRealHTML = `
-                    <div style="margin-top:12px;">
-                        <label style="font-size:11px; margin-bottom:4px; color:var(--primary); display:block; font-weight:700;">🗺️ Rastreo en tiempo real (Montevideo):</label>
-                        <div class="mapa-preview-container" style="height:140px; border-radius:var(--radius-md); overflow:hidden; border: 1.5px solid var(--card-border);">
-                            <iframe src="https://maps.google.com/maps?q=${encodeURIComponent(p.direccion + ', Montevideo')}&t=&z=14&ie=UTF8&iwloc=&output=embed" style="width:100%; height:100%; border:0;" allowfullscreen></iframe>
-                        </div>
-                    </div>
-                `;
-
-                return `
-                    <div class="comercio-card" style="display:block; border-left: 5px solid var(--primary); margin-bottom: 14px;">
-                        <div style="display:flex; justify-content:space-between; margin-bottom:8px; align-items:center;">
-                            <strong style="color:var(--text-main); font-size:14px; font-weight:900;">Pedido #${p.id.toString().slice(-4)}</strong>
-                            <span class="badge-estado ${claseEstado}">${estadoActual}</span>
-                        </div>
-                        <p style="margin:4px 0; font-size:13px; color:var(--text-muted);">🏪 Local/Servicio: <b>${p.empresaNombre}</b></p>
-                        <p style="margin:4px 0; font-size:13px; color:var(--text-muted);">📍 Destino: <b>${p.direccion}</b></p>
-                        <p style="margin:4px 0; font-size:13px; color:var(--text-muted);">📦 ${itemsTexto}</p>
-                        ${p.descripcion ? `<p style="margin:4px 0; font-size:12px; color:var(--primary);">📝 <b>Detalle:</b> ${p.descripcion}</p>` : ''}
-                        <p style="margin:4px 0; font-size:13px; color:var(--text-muted);">💳 Total pagado: <b>$${p.total}</b></p>
-                        
-                        ${carnetCadeteHTML}
-                        ${mapaTiempoRealHTML}
-
-                        <div style="background:#FFF7ED; padding:12px; border-radius:var(--radius-md); text-align:center; margin-top:12px; border: 1.5px solid #FDBA74;">
-                            <span style="font-size:12px; color:#C2410C; font-weight:700;">🔑 PIN de seguridad para entregar al cadete:</span>
-                            <div style="font-size:22px; font-weight:900; color:#C2410C; letter-spacing:2px; margin-top:4px;">${p.codigoVerificacion}</div>
-                            <div style="font-size:11px; color:#9A3412; margin-top:6px;">⚠️ <i>Recuerde que la entrega se realiza al pie del edificio o puerta de calle.</i></div>
-                        </div>
-                    </div>
-                `;
-            }).join('') || '<p style="text-align:center; color:var(--text-muted); margin-top:40px;">No tenés pedidos activos.</p>';
-
-            if(container) {
-                container.innerHTML = `
-                    <h3 style="color:var(--text-main); margin-top:0; font-size:20px; font-weight:900;">📦 Mis Pedidos y Seguimiento</h3>
-                    <div id="contenedor-cards-pedidos">${html}</div>
-                `;
+            if (inputFoto && inputFoto.files && inputFoto.files[0]) {
+                let reader = new FileReader();
+                reader.onload = function(e) {
+                    procesarPedidoConFoto(e.target.result);
+                };
+                reader.readAsDataURL(inputFoto.files[0]);
+            } else {
+                procesarPedidoConFoto(null);
             }
         }
-
-        function actualizarMenuActivo(index) {
-            document.querySelectorAll('.bottom-nav .nav-item').forEach((btn, idx) => {
-                if (idx === index) btn.classList.add('active');
-                else btn.classList.remove('active');
-            });
-        }
-    </script>
-</body>
-</html>
