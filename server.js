@@ -6,6 +6,12 @@ const { MercadoPagoConfig, Preference } = require('mercadopago');
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(express.static(__dirname));
+
+// Endpoint explícito para asegurar que el manifiesto se sirva correctamente sin errores
+app.get('/manifest.json', (req, res) => {
+    res.sendFile(path.join(__dirname, 'manifest.json'));
+});
 
 // Token de prueba de Mercado Pago
 const MP_ACCESS_TOKEN = process.env.MP_ACCESS_TOKEN || "TEST-8144547530007879-060322-e0ded8a3c392321664c7768317956d1f-138917132";
