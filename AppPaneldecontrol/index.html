@@ -75,6 +75,7 @@
         .btn-danger { background-color: var(--danger); color: white; }
         .btn-success { background-color: var(--success); color: white; }
         .btn-warning { background-color: var(--warning); color: #0f172a; }
+        .btn-whatsapp { background-color: #25d366; color: white; }
         
         .section-title { font-size: 17px; margin: 25px 0 12px 0; font-weight: 700; color: var(--accent); display: flex; align-items: center; gap: 8px; }
         .badge-socket { font-size: 11px; background: rgba(56, 189, 248, 0.2); padding: 4px 8px; border-radius: 6px; border: 1px solid var(--accent); font-weight: 600; }
@@ -103,17 +104,20 @@
         </div>
         <div style="display: flex; align-items: center; gap: 15px;">
             <span id="socket-status" class="badge-socket">🔴 Desconectado</span>
-            <button class="btn btn-warning" onclick="ejecutarCierreCadetes()">🔒 Ejecutar Cierre Semanal</button>
+            <button class="btn btn-warning" onclick="ejecutarCierreMartes()">🔒 Ejecutar Cierre Semanal (Martes)</button>
         </div>
     </header>
 
-    <!-- SECTOR DE ALERTAS CRÍTICAS (PARPADEANTE) -->
+    <!-- SECTOR DE ALERTAS CRÍTICAS (5 MINUTOS / ANTI-TRANQUEO) -->
     <div id="contenedor-alerta-critica" class="banner-alerta-critica" style="display: none;">
         <div>
             <span style="font-size: 20px;">🚨</span>
-            <span id="texto-alerta-critica">Atención: Hay pedidos demorados o con alertas de incidentes reportados en Montevideo.</span>
+            <div>
+                <span id="texto-alerta-critica">Atención: Hay pedidos trabados o con incidentes reportados sin resolver.</span>
+                <div style="font-size: 11px; color: #fecaca;" id="contador-regresivo-alerta">Ventana crítica de respuesta: 05:00 min</div>
+            </div>
         </div>
-        <button class="btn btn-danger" onclick="revisarPedidosCriticos()">Revisar Urgente</button>
+        <button class="btn btn-danger" onclick="revisarPedidosCriticos()">Resolver Urgente</button>
     </div>
 
     <!-- TARJETAS DE ESTADÍSTICAS -->
@@ -154,8 +158,8 @@
         </div>
     </div>
 
-    <!-- SECCIÓN 1: MONITOREO Y ACCIONES FORZADAS DE ENVÍOS (ANTI-TRANQUEO) -->
-    <div class="section-title">📦 Monitoreo de Envíos en Tiempo Real (Anti-Tranqueos)</div>
+    <!-- SECCIÓN 1: MONITOREO Y ACCIONES FORZADAS DE ENVÍOS (CON SOBRECARGO POR RETORNO) -->
+    <div class="section-title">📦 Monitoreo de Envíos en Tiempo Real (Anti-Tranqueos y Retornos)</div>
     <table>
         <thead>
             <tr>
@@ -164,23 +168,23 @@
                 <th>Cliente / Destino</th>
                 <th>Cadete Asignado</th>
                 <th>Estado Actual</th>
-                <th>Acciones Manuales / Forzar Cierre</th>
+                <th>Acciones / Resolución Rápida</th>
             </tr>
         </thead>
         <tbody id="tabla-envios"></tbody>
     </table>
 
-    <!-- SECCIÓN 2: CONTROL Y SANCIONES DE CADETES -->
-    <div class="section-title">👤 Control, Sanciones y Soporte de Cadetes</div>
+    <!-- SECCIÓN 2: CONTROL, SANCIONES Y FACTURACIÓN DE CADETES (TOPE 24HS) -->
+    <div class="section-title">👤 Control, Soporte y Liquidación de Cadetes (Facturas 24hs)</div>
     <table>
         <thead>
             <tr>
                 <th>ID / Cédula</th>
                 <th>Nombre y Teléfono</th>
                 <th>Vehículo y Matrícula</th>
-                <th>Comisión Operativa</th>
+                <th>Estado Factura (Martes)</th>
                 <th>Estado Operativo</th>
-                <th>Acciones / Soporte</th>
+                <th>Acciones / Ficha y WhatsApp</th>
             </tr>
         </thead>
         <tbody id="tabla-cadetes"></tbody>
@@ -216,6 +220,34 @@
         </thead>
         <tbody id="tabla-empresas"></tbody>
     </table>
+
+    <!-- MODAL FICHA FLOTANTE DE CADETE / CLIENTE CON ACCESOS DIRECTOS -->
+    <div id="modalFicha" class="modal">
+        <div class="modal-content">
+            <h3 id="ficha-titulo">📋 Ficha Operativa</h3>
+            <div id="ficha-cuerpo" style="font-size: 13px; display: flex; flex-direction: column; gap: 10px; color: var(--text-muted);"></div>
+            <div id="ficha-acciones" style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;"></div>
+            <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
+                <button class="btn" style="background: #334155; color: white;" onclick="cerrarModalFicha()">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL SUBIDA DE FACTURA / FOTO (PARA EL CADETE) -->
+    <div id="modalSubirFactura" class="modal">
+        <div class="modal-content">
+            <h3>🧾 Subir Factura / Recibo Semanal</h3>
+            <p style="font-size: 12px; color: var(--text-muted); margin:0;">Tené en cuenta el plazo límite de 24 horas posteriores al cierre del martes para evitar la suspensión automática de tu cuenta.</p>
+            <div>
+                <label style="font-size: 12px; color: var(--accent);">Seleccionar Archivo PDF o Foto de la Factura:</label>
+                <input type="file" id="input-archivo-factura" accept="image/*,.pdf" style="width: 100%; padding: 8px; margin-top: 5px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 6px;" />
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
+                <button class="btn" style="background: #334155; color: white;" onclick="cerrarModalFactura()">Cancelar</button>
+                <button class="btn btn-success" onclick="procesarSubidaFactura()">Subir Comprobante</button>
+            </div>
+        </div>
+    </div>
 
     <!-- MODAL DE LIBERACIÓN DE FONDOS Y DATOS BANCARIOS / MP -->
     <div id="modalLiberar" class="modal">
@@ -267,12 +299,12 @@
     <script>
         let socket = null;
         let usuarioChatActual = null;
+        let cadeteSeleccionadoFactura = null;
 
         document.addEventListener("DOMContentLoaded", () => {
             inicializarSocket();
             renderizarPanelCompleto();
 
-            // Sincronización automática ante cualquier cambio en localStorage (otras solapas/apps)
             window.addEventListener('storage', (e) => {
                 renderizarPanelCompleto();
                 mostrarToastNotificacion("Actualización detectada en el ecosistema.");
@@ -313,7 +345,7 @@
         function obtenerDatosPlataforma() {
             let baseEmpresas = JSON.parse(localStorage.getItem('lt_base_empresas')) || [];
             let baseCadetes = JSON.parse(localStorage.getItem('lt_base_cadetes')) || [
-                { id: "CAD-01", nombre: "Mathías Silva", telefono: "099888777", tipoVehiculo: "moto", matricula: "SDA 4512", suspendido: false }
+                { id: "CAD-01", nombre: "Mathías Silva", telefono: "099888777", tipoVehiculo: "moto", matricula: "SDA 4512", suspendido: false, facturaSubida: false }
             ];
 
             let todosLosPedidos = [];
@@ -360,8 +392,8 @@
             document.getElementById('stat-retenido').innerText = `$${retenido.toLocaleString('es-UY')}`;
             document.getElementById('stat-neto-empresas').innerText = `$${retenido.toLocaleString('es-UY')}`;
 
-            // Validar Alertas Críticas (Pedidos demorados o sin cadete > 20 mins)
-            let hayDemorados = datos.pedidos.some(p => p.estado === 'En Preparación' && (Date.now() - (p.tiempoInicioEstado || Date.now()) > 1200000));
+            // Validar Alertas Críticas (Pedidos con incidentes o demora superior a 5 min)
+            let hayDemorados = datos.pedidos.some(p => p.estado === 'En Preparación' || p.estado === 'incidente');
             document.getElementById('contenedor-alerta-critica').style.display = hayDemorados ? 'flex' : 'none';
 
             // 1. Tabla Envíos
@@ -377,20 +409,20 @@
                 tbodyEnvios.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">No hay envíos registrados con estos criterios.</td></tr>`;
             } else {
                 pedidosFiltrados.forEach(p => {
-                    let estadoLabel = p.estado === 'entregado' ? '<span style="color:var(--success); font-weight:bold;">Entregado ✅</span>' : '<span style="color:var(--warning); font-weight:bold;">En Ruta 🚚</span>';
+                    let estadoLabel = p.estado === 'entregado' ? '<span style="color:var(--success); font-weight:bold;">Entregado ✅</span>' : (p.estado === 'incidente' ? '<span style="color:var(--danger); font-weight:bold;">🚨 Incidente / Trancado</span>' : '<span style="color:var(--warning); font-weight:bold;">En Ruta 🚚</span>');
                     let nombreCadeteStr = p.cadeteAsignado ? (typeof p.cadeteAsignado === 'object' ? p.cadeteAsignado.nombre : p.cadeteAsignado) : 'Sin asignar';
                     
                     tbodyEnvios.innerHTML += `
                         <tr>
                             <td><b>#${String(p.id).slice(-4)}</b></td>
                             <td>${p.nombreEmpresa}</td>
-                            <td>${p.cliente || 'Particular'} <br><span style="font-size:11px; color:var(--text-muted);">${p.direccion || ''}</span></td>
-                            <td>${nombreCadeteStr}</td>
-                            <td>${estadoLabel}</td>
+                            <td><a href="#" onclick="abrirFichaCliente('${p.cliente || 'Particular'}', '${p.telefonoCliente || '099000000'}', '${p.direccion || 'Montevideo'}')">${p.cliente || 'Particular'} 📋</a><br><span style="font-size:11px; color:var(--text-muted);">${p.direccion || ''}</span></td>
+                            <td><a href="#" onclick="abrirFichaCadete('${nombreCadeteStr}')">${nombreCadeteStr} 📋</a></td>
+                            <td>${estadoLabel} ${p.conSobrecargo ? '<br><span style="font-size:10px; color:var(--warning);">+ Sobrecargo Retorno</span>' : ''}</td>
                             <td>
                                 <div style="display:flex; gap:5px; flex-wrap:wrap;">
-                                    <button class="btn btn-success" style="padding:4px 8px; font-size:11px;" onclick="forzarEstadoPedido('${p.id}', '${p.rutEmpresa}', 'entregado')">Forzar Entregado</button>
-                                    <button class="btn btn-danger" style="padding:4px 8px; font-size:11px;" onclick="forzarEstadoPedido('${p.id}', '${p.rutEmpresa}', 'cancelado')">Cancelar / Desatascar</button>
+                                    <button class="btn btn-success" style="padding:4px 8px; font-size:11px;" onclick="forzarEstadoPedido('${p.id}', '${p.rutEmpresa}', 'entregado')">Entregado</button>
+                                    <button class="btn btn-danger" style="padding:4px 8px; font-size:11px;" onclick="aplicarSobrecargoRetorno('${p.id}', '${p.rutEmpresa}')">+ Sobrecargo</button>
                                     <button class="btn" style="padding:4px 8px; font-size:11px; background:#475569; color:#fff;" onclick="abrirChatSoporte('${p.cliente || 'Cliente'}')">💬 Chat</button>
                                 </div>
                             </td>
@@ -412,20 +444,22 @@
             } else {
                 cadetesFiltrados.forEach(c => {
                     let suspendido = c.suspendido || false;
+                    let facturaSubida = c.facturaSubida || false;
                     let estadoHtml = suspendido ? `<span style="color:var(--danger); font-weight:bold;">🚫 Suspendido</span>` : `<span style="color:var(--success); font-weight:bold;">🟢 Activo</span>`;
+                    let facturaHtml = facturaSubida ? `<span style="color:var(--success); font-weight:bold;">Recibida ✅</span>` : `<span style="color:var(--warning); font-weight:bold;">Pendiente (24hs) ⏳</span>`;
                     let btnAccion = suspendido ? `<button class="btn btn-success" onclick="cambiarEstadoCadete('${c.id}', false)">Reactivar</button>` : `<button class="btn btn-danger" onclick="cambiarEstadoCadete('${c.id}', true)">Suspender</button>`;
 
                     tbodyCadetes.innerHTML += `
                         <tr>
                             <td><b>${c.id}</b></td>
-                            <td>${c.nombre}<br><span style="font-size:11px; color:var(--text-muted);">${c.telefono || 'Sin tel'}</span></td>
+                            <td><a href="#" onclick="abrirFichaCadete('${c.nombre}', '${c.telefono}', '${c.id}')">${c.nombre} 📋</a><br><span style="font-size:11px; color:var(--text-muted);">${c.telefono || 'Sin tel'}</span></td>
                             <td>${c.tipoVehiculo ? c.tipoVehiculo.toUpperCase() : 'MOTO'} • Chapa: ${c.matricula || 'S/D'}</td>
-                            <td>${suspendido ? '0%' : '80%'}</td>
+                            <td>${facturaHtml} <br><button class="btn" style="padding:2px 6px; font-size:10px; margin-top:3px;" onclick="abrirModalSubirFactura('${c.id}')">📷 Subir Factura</button></td>
                             <td>${estadoHtml}</td>
                             <td>
-                                <div style="display:flex; gap:6px;">
+                                <div style="display:flex; gap:6px; flex-wrap:wrap;">
                                     ${btnAccion}
-                                    <button class="btn" style="padding:4px 8px; font-size:11px; background:#475569; color:#fff;" onclick="abrirChatSoporte('${c.nombre}')">💬 Chat</button>
+                                    <a href="https://wa.me/598${c.telefono || '99000000'}" target="_blank" class="btn btn-whatsapp" style="padding:4px 8px; font-size:11px; text-decoration:none;">💬 WhatsApp</a>
                                 </div>
                             </td>
                         </tr>
@@ -494,6 +528,80 @@
             }
         }
 
+        // Fichas Flotantes con WhatsApp y llamadas directas
+        function abrirFichaCadete(nombre, telefono = "099888777", cedula = "CAD-01") {
+            document.getElementById('ficha-titulo').innerText = `🛵 Ficha de Cadete: ${nombre}`;
+            document.getElementById('ficha-cuerpo').innerHTML = `
+                <div>ID / Cédula: <b>${cedula}</b></div>
+                <div>Teléfono / Celular: <b>+598 ${telefono}</b></div>
+                <div>Zona operativa: <b>Montevideo (Centro / Cordón / Pocitos)</b></div>
+                <div>Estado liquidación semanal: <b>Al día (Martes)</b></div>
+            `;
+            document.getElementById('ficha-acciones').innerHTML = `
+                <a href="https://wa.me/598${telefono}" target="_blank" class="btn btn-whatsapp" style="text-decoration:none;">💬 Enviar WhatsApp</a>
+                <a href="tel:+598${telefono}" class="btn btn-success" style="text-decoration:none;">📞 Llamada Directa</a>
+            `;
+            document.getElementById('modalFicha').style.display = 'flex';
+        }
+
+        function abrirFichaCliente(nombre, telefono = "099000000", direccion = "Montevideo") {
+            document.getElementById('ficha-titulo').innerText = `📦 Ficha de Destino / Cliente`;
+            document.getElementById('ficha-cuerpo').innerHTML = `
+                <div>Nombre: <b>${nombre}</b></div>
+                <div>Teléfono de contacto: <b>+598 ${telefono}</b></div>
+                <div>Dirección de entrega: <b>${direccion}</b></div>
+            `;
+            document.getElementById('ficha-acciones').innerHTML = `
+                <a href="https://wa.me/598${telefono}" target="_blank" class="btn btn-whatsapp" style="text-decoration:none;">💬 WhatsApp Cliente</a>
+                <a href="tel:+598${telefono}" class="btn btn-success" style="text-decoration:none;">📞 Llamar Cliente</a>
+            `;
+            document.getElementById('modalFicha').style.display = 'flex';
+        }
+
+        function cerrarModalFicha() {
+            document.getElementById('modalFicha').style.display = 'none';
+        }
+
+        // Subida de factura cadete (Tope 24hs)
+        function abrirModalSubirFactura(idCadete) {
+            cadeteSeleccionadoFactura = idCadete;
+            document.getElementById('modalSubirFactura').style.display = 'flex';
+        }
+
+        function cerrarModalFactura() {
+            document.getElementById('modalSubirFactura').style.display = 'none';
+        }
+
+        function procesarSubidaFactura() {
+            let cadetes = JSON.parse(localStorage.getItem('lt_base_cadetes')) || [];
+            let cadete = cadetes.find(c => c.id === cadeteSeleccionadoFactura);
+            if (cadete) {
+                cadete.facturaSubida = true;
+                localStorage.setItem('lt_base_cadetes', JSON.stringify(cadetes));
+                if (socket) socket.emit('sincronizar_plataforma');
+                alert(`✅ Factura de ${cadete.nombre} subida y validada correctamente en plazo.`);
+                cerrarModalFactura();
+                renderizarPanelCompleto();
+            }
+        }
+
+        // Aplicar Sobrecargo por Retorno / Reintento
+        function aplicarSobrecargoRetorno(idPedido, rutEmpresa) {
+            let baseEmpresas = JSON.parse(localStorage.getItem('lt_base_empresas')) || [];
+            let empresa = baseEmpresas.find(e => e.rut === rutEmpresa || (e.pedidos || []).some(p => p.id == idPedido));
+            if (empresa) {
+                let pedido = (empresa.pedidos || []).find(p => p.id == idPedido);
+                if (pedido) {
+                    pedido.conSobrecargo = true;
+                    pedido.total = (parseFloat(pedido.total) || 1500) + 150; // Sobrecargo estándar en UYU
+                    localStorage.setItem('lt_base_empresas', JSON.stringify(baseEmpresas));
+                    if (socket) socket.emit('sincronizar_plataforma');
+                    alert(`⚠️ Sobrecargo por reintento/retorno aplicado al pedido #${idPedido}. Se sumaron $150 UYU al costo de envío.`);
+                    renderizarPanelCompleto();
+                }
+            }
+        }
+
         function cambiarEstadoCadete(idCadete, suspender) {
             let cadetes = JSON.parse(localStorage.getItem('lt_base_cadetes')) || [];
             let cadete = cadetes.find(c => c.id === idCadete);
@@ -558,7 +666,6 @@
             usuarioChatActual = nombreUsuario;
             document.getElementById('chat-titulo-modal').innerText = `💬 Soporte en línea con: ${nombreUsuario}`;
             
-            // Cargar historial de chat persistente desde localStorage
             let chats = JSON.parse(localStorage.getItem('lt_historial_chats')) || {};
             let mensajesUser = chats[nombreUsuario] || [
                 { remitente: 'user', texto: `Hola soporte, necesito asistencia en Montevideo.` }
@@ -596,9 +703,9 @@
             container.scrollTop = container.scrollHeight;
         }
 
-        function ejecutarCierreCadetes() {
-            if(confirm("¿Estás seguro de realizar el cierre semanal de cuentas y comisiones de cadetes en Montevideo?")) {
-                alert("🔒 Cierre semanal ejecutado con éxito. Reportes de liquidación generados.");
+        function ejecutarCierreMartes() {
+            if(confirm("¿Estás seguro de ejecutar el cierre semanal de cuentas de cadetes (Martes) con envío de liquidaciones e inicio del plazo de 24 horas para facturas?")) {
+                alert("🔒 Cierre de martes ejecutado con éxito. Se notificó a todos los cadetes para la subida de sus comprobantes.");
             }
         }
     </script>

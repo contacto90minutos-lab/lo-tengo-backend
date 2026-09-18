@@ -10,6 +10,7 @@
             --secondary: #E85B04;
             --success: #28a745;
             --warning: #ffc107;
+            --danger: #dc3545;
             --bg-light: #f8f9fa;
             --border: #e5e7eb;
             --radius: 14px;
@@ -138,6 +139,19 @@
             align-items: center;
         }
 
+        .terms-box {
+            font-size: 11px;
+            max-height: 110px;
+            overflow-y: auto;
+            background: #f1f1f1;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            color: #555;
+            border: 1px solid var(--border);
+            line-height: 1.4;
+        }
+
         .bottom-nav {
             position: absolute;
             bottom: 0;
@@ -207,7 +221,7 @@
                 </div>
             </div>
 
-            <!-- Registro de Empresas Actualizado -->
+            <!-- Registro de Empresas Actualizado con Términos y Datos Bancarios -->
             <div id="screen-registro-empresa" style="display: none;">
                 <h3 style="color: var(--primary); margin-top: 0;">Registro de Local</h3>
                 
@@ -244,7 +258,7 @@
                 <label>Logo de la Empresa (Cámara o Archivo):</label>
                 <input type="file" id="regEmpLogoFile" accept="image/*" capture="environment">
 
-                <label>Correo Electrónico:</label>
+                <label>Correo Electrónico (para reenvío de facturas):</label>
                 <input type="email" id="regEmpEmail" placeholder="contacto@comercio.com">
 
                 <label>Teléfono de Contacto:</label>
@@ -256,8 +270,31 @@
                 <label>Dirección de Retiro de Productos (Depósito / Local):</label>
                 <input type="text" id="regEmpDirRetiro" placeholder="Depósito trasero / Mismo local">
 
+                <label>Datos Bancarios (BROU / Cuenta para liquidaciones):</label>
+                <input type="text" id="regEmpBanco" placeholder="Número de cuenta / Banco o CBU">
+
+                <!-- Horarios Operativos -->
+                <div style="display: flex; gap: 10px;">
+                    <div style="flex:1;"><label>Apertura:</label><input type="time" id="regEmpHoraApertura" value="10:00"></div>
+                    <div style="flex:1;"><label>Cierre:</label><input type="time" id="regEmpHoraCierre" value="23:00"></div>
+                </div>
+
                 <label>Contraseña:</label>
                 <input type="password" id="regEmpPass" placeholder="Contraseña de acceso">
+
+                <!-- Términos y Condiciones Operativos -->
+                <label style="margin-top: 10px;">Términos y Condiciones del Servicio:</label>
+                <div class="terms-box">
+                    • <b>Garantía y Responsabilidad:</b> La garantía de los productos comercializados corresponde de manera directa al comercio que efectúa la venta.<br>
+                    • <b>Facturación:</b> El comercio emite y reenvía la factura digital a LO TENGO para su distribución automática al correo del cliente final.<br>
+                    • <b>Corte Operativo de Pedidos:</b> Gastronomía realiza corte automático 25 minutos antes del cierre. El resto de los rubros efectúa corte 2 horas antes del cierre del local.<br>
+                    • <b>Liquidaciones:</b> Semanales mediante transferencia bancaria configurada, aplicando la comisión vigente acordada.
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 8px; margin: 10px 0;">
+                    <input type="checkbox" id="regTerminosCheck" style="width: auto; margin: 0;">
+                    <label for="regTerminosCheck" style="font-size: 12px; color: #555; margin: 0; cursor: pointer;">Acepto los términos, condiciones y normativas operativas.</label>
+                </div>
 
                 <button type="button" onclick="completarRegistroEmpresa()" style="background: var(--success); margin-top: 6px;">Crear Cuenta Empresa</button>
                 <button type="button" onclick="irLoginEmpresa()" class="link-btn" style="width:100%; text-align:center;">Volver al login</button>
@@ -275,7 +312,7 @@
         </div>
     </div>
 
-    <!-- Script Completo Sincronizado y Actualizado para el Panel de Empresas -->
+    <!-- Script Completo Sincronizado -->
     <script>
         let temporizadoresGlobales = {};
         let ultimoHashPedidos = "";
@@ -285,7 +322,7 @@
             verificarSesionEmpresa();
             configurarEventosLoginEmpresa();
             
-            // Sincronización automática cada 2 segundos
+            // Sincronización automática de pedidos cada 2 segundos
             setInterval(() => {
                 let sesion = localStorage.getItem('lt_sesion_empresa');
                 if (sesion) {
@@ -307,7 +344,7 @@
                 }
             }, 2000);
 
-            window.addEventListener('storage', (e) => {
+            window.addEventListener('storage', () => {
                 let emp = obtenerEmpresaActualizada();
                 if (emp) {
                     actualizarContadorPedidosBadge(emp.rut || emp.nombre);
@@ -335,6 +372,7 @@
                         direccion: 'Bulevar Artigas 4521',
                         direccionRetiro: 'Bulevar Artigas 4521',
                         email: 'mono@hamburguesas.com',
+                        banco: 'BROU CA 001234567',
                         password: '123',
                         productos: [
                             { id: 1, nombre: 'Hamburguesa Doble Cheddar Real', precio: 380, stock: 25, enOutlet: false, descuento: 0, imagen: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=400&q=80' }
@@ -452,8 +490,15 @@
             let telefono = document.getElementById('regEmpTel').value.trim();
             let direccionFiscal = document.getElementById('regEmpDirFiscal').value.trim();
             let direccionRetiro = document.getElementById('regEmpDirRetiro').value.trim();
+            let banco = document.getElementById('regEmpBanco').value.trim();
             let password = document.getElementById('regEmpPass').value.trim();
+            let terminosAceptados = document.getElementById('regTerminosCheck').checked;
             let fileInput = document.getElementById('regEmpLogoFile');
+
+            if (!terminosAceptados) {
+                alert("⚠️ Debes aceptar los Términos y Condiciones del Servicio para registrarte.");
+                return;
+            }
 
             if (giro === 'Otro' && nuevoRubroTexto) {
                 giro = nuevoRubroTexto;
@@ -474,6 +519,7 @@
                 giro,
                 email,
                 telefono,
+                banco,
                 direccion: direccionFiscal || 'Montevideo',
                 direccionRetiro: direccionRetiro || direccionFiscal || 'Montevideo',
                 password,
@@ -614,10 +660,15 @@
                 <div style="background:#fff; border:1px solid var(--border); padding:15px; border-radius:var(--radius); margin-bottom:15px;">
                     <h4 style="margin:0 0 10px 0; color:var(--primary); font-size:14px;">Agregar Nuevo Artículo</h4>
                     
-                    <input type="text" id="nuevoProdNombre" placeholder="Nombre del producto o artículo">
+                    <input type="text" id="nuevoProdNombre" placeholder="Nombre del producto o plato">
                     <input type="number" id="nuevoProdPrecio" placeholder="Precio en $ (ej: 450)">
-                    <input type="number" id="nuevoProdStock" placeholder="Stock disponible (Obligatorio)" min="1" value="10">
+                    <input type="number" id="nuevoProdStock" placeholder="Stock disponible por unidad" min="1" value="10">
                     
+                    ${esGastronomia ? `
+                        <label style="font-size: 12px; color: #555; display:block; margin-top:6px;">Ingredientes / Notas de personalización:</label>
+                        <textarea id="nuevoProdNotas" placeholder="Ej: Lleva lechuga, tomate, mayonesa (permite quitar ingredientes)" style="height:60px;"></textarea>
+                    ` : ''}
+
                     <label style="font-size: 12px; color: #555; display:block; margin-top:6px;">Foto del Producto (Hasta 5 fotos - Cámara o Archivo):</label>
                     <input type="file" id="nuevoProdFile" accept="image/*" capture="environment">
 
@@ -653,6 +704,8 @@
             let nombre = document.getElementById('nuevoProdNombre').value.trim();
             let precio = parseFloat(document.getElementById('nuevoProdPrecio').value);
             let stock = parseInt(document.getElementById('nuevoProdStock').value);
+            let notaInput = document.getElementById('nuevoProdNotas');
+            let notasDisponibles = notaInput ? notaInput.value.trim() : '';
             let fileInput = document.getElementById('nuevoProdFile');
             
             let chkOutlet = document.getElementById('nuevoProdOutlet');
@@ -668,15 +721,15 @@
             if (fileInput.files && fileInput.files[0]) {
                 let reader = new FileReader();
                 reader.onload = function(e) {
-                    procesarGuardadoProducto(nombre, precio, stock, e.target.result, enOutlet, descuento, horasOutlet);
+                    procesarGuardadoProducto(nombre, precio, stock, notasDisponibles, e.target.result, enOutlet, descuento, horasOutlet);
                 };
                 reader.readAsDataURL(fileInput.files[0]);
             } else {
-                procesarGuardadoProducto(nombre, precio, stock, 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80', enOutlet, descuento, horasOutlet);
+                procesarGuardadoProducto(nombre, precio, stock, notasDisponibles, 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80', enOutlet, descuento, horasOutlet);
             }
         }
 
-        function procesarGuardadoProducto(nombre, precio, stock, imagen, enOutlet, descuento, horasOutlet) {
+        function procesarGuardadoProducto(nombre, precio, stock, notasDisponibles, imagen, enOutlet, descuento, horasOutlet) {
             let base = JSON.parse(localStorage.getItem('lt_base_empresas')) || [];
             let sesion = JSON.parse(localStorage.getItem('lt_sesion_empresa'));
             let emp = base.find(e => String(e.nombre).trim().toLowerCase() === String(sesion.nombre).trim().toLowerCase() || String(e.rut).trim() === String(sesion.rut).trim());
@@ -687,6 +740,7 @@
                 nombre,
                 precio,
                 stock,
+                notasDisponibles,
                 enOutlet,
                 descuento,
                 tiempoFinOutlet: enOutlet ? (Date.now() + (horasOutlet * 3600 * 1000)) : null,
@@ -745,7 +799,7 @@
                                 <span><b>${i.cantidad || 1}x</b> ${i.nombre}</span>
                                 <b style="color: #333;">$${(i.precio * (i.cantidad || 1))}</b>
                             </div>
-                            ${i.nota ? `<div style="font-size: 11px; color: var(--secondary); margin-top: 2px;">📝 Nota: ${i.nota}</div>` : ''}
+                            ${i.nota ? `<div style="font-size: 11px; color: var(--secondary); margin-top: 2px;">📝 Nota / Quitar: ${i.nota}</div>` : ''}
                         </div>
                     `).join('');
                 } else if (p.descripcion) {
@@ -784,7 +838,7 @@
                             <span style="font-size: 11px; color: #333; font-weight: bold; display:block; margin-bottom:6px;">⚡ GESTIÓN:</span>
                             <div style="display: flex; gap: 6px; flex-wrap: wrap;">
                                 <button type="button" onclick="cambiarEstadoPedido(${p.id}, 'En Preparación')" style="flex:1; min-width:120px; padding: 8px; font-size: 11px; background: var(--warning); color:#000;">1. En Preparación</button>
-                                <button type="button" onclick="cambiarEstadoPedido(${p.id}, 'Listo para Retirar (En Ruta/Cadete)')" style="flex:1; min-width:120px; padding: 8px; font-size: 11px; background: var(--success);">2. Liberar Pedido</button>
+                                <button type="button" onclick="cambiarEstadoPedido(${p.id}, 'Listo para Retirar (En Ruta/Cadete)')" style="flex:1; min-width:120px; padding: 8px; font-size: 11px; background: var(--success);">2. Poner en Camino (Liberar)</button>
                             </div>
                         </div>
 
@@ -834,22 +888,22 @@
 
             let htmlRuta = pedidosEnRuta.map(p => `
                 <div style="background: #fff; border: 1px solid var(--border); border-left: 4px solid var(--success); border-radius: var(--radius); padding: 15px; margin-bottom: 15px;">
-                    <strong style="color: var(--success); font-size: 16px;">🛵 Pedido #${p.id} (Liberado)</strong>
+                    <strong style="color: var(--success); font-size: 16px;">🛵 Pedido #${p.id} (En Camino / Liberado)</strong>
                     <p style="margin: 4px 0; font-size: 13px;">👤 <b>Cliente:</b> ${p.cliente} (${p.telefonoCliente || 'Sin tel'})</p>
                     <p style="margin: 4px 0; font-size: 13px;">📍 <b>Destino:</b> ${p.direccion}</p>
                     <p style="margin: 4px 0; font-size: 13px; color:var(--secondary);">🔑 <b>PIN de Entrega:</b> ${p.codigoVerificacion}</p>
                     
                     <div style="background: #fff3cd; border: 1px solid #ffeeba; padding: 10px; border-radius: 8px; margin-top: 10px; text-align: center;">
-                        <span style="font-size: 12px; color: #856404; font-weight: bold;">⏳ Esperando escaneo y retiro del cadete...</span>
-                        <p style="font-size: 11px; color: #666; margin: 4px 0 0 0;">El pedido se cerrará automáticamente al ser escaneado por el cadete en el local.</p>
+                        <span style="font-size: 12px; color: #856404; font-weight: bold;">⏳ Cadete liberado y en ruta zonal ping-pong...</span>
+                        <p style="font-size: 11px; color: #666; margin: 4px 0 0 0;">El pedido se cerrará automáticamente al confirmarse la entrega al cliente.</p>
                     </div>
                 </div>
-            `).join('') || '<p style="text-align:center; color:#666; margin-top:30px;">No hay pedidos pendientes de retiro por cadete.</p>';
+            `).join('') || '<p style="text-align:center; color:#666; margin-top:30px;">No hay pedidos en ruta actualmente.</p>';
 
             container.innerHTML = `
                 <div id="bandera-vista-envios"></div>
                 <div class="section-title">
-                    <span>🛵 Pedidos Esperando Cadete</span>
+                    <span>🛵 Pedidos En Ruta / Liberados</span>
                     <button type="button" onclick="mostrarPedidosEnRutaComercio()" style="width:auto; padding:6px 10px; font-size:11px; background:var(--primary);">Actualizar 🔄</button>
                 </div>
                 ${htmlRuta}
@@ -884,7 +938,7 @@
                     <div style="background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; margin-bottom: 10px; font-size: 13px;">
                         <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
                             <b>Pedido #${p.id}</b>
-                            <span style="color:var(--success); font-weight:bold;">Entregado y Escaneado ✓</span>
+                            <span style="color:var(--success); font-weight:bold;">Entregado ✓</span>
                         </div>
                         <p style="margin:2px 0; color:#555;">Cliente: ${p.cliente}</p>
                         <div style="display: flex; justify-content: space-between; border-top: 1px dashed #eee; margin-top: 6px; padding-top: 6px; font-size: 12px;">
@@ -904,6 +958,7 @@
                     <h4 style="margin:0 0 8px 0; font-size:14px;">Resumen Financiero Acumulado</h4>
                     <p style="margin:2px 0; font-size:12px; opacity:0.9;">Total Bruto Ventas: $${brutoTotal.toFixed(2)}</p>
                     <p style="margin:2px 0; font-size:12px; opacity:0.9;">Total Comisiones Descontadas: -$${comisionesTotal.toFixed(2)}</p>
+                    <p style="margin:4px 0 0 0; font-size:11px; opacity:0.8;">Destino de Pago: <b>${emp.banco || 'Cuenta bancaria no especificada'}</b></p>
                     <h3 style="margin:8px 0 0 0; font-size:18px; border-top:1px solid rgba(255,255,255,0.3); paddingTop:6px;">Neto Líquido: $${netoTotal.toFixed(2)}</h3>
                 </div>
                 ${htmlHistorial}
@@ -1028,6 +1083,7 @@
                     <h3 style="text-align:right;">Total: $${pedido.total}</h3>
                     <hr>
                     <h2 style="text-align:center; margin:10px 0;">PIN: ${pedido.codigoVerificacion}</h2>
+                    <p style="text-align:center; font-size:11px;">(Si no cuenta con impresora, anote el nombre, dirección y PIN a mano)</p>
                     <script>window.onload = function() { window.print(); }<\/script>
                 </body>
                 </html>

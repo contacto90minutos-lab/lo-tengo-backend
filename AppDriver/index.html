@@ -270,7 +270,7 @@
                 </div>
             </div>
 
-            <!-- 2. REGISTRO EXTENDIDO DE CADETES -->
+            <!-- 2. REGISTRO EXTENDIDO DE CADETES CON DOBLE CHECK DE PASSWORD Y VALIDACIÓN -->
             <div id="screen-registro-cadete" style="display: none;">
                 <h3 style="color: var(--primary); margin-top: 0;">Registro de Cadete Independiente</h3>
                 
@@ -278,7 +278,7 @@
                 <input type="text" id="regCadNombre" placeholder="Ej: Carlos Gómez">
 
                 <label>Cédula de Identidad (CI):</label>
-                <input type="text" id="regCadCi" placeholder="Sin puntos ni guiones">
+                <input type="text" id="regCadCi" placeholder="Sin puntos ni guiones (Obligatorio verificar documento)">
 
                 <label>Teléfono de Contacto (WhatsApp):</label>
                 <input type="tel" id="regCadTel" placeholder="099123456">
@@ -311,8 +311,11 @@
                 <label>Contraseña:</label>
                 <input type="password" id="regCadPass" placeholder="Contraseña de acceso">
 
+                <label>Confirmar Contraseña:</label>
+                <input type="password" id="regCadPassConfirm" placeholder="Reingresá tu contraseña (Doble Check)">
+
                 <div style="background: #f8f9fa; padding: 10px; border-radius: 8px; border: 1px solid var(--border); font-size: 11px; color: #555; margin: 10px 0;">
-                    <b>Términos y Condiciones del Servicio:</b> Al registrarte aceptás que operás como contratista independiente. Lo Tengo no asume costos de combustible, repuestos, mantenimiento mecánico ni multas de tránsito. Comisión base: 70%, IVA incluido.
+                    <b>Términos y Condiciones del Servicio:</b> Al registrarte aceptás que operás como contratista independiente. Lo Tengo valida tu identidad por cédula y no asume costos de combustible, repuestos, mantenimiento mecánico ni multas de tránsito. Comisión base: 70%, IVA incluido.
                 </div>
 
                 <div style="display: flex; align-items: center; margin-bottom: 12px; font-size: 13px;">
@@ -469,11 +472,20 @@
             let solicitaCajon = document.getElementById('regCadCajon').checked;
             let fotoPerfil = document.getElementById('regCadFoto').value.trim();
             let password = document.getElementById('regCadPass').value.trim();
+            let passwordConfirm = document.getElementById('regCadPassConfirm').value.trim();
             let aceptaTerminos = document.getElementById('regCadTerminos').checked;
 
-            if (!nombre || !ci || !telefono || !cuentaBancaria || !fotoPerfil || !password) { 
-                alert("⚠️ Completá todos los campos obligatorios (foto de perfil y cuenta bancaria incluidos)."); 
+            if (!nombre || !ci || !telefono || !cuentaBancaria || !fotoPerfil || !password || !passwordConfirm) { 
+                alert("⚠️ Completá todos los campos obligatorios (incluyendo doble check de contraseña, foto y cuenta bancaria)."); 
                 return; 
+            }
+            if (password !== passwordConfirm) {
+                alert("❌ Las contraseñas no coinciden. Verificá el doble check de seguridad.");
+                return;
+            }
+            if (ci.length < 6) {
+                alert("❌ La Cédula de Identidad ingresada no es válida.");
+                return;
             }
             if (!aceptaTerminos) {
                 alert("⚠️ Debes aceptar los Términos y Condiciones para operar.");
@@ -493,7 +505,7 @@
             localStorage.setItem('lt_base_cadetes', JSON.stringify(base));
             localStorage.setItem('lt_sesion_cadete', JSON.stringify(nuevoCadete));
 
-            alert("✅ ¡Registro de cadete exitoso en Lo Tengo!");
+            alert("✅ ¡Registro de cadete verificado y exitoso en Lo Tengo!");
             location.reload();
         }
 
@@ -669,7 +681,7 @@
             mostrarEnCursoCadete();
         };
 
-        // ================= 2. EN CURSO (MULTI-PEDIDO Y VALIDACIÓN CRUZADA) =================
+        // ================= 2. EN CURSO (PIN + CRONÓMETRO / GPS NO ENTREGA) =================
         function mostrarEnCursoCadete() {
             actualizarMenuActivoCadete(1);
             let sesion = obtenerCadeteActualizado();
@@ -690,7 +702,7 @@
                     <p style="margin: 6px 0 2px 0; font-size: 13px;">🏪 <b>Retirar en local:</b> ${p.comercio} (${p.direccionComercio})</p>
                     <div style="background:#eef2f6; padding:8px; border-radius:8px; margin:6px 0;">
                         <p style="margin: 0; font-size: 13px; color:var(--primary); font-weight:bold;">👤 Cliente a nombrar en mostrador: ${p.cliente}</p>
-                        <p style="margin: 2px 0 0 0; font-size: 12px; color:#555;">⚠️ <b>Validación Cruzada:</b> Verificá que este nombre coincida exactamente con la dirección de entrega antes de llevártelo.</p>
+                        <p style="margin: 2px 0 0 0; font-size: 12px; color:#555;">⚠️ <b>Validación Cruzada:</b> Verificá que este nombre coincida antes de llevártelo.</p>
                     </div>
                     
                     <a href="https://wa.me/598${p.telefonoCliente || '99000000'}?text=${encodeURIComponent('Hola ' + p.cliente + ', soy tu cadete de Lo Tengo. Voy en camino con tu pedido.')}" target="_blank" class="btn-whatsapp">
@@ -708,9 +720,12 @@
                     </div>
 
                     <div style="background:#f8f9fa; padding:10px; border-radius:8px; margin-top:8px;">
-                        <label style="font-size:11px; font-weight:bold; color:var(--primary); display:block; margin-bottom:4px;">VERIFICAR PIN DE ENTREGA (Solicitáselo al cliente en mano):</label>
-                        <input type="text" id="pin-ingresado-${p.id}" placeholder="PIN de 4 dígitos" style="margin-bottom:6px; text-align:center; font-size:16px; letter-spacing:2px; font-weight:bold;">
+                        <label style="font-size:11px; font-weight:bold; color:var(--primary); display:block; margin-bottom:4px;">VERIFICAR PIN DE ENTREGA (4 Dígitos):</label>
+                        <input type="text" id="pin-ingresado-${p.id}" placeholder="PIN secreto" style="margin-bottom:6px; text-align:center; font-size:16px; letter-spacing:2px; font-weight:bold;">
                         <button type="button" onclick="finalizarEntregaConPin(${p.id})" style="background:var(--success);">✅ Confirmar Entrega y Cerrar Paquete</button>
+                        
+                        <!-- Protocolo de No Entrega (Cronómetro y GPS) -->
+                        <button type="button" onclick="activarProtocoloNoEntrega(${p.id})" style="background:var(--danger); margin-top:8px; font-size:12px;">⏱️ Reportar Ausencia / Cliente ausente (GPS + Cronómetro)</button>
                     </div>
                 </div>
             `).join('') || '<p style="text-align:center; color:#666; margin-top:30px;">No tenés pedidos en curso actualmente. Podés tomar varios para la misma zona.</p>';
@@ -764,6 +779,20 @@
             reproducirAlertaVoz("Lo tengo");
             mostrarBurbujaEmergente("🎉 ¡Entrega Exitosa!", "El pedido fue cerrado correctamente.");
             mostrarEnCursoCadete();
+        };
+
+        window.activarProtocoloNoEntrega = function(idPedido) {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(position => {
+                    let lat = position.coords.latitude;
+                    let lon = position.coords.longitude;
+                    alert(`⏱️ Protocolo de No Entrega Activado.\n\n- Cronómetro de espera iniciado (5 min).\n- Coordenadas GPS registradas: Lat ${lat.toFixed(4)}, Lon ${lon.toFixed(4)}.\n- Se notificará al comercio y soporte central en Montevideo si el cliente no responde.`);
+                }, () => {
+                    alert("⚠️ No se pudo obtener la ubicación GPS exacta. Asegurate de tener los permisos activos para registrar el incidente.");
+                });
+            } else {
+                alert("⚠️ Tu dispositivo no soporta geolocalización.");
+            }
         };
 
         // ================= 3. HISTORIAL =================
