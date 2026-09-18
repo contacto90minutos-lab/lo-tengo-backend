@@ -312,7 +312,7 @@
         </div>
     </div>
 
-    <!-- Script Completo Sincronizado -->
+    <!-- Script Completo Sincronizado de Punta a Punta -->
     <script>
         let temporizadoresGlobales = {};
         let ultimoHashPedidos = "";
@@ -650,10 +650,9 @@
             container.innerHTML = `
                 <div class="section-title"><span>📦 Mi Catálogo Exclusivo</span></div>
                 
-                <!-- Sección Potencia tus Ventas -->
                 <div style="background: linear-gradient(135deg, #002855, #004080); color:white; padding:12px 15px; border-radius:var(--radius); margin-bottom:15px;">
                     <h4 style="margin:0 0 4px 0; font-size:14px;">🚀 Potencia tus Ventas / Máxima Exposición</h4>
-                    <p style="margin:0 0 8px 0; font-size:11px; opacity:0.9;">Destacá hasta 5 productos por semana para duplicar tus ventas ($300 semanales por producto, sin compromiso, cancelable cuando quieras).</p>
+                    <p style="margin:0 0 8px 0; font-size:11px; opacity:0.9;">Destacá hasta 5 productos por semana para duplicar tus ventas ($300 semanales por producto, sin compromiso).</p>
                     <button type="button" onclick="contratarPotenciaVentas()" style="background:var(--secondary); font-size:12px; padding:8px;">Contratar Exposición Semanal ($300)</button>
                 </div>
 
@@ -697,7 +696,7 @@
         }
 
         function contratarPotenciaVentas() {
-            alert("🚀 ¡Solicitud de 'Potencia tus Ventas' enviada con éxito! Se debitarán $300 de tu próxima liquidación semanal para darte máxima exposición rotativa.");
+            alert("🚀 ¡Solicitud de 'Potencia tus Ventas' enviada con éxito! Se debitarán $300 de tu próxima liquidación semanal.");
         }
 
         function guardarNuevoProducto() {
@@ -710,8 +709,8 @@
             
             let chkOutlet = document.getElementById('nuevoProdOutlet');
             let enOutlet = chkOutlet ? chkOutlet.checked : false;
-            let descuento = parseFloat(document.getElementById('nuevoProdDescuento') ? document.getElementById('nuevoProdDescuento').value : 0) || 0;
-            let horasOutlet = parseInt(document.getElementById('nuevoProdHorasOutlet') ? document.getElementById('nuevoProdHorasOutlet').value : 24) || 24;
+            let descuento = parseFloat(document.getElementById('nuevoProdDescuento') ? document.getElementById('nuevoProdDescuento'].value : 0) || 0;
+            let horasOutlet = parseInt(document.getElementById('nuevoProdHorasOutlet') ? document.getElementById('nuevoProdHorasOutlet'].value : 24) || 24;
 
             if (!nombre || isNaN(precio) || isNaN(stock)) { 
                 alert("⚠️ Completá el nombre, el precio y el stock obligatorio."); 
@@ -894,7 +893,7 @@
                     <p style="margin: 4px 0; font-size: 13px; color:var(--secondary);">🔑 <b>PIN de Entrega:</b> ${p.codigoVerificacion}</p>
                     
                     <div style="background: #fff3cd; border: 1px solid #ffeeba; padding: 10px; border-radius: 8px; margin-top: 10px; text-align: center;">
-                        <span style="font-size: 12px; color: #856404; font-weight: bold;">⏳ Cadete liberado y en ruta zonal ping-pong...</span>
+                        <span style="font-size: 12px; color: #856404; font-weight: bold;">⏳ Cadete liberado y en ruta zonal...</span>
                         <p style="font-size: 11px; color: #666; margin: 4px 0 0 0;">El pedido se cerrará automáticamente al confirmarse la entrega al cliente.</p>
                     </div>
                 </div>
@@ -998,9 +997,11 @@
                 pedido.estado = nuevoEstado;
                 pedido.tiempoInicioEstado = Date.now();
 
+                // 1. Guardamos cambios en la base global de empresas
                 localStorage.setItem('lt_base_empresas', JSON.stringify(base));
                 localStorage.setItem('lt_sesion_empresa', JSON.stringify(emp));
 
+                // 2. Sincronizamos con el Cliente (lt_pedidos_cliente)
                 let pedidosCliente = JSON.parse(localStorage.getItem('lt_pedidos_cliente')) || [];
                 let pCliente = pedidosCliente.find(p => Number(p.id) === Number(idPedido));
                 if (pCliente) {
@@ -1008,27 +1009,37 @@
                     localStorage.setItem('lt_pedidos_cliente', JSON.stringify(pedidosCliente));
                 }
 
+                // 3. Si se pone en marcha para cadete, inyectamos en lt_pedidos_cadete de forma limpia
                 if (nuevoEstado === 'Listo para Retirar (En Ruta/Cadete)') {
                     let pedidosCadete = JSON.parse(localStorage.getItem('lt_pedidos_cadete')) || [];
-                    if (!pedidosCadete.some(p => Number(p.id) === Number(idPedido))) {
-                        pedidosCadete.push({
-                            id: pedido.id,
-                            comercio: emp.nombre,
-                            rutComercio: emp.rut,
-                            direccionComercio: emp.direccionRetiro || emp.direccion,
-                            telefonoComercio: emp.telefono,
-                            cliente: pedido.cliente,
-                            direccionCliente: pedido.direccion,
-                            telefonoCliente: pedido.telefonoCliente || 'Sin tel',
-                            total: pedido.total,
-                            codigoVerificacion: pedido.codigoVerificacion,
-                            tipoEntrega: pedido.tipoEntrega || 'domicilio',
-                            estado: 'Disponible para retirar'
-                        });
-                        localStorage.setItem('lt_pedidos_cadete', JSON.stringify(pedidosCadete));
+                    
+                    let pedidoParaCadete = {
+                        id: pedido.id,
+                        comercio: emp.nombre,
+                        rutComercio: emp.rut,
+                        direccionComercio: emp.direccionRetiro || emp.direccion,
+                        telefonoComercio: emp.telefono || '099000000',
+                        cliente: pedido.cliente,
+                        direccionCliente: pedido.direccion,
+                        telefonoCliente: pedido.telefonoCliente || 'Sin tel',
+                        total: pedido.total,
+                        formaPago: pedido.formaPago || 'Efectivo',
+                        codigoVerificacion: pedido.codigoVerificacion,
+                        tipoEntrega: pedido.tipoEntrega || 'domicilio',
+                        estado: 'Disponible para retirar',
+                        cadeteAsignado: null
+                    };
+
+                    let indexCadeteExistente = pedidosCadete.findIndex(p => Number(p.id) === Number(pedidoParaCadete.id));
+                    if (indexCadeteExistente !== -1) {
+                        pedidosCadete[indexCadeteExistente] = pedidoParaCadete;
+                    } else {
+                        pedidosCadete.push(pedidoParaCadete);
                     }
+                    localStorage.setItem('lt_pedidos_cadete', JSON.stringify(pedidosCadete));
                 }
 
+                // Disparamos evento general de red / storage para refrescar vistas conectadas
                 window.dispatchEvent(new Event('storage'));
 
                 alert(`✅ Pedido #${idPedido} actualizado a:\n"${nuevoEstado}"`);
