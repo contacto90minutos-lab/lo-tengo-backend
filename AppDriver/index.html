@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LO TENGO - Cadetes / Delivery Profesional</title>
+    <!-- Socket.io Client CDN -->
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <style>
         :root {
             --primary: #002855;
@@ -39,7 +41,6 @@
             position: relative;
         }
 
-        /* Branding Minimalista / Lo Tengo */
         .header-app {
             background: var(--primary);
             color: white;
@@ -175,7 +176,6 @@
         .nav-item span { font-size: 16px; margin-bottom: 2px; }
         .nav-item.active { color: var(--secondary); font-weight: bold; }
 
-        /* Banner emergente animado */
         #banner-notificacion-flotante {
             position: fixed;
             top: -100px;
@@ -221,7 +221,6 @@
 </head>
 <body>
 
-    <!-- Notificación Flotante -->
     <div id="banner-notificacion-flotante">
         <div style="display:flex; justify-content:space-between; align-items:center;">
             <b id="titulo-burbuja" style="font-size:15px;">📦 ¡Nuevo Pedido Disponible!</b>
@@ -231,7 +230,6 @@
     </div>
 
     <div id="app-container">
-        <!-- Header Minimalista -->
         <div class="header-app">
             <div class="brand-logo">
                 <div class="brand-icon">LT</div>
@@ -240,7 +238,6 @@
             <span id="header-cadete-info" style="font-size: 11px; opacity: 0.9;">Panel Independiente</span>
         </div>
         
-        <!-- Contenido Principal -->
         <div class="content-body" id="main-content-cadete">
             
             <!-- 1. LOGIN DE CADETES -->
@@ -270,7 +267,7 @@
                 </div>
             </div>
 
-            <!-- 2. REGISTRO EXTENDIDO DE CADETES CON DOBLE CHECK DE PASSWORD Y VALIDACIÓN -->
+            <!-- 2. REGISTRO EXTENDIDO DE CADETES -->
             <div id="screen-registro-cadete" style="display: none;">
                 <h3 style="color: var(--primary); margin-top: 0;">Registro de Cadete Independiente</h3>
                 
@@ -278,7 +275,7 @@
                 <input type="text" id="regCadNombre" placeholder="Ej: Carlos Gómez">
 
                 <label>Cédula de Identidad (CI):</label>
-                <input type="text" id="regCadCi" placeholder="Sin puntos ni guiones (Obligatorio verificar documento)">
+                <input type="text" id="regCadCi" placeholder="Sin puntos ni guiones">
 
                 <label>Teléfono de Contacto (WhatsApp):</label>
                 <input type="tel" id="regCadTel" placeholder="099123456">
@@ -289,7 +286,7 @@
                 <label>Dirección / Barrio en Montevideo:</label>
                 <input type="text" id="regCadDireccion" placeholder="Ej: Av. Italia 2400, Pocitos">
 
-                <label>Número de Cuenta Bancaria / BROU / Oca / Prex (para depósitos):</label>
+                <label>Número de Cuenta Bancaria / BROU / Oca / Prex:</label>
                 <input type="text" id="regCadCuenta" placeholder="Nro. de Cuenta / CBU / Alias">
 
                 <label>Vehículo de Trabajo:</label>
@@ -302,11 +299,11 @@
 
                 <div style="display: flex; align-items: center; margin: 10px 0; font-size: 13px; background:#fff8f5; padding:8px; border-radius:8px; border:1px solid #ffd5c2;">
                     <input type="checkbox" id="regCadCajon" style="width: auto; margin: 0 8px 0 0;">
-                    <label for="regCadCajon" style="color: var(--secondary); cursor: pointer; margin:0; font-weight:bold;">Solicitar cajón térmico oficial "Lo Tengo" (Financiado en 6 cuotas mensuales)</label>
+                    <label for="regCadCajon" style="color: var(--secondary); cursor: pointer; margin:0; font-weight:bold;">Solicitar cajón térmico oficial "Lo Tengo" (Financiado en 6 cuotas)</label>
                 </div>
 
-                <label>Foto de Perfil (URL o Imagen Obligatoria):</label>
-                <input type="text" id="regCadFoto" placeholder="Enlace de imagen de perfil obligatoria">
+                <label>Foto de Perfil (URL Obligatoria):</label>
+                <input type="text" id="regCadFoto" placeholder="Enlace de imagen de perfil">
 
                 <label>Contraseña:</label>
                 <input type="password" id="regCadPass" placeholder="Contraseña de acceso">
@@ -315,7 +312,7 @@
                 <input type="password" id="regCadPassConfirm" placeholder="Reingresá tu contraseña (Doble Check)">
 
                 <div style="background: #f8f9fa; padding: 10px; border-radius: 8px; border: 1px solid var(--border); font-size: 11px; color: #555; margin: 10px 0;">
-                    <b>Términos y Condiciones del Servicio:</b> Al registrarte aceptás que operás como contratista independiente. Lo Tengo valida tu identidad por cédula y no asume costos de combustible, repuestos, mantenimiento mecánico ni multas de tránsito. Comisión base: 70%, IVA incluido.
+                    <b>Términos y Condiciones:</b> Operás como contratista independiente. Lo Tengo valida tu identidad por cédula y no asume costos de combustible, repuestos ni multas. Comisión base: 70%, IVA incluido.
                 </div>
 
                 <div style="display: flex; align-items: center; margin-bottom: 12px; font-size: 13px;">
@@ -341,7 +338,6 @@
 
         </div>
 
-        <!-- Barra de Navegación Inferior -->
         <div class="bottom-nav" id="bottom-nav-cadete" style="display: none;">
             <button class="nav-item active" onclick="mostrarDisponiblesCadete()"><span>📦</span>Disponibles <span id="badge-cadete-disponibles" style="background:var(--secondary); color:white; border-radius:50%; padding:1px 4px; font-size:8px; display:inline-block; vertical-align:top; margin-left:1px;">0</span></button>
             <button class="nav-item" onclick="mostrarEnCursoCadete()"><span>🛵</span>En Curso</button>
@@ -350,10 +346,10 @@
         </div>
     </div>
 
-    <!-- Script General y Lógica del Sistema -->
     <script>
         const BACKEND_URL = 'https://lo-tengo-backend.onrender.com';
-        let ultimoConteoPedidosCadete = 0;
+        let socket = null;
+        let watchIdGPS = null;
 
         document.addEventListener("DOMContentLoaded", () => {
             verificarSesionCadete();
@@ -367,17 +363,60 @@
                     else if (document.getElementById('bandera-vista-curso')) mostrarEnCursoCadete();
                 }
             });
-
-            setInterval(() => {
-                let cadete = obtenerCadeteActualizado();
-                if (cadete) {
-                    sincronizarPedidosConBackend();
-                    revisarNuevosPedidosCadete(false);
-                }
-            }, 5000);
         });
 
-        // ================= VOZ Y ALERTAS =================
+        // --- CONEXIÓN SOCKET.IO EN TIEMPO REAL ---
+        function inicializarSocketCadete(cadete) {
+            if (socket) return;
+
+            socket = io(BACKEND_URL);
+
+            socket.on('connect', () => {
+                console.log("🟢 Conectado al servidor de WebSockets Lo Tengo:", socket.id);
+                // Registrar dispositivo en la sala correspondiente
+                socket.emit('registrar_dispositivo', {
+                    rol: 'driver',
+                    zona: 'Montevideo',
+                    ci: cadete.ci,
+                    nombre: cadete.nombre
+                });
+            });
+
+            // Escuchar cambios de estado en pedidos globalmente al instante
+            socket.on('pedido_actualizado', (data) => {
+                console.log("📦 Evento socket: pedido_actualizado", data);
+                sincronizarPedidosConBackend().then(() => {
+                    revisarNuevosPedidosCadete(true);
+                    if (document.getElementById('bandera-vista-disponibles')) mostrarDisponiblesCadete();
+                    else if (document.getElementById('bandera-vista-curso')) mostrarEnCursoCadete();
+                });
+            });
+
+            // Iniciar streaming de geolocalización en tiempo real
+            iniciarStreamingGPS(cadete.ci);
+        }
+
+        function iniciarStreamingGPS(ciCadete) {
+            if (navigator.geolocation && !watchIdGPS) {
+                watchIdGPS = navigator.geolocation.watchPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        if (socket && socket.connected) {
+                            socket.emit('actualizar_ubicacion_cadete', {
+                                ci: ciCadete,
+                                lat: lat,
+                                lon: lon,
+                                timestamp: Date.now()
+                            });
+                        }
+                    },
+                    (error) => { console.warn("GPS Warning:", error.message); },
+                    { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
+                );
+            }
+        }
+
         function reproducirAlertaVoz(mensaje) {
             try {
                 if ('speechSynthesis' in window) {
@@ -408,7 +447,6 @@
             if (banner) banner.classList.remove('mostrar');
         }
 
-        // ================= SESIÓN =================
         function verificarSesionCadete() {
             const sesion = localStorage.getItem('lt_sesion_cadete');
             if (sesion) {
@@ -421,7 +459,10 @@
                     }
                     document.getElementById('header-cadete-info').innerText = cadete.nombre;
                     document.getElementById('bottom-nav-cadete').style.display = 'flex';
+                    
+                    // Conectar WebSockets y sincronizar datos iniciales
                     sincronizarPedidosConBackend();
+                    inicializarSocketCadete(cadete);
                     mostrarDisponiblesCadete();
                 } catch (e) { console.error(e); }
             }
@@ -476,7 +517,7 @@
             let aceptaTerminos = document.getElementById('regCadTerminos').checked;
 
             if (!nombre || !ci || !telefono || !cuentaBancaria || !fotoPerfil || !password || !passwordConfirm) { 
-                alert("⚠️ Completá todos los campos obligatorios (incluyendo doble check de contraseña, foto y cuenta bancaria)."); 
+                alert("⚠️ Completá todos los campos obligatorios."); 
                 return; 
             }
             if (password !== passwordConfirm) {
@@ -534,6 +575,8 @@
         }
 
         function cerrarSesionCadete() {
+            if (socket) socket.disconnect();
+            if (watchIdGPS !== null) navigator.geolocation.clearWatch(watchIdGPS);
             localStorage.removeItem('lt_sesion_cadete');
             location.reload();
         }
@@ -545,7 +588,6 @@
             return base.find(c => c.ci === sesion.ci) || sesion;
         }
 
-        // ================= SINCRONIZACIÓN =================
         async function sincronizarPedidosConBackend() {
             try {
                 let response = await fetch(`${BACKEND_URL}/api/pedidos`);
@@ -589,6 +631,7 @@
                         .filter(p => p.estado === 'Disponible para retirar');
         }
 
+        let ultimoConteoPedidosCadete = 0;
         function revisarNuevosPedidosCadete(activarAlertaSonora) {
             let disponibles = obtenerPedidosDisponiblesGlobales();
             let badge = document.getElementById('badge-cadete-disponibles');
@@ -601,7 +644,6 @@
             ultimoConteoPedidosCadete = disponibles.length;
         }
 
-        // ================= 1. DISPONIBLES =================
         function mostrarDisponiblesCadete() {
             actualizarMenuActivoCadete(0);
             let disponibles = obtenerPedidosDisponiblesGlobales();
@@ -621,7 +663,7 @@
                     <p style="margin: 2px 0; font-size: 13px; color:#555;">📍 <b>Entrega:</b> ${p.direccionCliente}</p>
                     <p style="margin: 2px 0 10px 0; font-size: 12px; color:#c04800; background:#fff8f5; padding:6px; border-radius:6px;">ℹ️ <b>Referencias:</b> ${p.referenciasCliente || 'Sin referencias'}</p>
 
-                    <button type="button" onclick="tomarPedidoCadete(${p.id})" style="background: var(--success); margin-top: 5px;">🚀 Aceptar y Tomar Pedido (Multitarea)</button>
+                    <button type="button" onclick="tomarPedidoCadete(${p.id})" style="background: var(--success); margin-top: 5px;">🚀 Aceptar y Tomar Pedido</button>
                 </div>
             `).join('') || '<p style="text-align:center; color:#666; margin-top:30px;">No hay pedidos disponibles para retirar en este momento.</p>';
 
@@ -635,7 +677,7 @@
             `;
         }
 
-        window.tomarPedidoCadete = function(idPedido) {
+        window.tomarPedidoCadete = async function(idPedido) {
             let sesion = obtenerCadeteActualizado();
             let pedidosCadete = JSON.parse(localStorage.getItem('lt_pedidos_cadete')) || [];
             let baseEmpresas = JSON.parse(localStorage.getItem('lt_base_empresas')) || [];
@@ -676,12 +718,20 @@
             localStorage.setItem('lt_pedidos_cadete', JSON.stringify(pedidosCadete));
             window.dispatchEvent(new Event('storage'));
 
+            // Notificar al backend vía HTTP o Socket para sincronizar con comercios al instante
+            try {
+                await fetch(`${BACKEND_URL}/api/pedidos/actualizar`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: idPedido, estado: 'En Camino', cadeteAsignado: sesion.nombre })
+                });
+            } catch (e) {}
+
             reproducirAlertaVoz("Lo tengo");
             mostrarBurbujaEmergente("🛵 Pedido Tomado", "Verificá la dirección y el nombre del cliente en tu panel de ruta.");
             mostrarEnCursoCadete();
         };
 
-        // ================= 2. EN CURSO (PIN + CRONÓMETRO / GPS NO ENTREGA) =================
         function mostrarEnCursoCadete() {
             actualizarMenuActivoCadete(1);
             let sesion = obtenerCadeteActualizado();
@@ -701,8 +751,8 @@
                     
                     <p style="margin: 6px 0 2px 0; font-size: 13px;">🏪 <b>Retirar en local:</b> ${p.comercio} (${p.direccionComercio})</p>
                     <div style="background:#eef2f6; padding:8px; border-radius:8px; margin:6px 0;">
-                        <p style="margin: 0; font-size: 13px; color:var(--primary); font-weight:bold;">👤 Cliente a nombrar en mostrador: ${p.cliente}</p>
-                        <p style="margin: 2px 0 0 0; font-size: 12px; color:#555;">⚠️ <b>Validación Cruzada:</b> Verificá que este nombre coincida antes de llevártelo.</p>
+                        <p style="margin: 0; font-size: 13px; color:var(--primary); font-weight:bold;">👤 Cliente a nombrar: ${p.cliente}</p>
+                        <p style="margin: 2px 0 0 0; font-size: 12px; color:#555;">⚠️ <b>Validación Cruzada:</b> Verificá el nombre en mostrador.</p>
                     </div>
                     
                     <a href="https://wa.me/598${p.telefonoCliente || '99000000'}?text=${encodeURIComponent('Hola ' + p.cliente + ', soy tu cadete de Lo Tengo. Voy en camino con tu pedido.')}" target="_blank" class="btn-whatsapp">
@@ -710,7 +760,7 @@
                     </a>
 
                     <p style="margin: 8px 0 2px 0; font-size: 13px;">📍 <b>Destino Exacto:</b> ${p.direccionCliente}</p>
-                    <p style="margin: 2px 0 8px 0; font-size: 12px; color:#c04800; background:#fff8f5; padding:6px; border-radius:6px;">ℹ️ <b>Referencias:</b> ${p.referenciasCliente || 'Sin referencias adicionales'}</p>
+                    <p style="margin: 2px 0 8px 0; font-size: 12px; color:#c04800; background:#fff8f5; padding:6px; border-radius:6px;">ℹ️ <b>Referencias:</b> ${p.referenciasCliente || 'Sin referencias'}</p>
 
                     <div style="margin-top:10px; margin-bottom:10px;">
                         <div style="font-size:11px; color:var(--primary); font-weight:bold; margin-bottom:4px;">🗺️ Mapa de Ruta Vial:</div>
@@ -723,12 +773,10 @@
                         <label style="font-size:11px; font-weight:bold; color:var(--primary); display:block; margin-bottom:4px;">VERIFICAR PIN DE ENTREGA (4 Dígitos):</label>
                         <input type="text" id="pin-ingresado-${p.id}" placeholder="PIN secreto" style="margin-bottom:6px; text-align:center; font-size:16px; letter-spacing:2px; font-weight:bold;">
                         <button type="button" onclick="finalizarEntregaConPin(${p.id})" style="background:var(--success);">✅ Confirmar Entrega y Cerrar Paquete</button>
-                        
-                        <!-- Protocolo de No Entrega (Cronómetro y GPS) -->
                         <button type="button" onclick="activarProtocoloNoEntrega(${p.id})" style="background:var(--danger); margin-top:8px; font-size:12px;">⏱️ Reportar Ausencia / Cliente ausente (GPS + Cronómetro)</button>
                     </div>
                 </div>
-            `).join('') || '<p style="text-align:center; color:#666; margin-top:30px;">No tenés pedidos en curso actualmente. Podés tomar varios para la misma zona.</p>';
+            `).join('') || '<p style="text-align:center; color:#666; margin-top:30px;">No tenés pedidos en curso actualmente.</p>';
 
             container.innerHTML = `
                 <div id="bandera-vista-curso"></div>
@@ -786,16 +834,15 @@
                 navigator.geolocation.getCurrentPosition(position => {
                     let lat = position.coords.latitude;
                     let lon = position.coords.longitude;
-                    alert(`⏱️ Protocolo de No Entrega Activado.\n\n- Cronómetro de espera iniciado (5 min).\n- Coordenadas GPS registradas: Lat ${lat.toFixed(4)}, Lon ${lon.toFixed(4)}.\n- Se notificará al comercio y soporte central en Montevideo si el cliente no responde.`);
+                    alert(`⏱️ Protocolo de No Entrega Activado.\n\n- Cronómetro de espera iniciado (5 min).\n- Coordenadas GPS registradas: Lat ${lat.toFixed(4)}, Lon ${lon.toFixed(4)}.`);
                 }, () => {
-                    alert("⚠️ No se pudo obtener la ubicación GPS exacta. Asegurate de tener los permisos activos para registrar el incidente.");
+                    alert("⚠️ No se pudo obtener la ubicación GPS exacta.");
                 });
             } else {
                 alert("⚠️ Tu dispositivo no soporta geolocalización.");
             }
         };
 
-        // ================= 3. HISTORIAL =================
         function mostrarHistorialCadete() {
             actualizarMenuActivoCadete(2);
             let sesion = obtenerCadeteActualizado();

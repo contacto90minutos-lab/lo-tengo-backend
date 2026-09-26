@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LO TENGO - Empresas / Comercios</title>
+    <!-- Inclusión de Socket.io del servidor backend -->
+    <script src="http://localhost:3000/socket.io/socket.io.js"></script>
     <style>
         :root {
             --primary: #002855;
@@ -192,7 +194,10 @@
         <!-- Header -->
         <div class="header-app">
             <h1><span style="color:var(--secondary);">LO</span> TENGO <small style="font-size:11px; opacity:0.8;">[Empresas]</small></h1>
-            <span id="header-empresa-info" style="font-size: 11px; opacity: 0.9;">Panel Comercio</span>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span id="socket-status" style="font-size: 9px; background: var(--danger); padding: 2px 6px; border-radius: 4px; color: white;">Desconectado</span>
+                <span id="header-empresa-info" style="font-size: 11px; opacity: 0.9;">Panel Comercio</span>
+            </div>
         </div>
         
         <!-- Contenedor Principal -->
@@ -312,17 +317,67 @@
         </div>
     </div>
 
-    <!-- Script Completo Sincronizado de Punta a Punta -->
+    <!-- Script Integrado con WebSockets y Sincronización Backend -->
     <script>
+        const socket = io("http://localhost:3000");
+
         let temporizadoresGlobales = {};
         let ultimoHashPedidos = "";
+
+        socket.on('connect', () => {
+            const statusEl = document.getElementById('socket-status');
+            if (statusEl) {
+                statusEl.innerText = "Conectado";
+                statusEl.style.background = "var(--success)";
+            }
+            
+            // Si ya hay sesión activa, re-registramos el dispositivo en el backend
+            let sesion = localStorage.getItem('lt_sesion_empresa');
+            if (sesion) {
+                try {
+                    let empresa = JSON.parse(sesion);
+                    let idComercio = empresa.rut || empresa.nombre;
+                    socket.emit('registrar_dispositivo', { tipo: 'empresa', id: idComercio });
+                } catch(e) {}
+            }
+        });
+
+        socket.on('disconnect', () => {
+            const statusEl = document.getElementById('socket-status');
+            if (statusEl) {
+                statusEl.innerText = "Desconectado";
+                statusEl.style.background = "var(--danger)";
+            }
+        });
+
+        // Escucha de nuevos pedidos entrantes en tiempo real desde el servidor
+        socket.on('nuevo_pedido_comercio', (pedido) => {
+            let emp = obtenerEmpresaActualizada();
+            if (emp) {
+                if (!emp.pedidos) emp.pedidos = [];
+                // Evitar duplicados
+                let existe = emp.pedidos.some(p => Number(p.id) === Number(pedido.id));
+                if (!existe) {
+                    emp.pedidos.push(pedido);
+                    guardarEmpresaActualizadaEnBase(emp);
+                    actualizarContadorPedidosBadge(emp.rut || emp.nombre);
+                    
+                    // Refrescar vistas si está en cocina
+                    const contenedor = document.getElementById('main-content-empresa');
+                    if (contenedor && document.getElementById('bandera-vista-pedidos')) {
+                        mostrarPedidosEntrantesComercio();
+                    }
+                    alert(`🛎️ ¡Nuevo pedido recibido #${pedido.id} de ${pedido.cliente}!`);
+                }
+            }
+        });
 
         document.addEventListener("DOMContentLoaded", () => {
             inicializarBaseDatosEmpresasPorDefecto();
             verificarSesionEmpresa();
             configurarEventosLoginEmpresa();
             
-            // Sincronización automática de pedidos cada 2 segundos
+            // Sincronización automática de respaldo por si acaso cada 2 segundos
             setInterval(() => {
                 let sesion = localStorage.getItem('lt_sesion_empresa');
                 if (sesion) {
@@ -394,6 +449,10 @@
                         document.getElementById('header-empresa-info').innerText = empresaReal.nombre;
                         document.getElementById('bottom-nav-empresa').style.display = 'flex';
                         actualizarContadorPedidosBadge(empresaReal.rut || empresaReal.nombre);
+                        
+                        // Registrar en socket
+                        socket.emit('registrar_dispositivo', { tipo: 'empresa', id: empresaReal.rut || empresaReal.nombre });
+                        
                         mostrarDashboardEmpresa();
                     }
                 } catch (e) { console.error(e); }
@@ -477,6 +536,10 @@
             }
 
             localStorage.setItem('lt_sesion_empresa', JSON.stringify(emp));
+            
+            // Emitir registro de dispositivo socket al iniciar sesión
+            socket.emit('registrar_dispositivo', { tipo: 'empresa', id: emp.rut || emp.nombre });
+
             location.reload();
         }
 
@@ -544,8 +607,23 @@
             base.push(nuevaEmpresa);
             localStorage.setItem('lt_base_empresas', JSON.stringify(base));
             localStorage.setItem('lt_sesion_empresa', JSON.stringify(nuevaEmpresa));
+            
+            socket.emit('registrar_dispositivo', { tipo: 'empresa', id: nuevaEmpresa.rut || nuevaEmpresa.nombre });
+
             alert("✅ ¡Comercio registrado con éxito!");
             location.reload();
+        }
+
+        function guardarEmpresaActualizadaEnBase(emp) {
+            let base = JSON.parse(localStorage.getItem('lt_base_empresas')) || [];
+            let index = base.findIndex(e => String(e.nombre).trim().toLowerCase() === String(emp.nombre).trim().toLowerCase() || String(e.rut).trim() === String(emp.rut).trim());
+            if (index !== -1) {
+                base[index] = emp;
+            } else {
+                base.push(emp);
+            }
+            localStorage.setItem('lt_base_empresas', JSON.stringify(base));
+            localStorage.setItem('lt_sesion_empresa', JSON.stringify(emp));
         }
 
         function irLoginEmpresa() {
@@ -747,8 +825,7 @@
             };
 
             emp.productos.push(nuevoP);
-            localStorage.setItem('lt_base_empresas', JSON.stringify(base));
-            localStorage.setItem('lt_sesion_empresa', JSON.stringify(emp));
+            guardarEmpresaActualizadaEnBase(emp);
 
             alert("✅ ¡Producto agregado con éxito con control de stock!");
             mostrarGestionCatalogo();
@@ -761,8 +838,7 @@
             let emp = base.find(e => String(e.nombre).trim().toLowerCase() === String(sesion.nombre).trim().toLowerCase() || String(e.rut).trim() === String(sesion.rut).trim());
 
             emp.productos = emp.productos.filter(p => p.id !== idProd);
-            localStorage.setItem('lt_base_empresas', JSON.stringify(base));
-            localStorage.setItem('lt_sesion_empresa', JSON.stringify(emp));
+            guardarEmpresaActualizadaEnBase(emp);
 
             mostrarGestionCatalogo();
         }
@@ -865,14 +941,7 @@
                 ${htmlPedidos}
             `;
 
-            let base = JSON.parse(localStorage.getItem('lt_base_empresas')) || [];
-            let indexEmp = base.findIndex(e => String(e.nombre).trim().toLowerCase() === String(emp.nombre).trim().toLowerCase() || String(e.rut).trim() === String(emp.rut).trim());
-            if (indexEmp !== -1) {
-                base[indexEmp] = emp;
-                localStorage.setItem('lt_base_empresas', JSON.stringify(base));
-                localStorage.setItem('lt_sesion_empresa', JSON.stringify(emp));
-            }
-
+            guardarEmpresaActualizadaEnBase(emp);
             pedidosActivos.forEach(p => iniciarCronometroEnVivo(p.id, p.tiempoInicioEstado));
         }
 
@@ -982,26 +1051,29 @@
         }
 
         window.cambiarEstadoPedido = function(idPedido, nuevoEstado) {
-            let base = JSON.parse(localStorage.getItem('lt_base_empresas')) || [];
-            let sesion = JSON.parse(localStorage.getItem('lt_sesion_empresa'));
-            if (!sesion) return;
+            let emp = obtenerEmpresaActualizada();
+            if (!emp) return;
 
-            let empIndex = base.findIndex(e => String(e.nombre).trim().toLowerCase() === String(sesion.nombre).trim().toLowerCase() || String(e.rut).trim() === String(sesion.rut).trim());
-            if (empIndex === -1) return;
-
-            let emp = base[empIndex];
             if (!emp.pedidos) emp.pedidos = [];
-
             let pedido = emp.pedidos.find(p => Number(p.id) === Number(idPedido));
+
             if (pedido) {
                 pedido.estado = nuevoEstado;
                 pedido.tiempoInicioEstado = Date.now();
 
-                // 1. Guardamos cambios en la base global de empresas
-                localStorage.setItem('lt_base_empresas', JSON.stringify(base));
-                localStorage.setItem('lt_sesion_empresa', JSON.stringify(emp));
+                // 1. Guardamos cambios locales y emitimos al servidor backend
+                guardarEmpresaActualizadaEnBase(emp);
 
-                // 2. Sincronizamos con el Cliente (lt_pedidos_cliente)
+                // Emitir actualización vía Socket.io al servidor backend
+                socket.emit('pedido_actualizado', {
+                    id: pedido.id,
+                    estado: nuevoEstado,
+                    cliente: pedido.cliente,
+                    comercio: emp.nombre,
+                    rutComercio: emp.rut
+                });
+
+                // 2. Sincronizamos con el almacenamiento local compartido (Cliente y Cadete)
                 let pedidosCliente = JSON.parse(localStorage.getItem('lt_pedidos_cliente')) || [];
                 let pCliente = pedidosCliente.find(p => Number(p.id) === Number(idPedido));
                 if (pCliente) {
@@ -1009,7 +1081,6 @@
                     localStorage.setItem('lt_pedidos_cliente', JSON.stringify(pedidosCliente));
                 }
 
-                // 3. Si se pone en marcha para cadete, inyectamos en lt_pedidos_cadete de forma limpia
                 if (nuevoEstado === 'Listo para Retirar (En Ruta/Cadete)') {
                     let pedidosCadete = JSON.parse(localStorage.getItem('lt_pedidos_cadete')) || [];
                     
@@ -1039,7 +1110,6 @@
                     localStorage.setItem('lt_pedidos_cadete', JSON.stringify(pedidosCadete));
                 }
 
-                // Disparamos evento general de red / storage para refrescar vistas conectadas
                 window.dispatchEvent(new Event('storage'));
 
                 alert(`✅ Pedido #${idPedido} actualizado a:\n"${nuevoEstado}"`);
