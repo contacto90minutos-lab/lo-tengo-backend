@@ -296,9 +296,9 @@ app.get('/track/:token', (req, res) => {
                 <meta name="viewport" content="width=device-width, initial-scale=1">
                 <style>
                     body { font-family: Arial, sans-serif; background: #f4f7f6; text-align: center; padding: 20px; }
-                   .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 400px; margin: auto; }
+                  .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 400px; margin: auto; }
                     h2 { color: #2c3e50; }
-                   .status { font-size: 18px; font-weight: bold; color: #e67e22; margin: 15px 0; }
+                  .status { font-size: 18px; font-weight: bold; color: #e67e22; margin: 15px 0; }
                 </style>
             </head>
             <body>
@@ -411,10 +411,14 @@ app.post('/api/pedidos/validar-entrega', (req, res) => {
     }
 });
 
-app.use('/cliente', express.static(path.join(__dirname, 'AppCliente')));
-app.use('/driver', express.static(path.join(__dirname, 'AppDriver')));
-app.use('/empresa', express.static(path.join(__dirname, 'AppEmpresa')));
-app.use('/panel', express.static(path.join(__dirname, 'AppPaneldecontrol')));
+// ==========================================
+// ESTA ES LA ÚNICA PARTE QUE SE CAMBIA - RUTAS A LA NUEVA ESTRUCTURA
+// ==========================================
+app.use('/cliente', express.static(path.join(__dirname, 'lo-tengo-Clientes', 'www')));
+app.use('/driver', express.static(path.join(__dirname, 'lo-tengo-Driver', 'www')));
+app.use('/empresa', express.static(path.join(__dirname, 'lo-tengo-Empresa', 'www')));
+app.use('/panel', express.static(path.join(__dirname, 'lo-tengo-Admin', 'www')));
+app.use('/admin', express.static(path.join(__dirname, 'lo-tengo-Admin', 'www')));
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
