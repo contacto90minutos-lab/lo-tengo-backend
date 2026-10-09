@@ -8,12 +8,15 @@ const { MercadoPagoConfig, Preference } = require('mercadopago');
 const app = express();
 const server = http.createServer(app);
 
-// Configuración robusta de Socket.io para la comunicación en tiempo real entre las 4 Apps
+// Configuración robusta de Socket.io para la comunicación en tiempo real entre las 4 Apps - FIX
 const io = new Server(server, {
     cors: {
         origin: "*",
         methods: ["GET", "POST"]
-    }
+    },
+    transports: ['websocket', 'polling'],
+    pingTimeout: 60000,
+    pingInterval: 25000
 });
 
 app.use(cors());
@@ -48,63 +51,89 @@ let pedidosGlobales = [
         total: 1250,
         estado: "Disponible para retirar",
         metodoPago: "Efectivo / Simulado",
-        pinRetiro: "4821",   
-        pinEntrega: "7823",  
+        pinRetiro: "4821",
+        pinEntrega: "7823",
         cadeteAsignado: null,
         ciCadete: null,
-        init_point: null     
+        init_point: null
     }
 ];
 
-// Almacén de Productos (Sincronización App Comercios <-> Cliente)
 let productosGlobales = [];
-
-// Almacén para Bolsa de Horarios de Cadetes (Disponibilidad por demanda)
 let bolsaHorariosGlobal = [];
-
-// Almacén para Calificaciones y Comentarios (Cadetes y Comercios)
 let calificacionesGlobales = [];
-
-// Almacén en memoria para sesiones de usuarios (Login con Google/Apple y Perfiles extendidos)
 let usuariosSesion = {};
-
-// Almacén para Enlaces Temporales de Seguimiento (Compartir con Terceros)
 let enlacesSeguimiento = {};
-
-// Almacén de Ubicaciones en Vivo de Cadetes (Para WebSockets / Zonas Calientes)
 let ubicacionesCadetes = {};
 
 // ==========================================
-// GESTIÓN UNIFICADA DE SOCKET.IO (TIEMPO REAL)
+// GESTIÓN UNIFICADA DE SOCKET.IO (TIEMPO REAL) - VINCULACIÓN 4 APPS
 // ==========================================
 io.on('connection', (socket) => {
     console.log(`Dispositivo conectado al servidor: ${socket.id}`);
 
-    // Registro de roles para segmentar comunicaciones (cliente, driver, empresa, admin)
+    // Registro unificado para las 4 Apps
     socket.on('registrar_dispositivo', (data) => {
-        if (data && data.rol) {
-            socket.join(data.rol);
-            console.log(`Dispositivo ${socket.id} se unió a la sala de rol: [${data.rol}]`);
+        if (!data ||!data.rol) return;
+
+        const rol = data.rol.toLowerCase().trim();
+        socket.data.rol = rol;
+        socket.data.userId = data.userId || null;
+
+        socket.join(rol);
+        console.log(`Dispositivo ${socket.id} se unió a la sala de rol: [${rol}]`);
+
+        if (data.zona) {
+            socket.join(`zona_${data.zona}`);
         }
-        if (data && data.zona) {
-            socket.join(data.zona);
+        if (data.userId) {
+            socket.join(`user_${data.userId}`);
         }
+        if (data.pedidoId) {
+            socket.join(`pedido_${data.pedidoId}`);
+        }
+
+        socket.emit('dispositivo_registrado', { ok: true, rol, id: socket.id });
     });
 
-    // Streaming de coordenadas GPS del cadete en tiempo real hacia el panel y clientes
+    socket.on('unirse_a_pedido', (pedidoId) => {
+        if (!pedidoId) return;
+        socket.join(`pedido_${pedidoId}`);
+        console.log(`${socket.id} se unió a pedido_${pedidoId}`);
+    });
+
     socket.on('actualizar_ubicacion_cadete', (data) => {
-        // data: { cadeteId, lat, lng, zona }
         if (data && data.cadeteId) {
-            ubicacionesCadetes[data.cadeteId] = { lat: data.lat, lng: data.lng, timestamp: Date.now() };
-            
-            // Broadcast universal y dirigido a la torre de control y clientes
+            ubicacionesCadetes[data.cadeteId] = {
+                lat: data.lat,
+                lng: data.lng,
+                timestamp: Date.now(),
+                zona: data.zona,
+                pedidoId: data.pedidoId
+            };
+
             io.to('admin').emit('ubicacion_cadete_actualizada', data);
+            io.to('empresa').emit('ubicacion_cadete_actualizada', data);
+
+            if (data.pedidoId) {
+                io.to(`pedido_${data.pedidoId}`).emit('ubicacion_cadete_actualizada', data);
+            }
+
             io.emit('radar_cadetes', ubicacionesCadetes);
         }
     });
 
+    socket.on('cambiar_estado_pedido', (data) => {
+        const pedido = pedidosGlobales.find(p => Number(p.id) === Number(data.idPedido));
+        if (pedido) {
+            pedido.estado = data.nuevoEstado;
+            io.emit('pedido_actualizado', { tipo: 'estado_cambiado', pedido });
+            io.to(`pedido_${pedido.id}`).emit('pedido_actualizado', { tipo: 'estado_cambiado', pedido });
+        }
+    });
+
     socket.on('disconnect', () => {
-        console.log(`Dispositivo desconectado: ${socket.id}`);
+        console.log(`Dispositivo desconectado: ${socket.id} [${socket.data.rol || 'sin rol'}]`);
     });
 });
 
@@ -116,7 +145,6 @@ app.get('/api/pedidos', (req, res) => {
     res.json({ success: true, pedidos: pedidosGlobales });
 });
 
-// Endpoints para Gestión de Productos / Catálogo y Ofertas Flash
 app.get('/api/productos', (req, res) => {
     res.json({ success: true, productos: productosGlobales });
 });
@@ -124,33 +152,28 @@ app.get('/api/productos', (req, res) => {
 app.post('/api/productos', (req, res) => {
     const nuevoProducto = req.body;
     if (!nuevoProducto.id) nuevoProducto.id = Date.now();
-    
+
     const index = productosGlobales.findIndex(p => Number(p.id) === Number(nuevoProducto.id));
-    if (index !== -1) {
-        productosGlobales[index] = { ...productosGlobales[index], ...nuevoProducto };
+    if (index!== -1) {
+        productosGlobales[index] = {...productosGlobales[index],...nuevoProducto };
     } else {
         productosGlobales.push(nuevoProducto);
     }
 
-    // Sincronización instantánea a todas las apps conectadas
     io.emit('actualizacion_catalogo', productosGlobales);
     io.emit('notificacion_oferta_flash', { mensaje: "¡Nueva oferta disponible en el outlet!", producto: nuevoProducto });
-    
+
     res.json({ success: true, productos: productosGlobales });
 });
 
-// ==========================================
-// ENDPOINT DE AUTENTICACIÓN Y PERFILES (Google / Apple)
-// ==========================================
-
 app.post('/api/auth/google', (req, res) => {
     const { token, email, name, picture, deviceId, rol, fotoCadeteObligatoria } = req.body;
-    
+
     if (!email) {
         return res.status(400).json({ success: false, message: "Datos de usuario inválidos" });
     }
 
-    if (rol === 'driver' && !picture && !fotoCadeteObligatoria) {
+    if (rol === 'driver' &&!picture &&!fotoCadeteObligatoria) {
         return res.status(400).json({ success: false, message: "La foto de perfil es obligatoria para los cadetes." });
     }
 
@@ -172,36 +195,26 @@ app.post('/api/auth/google', (req, res) => {
     });
 });
 
-// ==========================================
-// ENDPOINTS DE LOGÍSTICA Y BOLSA DE HORARIOS
-// ==========================================
-
 app.get('/api/horarios', (req, res) => {
     res.json({ success: true, horarios: bolsaHorariosGlobal });
 });
 
 app.post('/api/horarios', (req, res) => {
-    const turno = req.body; 
+    const turno = req.body;
     turno.id = Date.now();
     bolsaHorariosGlobal.push(turno);
-
-    // Notificar al panel en tiempo real
     io.emit('nuevo_turno_registrado', turno);
     res.json({ success: true, message: "Turno registrado en la bolsa de horarios con éxito", bolsa: bolsaHorariosGlobal });
 });
-
-// ==========================================
-// ENDPOINTS DE CALIFICACIONES Y COMENTARIOS
-// ==========================================
 
 app.get('/api/calificaciones', (req, res) => {
     res.json({ success: true, calificaciones: calificacionesGlobales });
 });
 
 app.post('/api/calificaciones', (req, res) => {
-    const { tipo, objetivoId, evaluadorEmail, estrellas, comentario } = req.body; 
-    
-    if (!estrellas || !objetivoId) {
+    const { tipo, objetivoId, evaluadorEmail, estrellas, comentario } = req.body;
+
+    if (!estrellas ||!objetivoId) {
         return res.status(400).json({ success: false, message: "Faltan datos en la calificación" });
     }
 
@@ -219,13 +232,9 @@ app.post('/api/calificaciones', (req, res) => {
     res.json({ success: true, message: "Calificación registrada correctamente", calificaciones: calificacionesGlobales });
 });
 
-// ==========================================
-// ENDPOINTS DE PAGOS, ANTIFRAUDE Y PEDIDOS
-// ==========================================
-
 app.post('/api/pagos/validar-tarjeta', async (req, res) => {
     const { tokenTarjeta, emailCliente } = req.body;
-    
+
     try {
         if (mpClient) {
             const preference = new Preference(mpClient);
@@ -236,9 +245,9 @@ app.post('/api/pagos/validar-tarjeta', async (req, res) => {
                 }
             });
         }
-        
+
         console.log(`[ANTIFRAUDE] Transacción de $15 UYU procesada y reembolso automático emitido para ${emailCliente}`);
-        
+
         res.json({
             success: true,
             message: "Tarjeta validada correctamente. El cargo temporal de $15 UYU ha sido reembolsado."
@@ -274,12 +283,12 @@ app.get('/track/:token', (req, res) => {
     const token = req.params.token;
     const infoSeguimiento = enlacesSeguimiento[token];
 
-    if (!infoSeguimiento || !infoSeguimiento.activo) {
+    if (!infoSeguimiento ||!infoSeguimiento.activo) {
         return res.send(`<h2>El enlace de seguimiento ha expirado o no es válido.</h2><p>El pedido ya fue entregado o finalizado.</p>`);
     }
 
     const pedidoReal = pedidosGlobales.find(p => Number(p.id) === Number(infoSeguimiento.idPedido));
-    
+
     res.send(`
         <html>
             <head>
@@ -287,16 +296,16 @@ app.get('/track/:token', (req, res) => {
                 <meta name="viewport" content="width=device-width, initial-scale=1">
                 <style>
                     body { font-family: Arial, sans-serif; background: #f4f7f6; text-align: center; padding: 20px; }
-                    .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 400px; margin: auto; }
+                   .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 400px; margin: auto; }
                     h2 { color: #2c3e50; }
-                    .status { font-size: 18px; font-weight: bold; color: #e67e22; margin: 15px 0; }
+                   .status { font-size: 18px; font-weight: bold; color: #e67e22; margin: 15px 0; }
                 </style>
             </head>
             <body>
                 <div class="card">
                     <h2>📦 Seguimiento de Envío</h2>
-                    <p>Comercio: <strong>${pedidoReal ? pedidoReal.comercio : 'Lo Tengo'}</strong></p>
-                    <div class="status">Estado: ${pedidoReal ? pedidoReal.estado : 'Desconocido'}</div>
+                    <p>Comercio: <strong>${pedidoReal? pedidoReal.comercio : 'Lo Tengo'}</strong></p>
+                    <div class="status">Estado: ${pedidoReal? pedidoReal.estado : 'Desconocido'}</div>
                     <p>El cadete va en camino a la dirección de destino.</p>
                 </div>
             </body>
@@ -306,7 +315,7 @@ app.get('/track/:token', (req, res) => {
 
 app.post('/api/pedidos', async (req, res) => {
     const nuevoPedido = req.body;
-    
+
     if (!nuevoPedido.id) {
         nuevoPedido.id = Date.now();
     }
@@ -347,16 +356,14 @@ app.post('/api/pedidos', async (req, res) => {
     }
 
     const index = pedidosGlobales.findIndex(p => Number(p.id) === Number(nuevoPedido.id));
-    if (index !== -1) {
-        pedidosGlobales[index] = { ...pedidosGlobales[index], ...nuevoPedido };
+    if (index!== -1) {
+        pedidosGlobales[index] = {...pedidosGlobales[index],...nuevoPedido };
     } else {
         pedidosGlobales.push(nuevoPedido);
     }
-    
-    // =========================================================================
-    // DIFUSIÓN CRUCIAL: Notifica al instante a todas las apps el cambio del pedido
-    // =========================================================================
-    io.emit('pedido_actualizado', { tipo: index !== -1 ? 'modificado' : 'nuevo', pedido: nuevoPedido });
+
+    io.emit('pedido_actualizado', { tipo: index!== -1? 'modificado' : 'nuevo', pedido: nuevoPedido });
+    io.to(`pedido_${nuevoPedido.id}`).emit('pedido_actualizado', { tipo: index!== -1? 'modificado' : 'nuevo', pedido: nuevoPedido });
 
     res.json({ success: true, pedidos: pedidosGlobales, pedidoActualizado: nuevoPedido });
 });
@@ -372,6 +379,7 @@ app.post('/api/pedidos/validar-retiro', (req, res) => {
     if (pedido.pinRetiro === pinIngresado) {
         pedido.estado = "En Camino";
         io.emit('pedido_actualizado', { tipo: 'estado_cambiado', pedido });
+        io.to(`pedido_${pedido.id}`).emit('pedido_actualizado', { tipo: 'estado_cambiado', pedido });
         return res.json({ success: true, message: "PIN de retiro validado con éxito. Pedido en camino." });
     } else {
         return res.status(400).json({ success: false, message: "PIN de retiro incorrecto." });
@@ -388,7 +396,7 @@ app.post('/api/pedidos/validar-entrega', (req, res) => {
 
     if (pedido.pinEntrega === pinIngresado) {
         pedido.estado = "Entregado";
-        
+
         Object.keys(enlacesSeguimiento).forEach(token => {
             if (enlacesSeguimiento[token].idPedido === Number(idPedido)) {
                 enlacesSeguimiento[token].activo = false;
@@ -396,13 +404,13 @@ app.post('/api/pedidos/validar-entrega', (req, res) => {
         });
 
         io.emit('pedido_actualizado', { tipo: 'estado_cambiado', pedido });
+        io.to(`pedido_${pedido.id}`).emit('pedido_actualizado', { tipo: 'estado_cambiado', pedido });
         return res.json({ success: true, message: "PIN de entrega validado con éxito. Pedido completado." });
     } else {
         return res.status(400).json({ success: false, message: "PIN de entrega incorrecto." });
     }
 });
 
-// Servir archivos estáticos de las sub-apps adicionales
 app.use('/cliente', express.static(path.join(__dirname, 'AppCliente')));
 app.use('/driver', express.static(path.join(__dirname, 'AppDriver')));
 app.use('/empresa', express.static(path.join(__dirname, 'AppEmpresa')));
