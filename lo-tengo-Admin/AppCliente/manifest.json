@@ -1,0 +1,12 @@
+{
+  "background_color": "#ffffff",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "lo-tengo-backend.onrender",
+  "orientation": "any",
+  "scope": "/",
+  "short_name": "lo-tengo",
+  "start_url": "/",
+  "theme_color": "#ffffff",
+  "id": "https://lo-tengo-backend.onrender.com/cliente/"
+}

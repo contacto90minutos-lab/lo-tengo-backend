@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LO TENGO - Empresas / Comercios</title>
+    <!-- Inclusión de Socket.io del servidor backend -->
+    <script src="http://localhost:3000/socket.io/socket.io.js"></script>
+    <style>
+        :root {
+            --primary: #002855;
+            --secondary: #E85B04;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --bg-light: #f8f9fa;
+            --border: #e5e7eb;
+            --radius: 14px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #eef2f6;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        #app-container {
+            background: #ffffff;
+            width: 100%;
+            max-width: 480px;
+            min-height: 100vh;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .header-app {
+            background: var(--primary);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+        }
+
+        .header-app h1 {
+            margin: 0;
+            font-size: 20px;
+            letter-spacing: 0.5px;
+        }
+
+        .content-body {
+            padding: 15px;
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 90px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            margin: 6px 0 12px 0;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            box-sizing: border-box;
+            font-size: 14px;
+            background: #fff;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+            transition: opacity 0.2s;
+        }
+
+        button:hover { opacity: 0.9; }
+
+        .link-btn {
+            background: none;
+            color: var(--primary);
+            border: none;
+            text-decoration: underline;
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 13px;
+        }
+
+        .gestion-card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 12px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .gestion-avatar {
+            width: 55px;
+            height: 55px;
+            border-radius: 10px;
+            object-fit: cover;
+            background: #eef2f6;
+            flex-shrink: 0;
+        }
+
+        .badge-outlet {
+            background: var(--secondary);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--primary);
+            margin: 0 0 12px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .terms-box {
+            font-size: 11px;
+            max-height: 110px;
+            overflow-y: auto;
+            background: #f1f1f1;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            color: #555;
+            border: 1px solid var(--border);
+            line-height: 1.4;
+        }
+
+        .bottom-nav {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: #ffffff;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0;
+            box-sizing: border-box;
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+            box-shadow: 0 -4px 10px rgba(0,0,0,0.03);
+            z-index: 10;
+        }
+
+        .nav-item {
+            background: none;
+            border: none;
+            color: #666;
+            font-size: 10px;
+            cursor: pointer;
+            width: auto;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .nav-item span { font-size: 16px; margin-bottom: 2px; }
+        .nav-item.active { color: var(--secondary); font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div id="app-container">
+        <!-- Header -->
+        <div class="header-app">
+            <h1><span style="color:var(--secondary);">LO</span> TENGO <small style="font-size:11px; opacity:0.8;">[Empresas]</small></h1>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span id="socket-status" style="font-size: 9px; background: var(--danger); padding: 2px 6px; border-radius: 4px; color: white;">Desconectado</span>
+                <span id="header-empresa-info" style="font-size: 11px; opacity: 0.9;">Panel Comercio</span>
+            </div>
+        </div>
+        
+        <!-- Contenedor Principal -->
+        <div class="content-body" id="main-content-empresa">
+            <!-- Login de Empresas -->
+            <div id="screen-login-empresa">
+                <h3 style="color: var(--primary); margin-top: 0;">Acceso Comercios</h3>
+                
+                <label style="font-size: 12px; color: #555;">Nombre de Fantasía o Usuario:</label>
+                <input type="text" id="loginRutEmpresa" placeholder="Ej: Hamburguesas El Mono">
+
+                <label style="font-size: 12px; color: #555;">Contraseña:</label>
+                <input type="password" id="loginPassEmpresa" placeholder="Contraseña">
+
+                <!-- Checkbox Recordar Usuario -->
+                <div style="display: flex; align-items: center; gap: 8px; margin: 10px 0;">
+                    <input type="checkbox" id="recordarUsuarioEmpresa" style="width: auto; margin: 0;">
+                    <label for="recordarUsuarioEmpresa" style="font-size: 12px; color: #555; margin: 0; cursor: pointer;">Recordar mi usuario en este dispositivo</label>
+                </div>
+
+                <button id="btnIngresarEmpresa" type="button" style="background-color: var(--primary); margin-top: 5px;">Ingresar al Panel</button>
+                
+                <div style="text-align: center;">
+                    <p style="margin-top: 15px; font-size: 13px; color: #666;">¿Tu comercio no está registrado?</p>
+                    <button id="irARegistroEmpresa" type="button" class="link-btn">Registrar mi Local</button>
+                </div>
+            </div>
+
+            <!-- Registro de Empresas Actualizado con Términos y Datos Bancarios -->
+            <div id="screen-registro-empresa" style="display: none;">
+                <h3 style="color: var(--primary); margin-top: 0;">Registro de Local</h3>
+                
+                <label>Nombre de Fantasía:</label>
+                <input type="text" id="regEmpNombre" placeholder="Ej: Tienda Pepito">
+                
+                <label>Razón Social:</label>
+                <input type="text" id="regEmpRazon" placeholder="Ej: Pepito S.R.L.">
+
+                <label>RUT (Uso interno):</label>
+                <input type="text" id="regEmpRut" placeholder="RUT de 12 dígitos">
+                
+                <label>Giro Comercial (Rubro):</label>
+                <select id="regEmpGiro" onchange="verificarRubroAdultosRegistro()">
+                    <option value="Gastronomía">🍔 Gastronomía / Restaurante</option>
+                    <option value="Electrónica y Tecnología">⚡ Electrodomésticos y Tecnología</option>
+                    <option value="Celulares y Accesorios">📱 Celulares y Accesorios</option>
+                    <option value="Ferretería">🔧 Ferretería y Herramientas</option>
+                    <option value="Pet Shop">🐾 Alimentos de Mascotas (Pet Shop)</option>
+                    <option value="Indumentaria y Moda">👕 Indumentaria y Moda</option>
+                    <option value="Adultos (+18)">🔞 Sector Adultos (+18 / Sex Shop)</option>
+                    <option value="Otro">📦 Otro Rubro / Agregar Nuevo</option>
+                </select>
+
+                <div id="contenedor-nuevo-rubro" style="display:none;">
+                    <label>Especificar Nuevo Rubro:</label>
+                    <input type="text" id="regEmpNuevoRubroTexto" placeholder="Nombre del nuevo rubro">
+                </div>
+
+                <div id="aviso-adultos-registro" style="display:none; background:#fff3cd; border:1px solid #ffeeba; padding:10px; border-radius:8px; font-size:12px; color:#856404; margin-bottom:10px;">
+                    🔒 Este rubro requiere que los clientes ingresen un **Código de Seguridad de 4 dígitos** para acceder a su tienda.
+                </div>
+
+                <label>Logo de la Empresa (Cámara o Archivo):</label>
+                <input type="file" id="regEmpLogoFile" accept="image/*" capture="environment">
+
+                <label>Correo Electrónico (para reenvío de facturas):</label>
+                <input type="email" id="regEmpEmail" placeholder="contacto@comercio.com">
+
+                <label>Teléfono de Contacto:</label>
+                <input type="tel" id="regEmpTel" placeholder="099123456">
+
+                <label>Dirección Fiscal:</label>
+                <input type="text" id="regEmpDirFiscal" placeholder="Av. 18 de Julio 1234">
+
+                <label>Dirección de Retiro de Productos (Depósito / Local):</label>
+                <input type="text" id="regEmpDirRetiro" placeholder="Depósito trasero / Mismo local">
+
+                <label>Datos Bancarios (BROU / Cuenta para liquidaciones):</label>
+                <input type="text" id="regEmpBanco" placeholder="Número de cuenta / Banco o CBU">
+
+                <!-- Horarios Operativos -->
+                <div style="display: flex; gap: 10px;">
+                    <div style="flex:1;"><label>Apertura:</label><input type="time" id="regEmpHoraApertura" value="10:00"></div>
+                    <div style="flex:1;"><label>Cierre:</label><input type="time" id="regEmpHoraCierre" value="23:00"></div>
+                </div>
+
+                <label>Contraseña:</label>
+                <input type="password" id="regEmpPass" placeholder="Contraseña de acceso">
+
+                <!-- Términos y Condiciones Operativos -->
+                <label style="margin-top: 10px;">Términos y Condiciones del Servicio:</label>
+                <div class="terms-box">
+                    • <b>Garantía y Responsabilidad:</b> La garantía de los productos comercializados corresponde de manera directa al comercio que efectúa la venta.<br>
+                    • <b>Facturación:</b> El comercio emite y reenvía la factura digital a LO TENGO para su distribución automática al correo del cliente final.<br>
+                    • <b>Corte Operativo de Pedidos:</b> Gastronomía realiza corte automático 25 minutos antes del cierre. El resto de los rubros efectúa corte 2 horas antes del cierre del local.<br>
+                    • <b>Liquidaciones:</b> Semanales mediante transferencia bancaria configurada, aplicando la comisión vigente acordada.
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 8px; margin: 10px 0;">
+                    <input type="checkbox" id="regTerminosCheck" style="width: auto; margin: 0;">
+                    <label for="regTerminosCheck" style="font-size: 12px; color: #555; margin: 0; cursor: pointer;">Acepto los términos, condiciones y normativas operativas.</label>
+                </div>
+
+                <button type="button" onclick="completarRegistroEmpresa()" style="background: var(--success); margin-top: 6px;">Crear Cuenta Empresa</button>
+                <button type="button" onclick="irLoginEmpresa()" class="link-btn" style="width:100%; text-align:center;">Volver al login</button>
+            </div>
+        </div>
+
+        <!-- Barra de Navegación Inferior del Panel Empresa -->
+        <div class="bottom-nav" id="bottom-nav-empresa" style="display: none;">
+            <button class="nav-item active" onclick="mostrarDashboardEmpresa()"><span>📊</span>Dash</button>
+            <button class="nav-item" onclick="mostrarGestionCatalogo()"><span>📦</span>Catálogo</button>
+            <button class="nav-item" onclick="mostrarPedidosEntrantesComercio()"><span>🛎️</span>Cocina <span id="badge-pedidos-count" style="background:var(--secondary); color:white; border-radius:50%; padding:1px 4px; font-size:8px; display:inline-block; vertical-align:top; margin-left:1px;">0</span></button>
+            <button class="nav-item" onclick="mostrarPedidosEnRutaComercio()"><span>🛵</span>Envíos</button>
+            <button class="nav-item" onclick="mostrarHistorialFinancieroComercio()"><span>💰</span>Historial</button>
+            <button class="nav-item" onclick="cerrarSesionEmpresa()"><span>🚪</span>Salir</button>
+        </div>
+    </div>
+
+    <!-- Script Integrado con WebSockets y Sincronización Backend -->
+    <script>
+        const socket = io("http://localhost:3000");
+
+        let temporizadoresGlobales = {};
+        let ultimoHashPedidos = "";
+
+        socket.on('connect', () => {
+            const statusEl = document.getElementById('socket-status');
+            if (statusEl) {
+                statusEl.innerText = "Conectado";
+                statusEl.style.background = "var(--success)";
+            }
+            
+            // Si ya hay sesión activa, re-registramos el dispositivo en el backend
+            let sesion = localStorage.getItem('lt_sesion_empresa');
+            if (sesion) {
+                try {
+                    let empresa = JSON.parse(sesion);
+                    let idComercio = empresa.rut || empresa.nombre;
+                    socket.emit('registrar_dispositivo', { tipo: 'empresa', id: idComercio });
+                } catch(e) {}
+            }
+        });
+
+        socket.on('disconnect', () => {
+            const statusEl = document.getElementById('socket-status');
+            if (statusEl) {
+                statusEl.innerText = "Desconectado";
+                statusEl.style.background = "var(--danger)";
+            }
+        });
+
+        // Escucha de nuevos pedidos entrantes en tiempo real desde el servidor
+        socket.on('nuevo_pedido_comercio', (pedido) => {
+            let emp = obtenerEmpresaActualizada();
+            if (emp) {
+                if (!emp.pedidos) emp.pedidos = [];
+                // Evitar duplicados
+                let existe = emp.pedidos.some(p => Number(p.id) === Number(pedido.id));
+                if (!existe) {
+                    emp.pedidos.push(pedido);
+                    guardarEmpresaActualizadaEnBase(emp);
+                    actualizarContadorPedidosBadge(emp.rut || emp.nombre);
+                    
+                    // Refrescar vistas si está en cocina
+                    const contenedor = document.getElementById('main-content-empresa');
+                    if (contenedor && document.getElementById('bandera-vista-pedidos')) {
+                        mostrarPedidosEntrantesComercio();
+                    }
+                    alert(`🛎️ ¡Nuevo pedido recibido #${pedido.id} de ${pedido.cliente}!`);
+                }
+            }
+        });
+
+        document.addEventListener("DOMContentLoaded", () => {
+            inicializarBaseDatosEmpresasPorDefecto();
+            verificarSesionEmpresa();
+            configurarEventosLoginEmpresa();
+            
+            // Sincronización automática de respaldo por si acaso cada 2 segundos
+            setInterval(() => {
+                let sesion = localStorage.getItem('lt_sesion_empresa');
+                if (sesion) {
+                    let empActual = obtenerEmpresaActualizada();
+                    if (empActual) {
+                        actualizarContadorPedidosBadge(empActual.rut || empActual.nombre);
+                        
+                        let stringPedidos = JSON.stringify(empActual.pedidos || []);
+                        if (stringPedidos !== ultimoHashPedidos) {
+                            ultimoHashPedidos = stringPedidos;
+                            const contenedor = document.getElementById('main-content-empresa');
+                            if (contenedor && document.getElementById('bandera-vista-pedidos')) {
+                                mostrarPedidosEntrantesComercio();
+                            } else if (contenedor && document.getElementById('bandera-vista-envios')) {
+                                mostrarPedidosEnRutaComercio();
+                            }
+                        }
+                    }
+                }
+            }, 2000);
+
+            window.addEventListener('storage', () => {
+                let emp = obtenerEmpresaActualizada();
+                if (emp) {
+                    actualizarContadorPedidosBadge(emp.rut || emp.nombre);
+                    const contenedor = document.getElementById('main-content-empresa');
+                    if (contenedor && document.getElementById('bandera-vista-pedidos')) {
+                        mostrarPedidosEntrantesComercio();
+                    } else if (contenedor && document.getElementById('bandera-vista-envios')) {
+                        mostrarPedidosEnRutaComercio();
+                    }
+                }
+            });
+        });
+
+        function inicializarBaseDatosEmpresasPorDefecto() {
+            let base = localStorage.getItem('lt_base_empresas');
+            if (!base) {
+                const empresasDemo = [
+                    {
+                        rut: '210000000018',
+                        nombre: 'Hamburguesas El Mono',
+                        razonSocial: 'El Mono S.R.L.',
+                        giro: 'Gastronomía',
+                        logo: '',
+                        telefono: '099887766',
+                        direccion: 'Bulevar Artigas 4521',
+                        direccionRetiro: 'Bulevar Artigas 4521',
+                        email: 'mono@hamburguesas.com',
+                        banco: 'BROU CA 001234567',
+                        password: '123',
+                        productos: [
+                            { id: 1, nombre: 'Hamburguesa Doble Cheddar Real', precio: 380, stock: 25, enOutlet: false, descuento: 0, imagen: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=400&q=80' }
+                        ],
+                        pedidos: []
+                    }
+                ];
+                localStorage.setItem('lt_base_empresas', JSON.stringify(empresasDemo));
+            }
+        }
+
+        function verificarSesionEmpresa() {
+            const sesion = localStorage.getItem('lt_sesion_empresa');
+            if (sesion) {
+                try {
+                    const empresa = JSON.parse(sesion);
+                    let empresaReal = obtenerEmpresaActualizadaPorIdentificador(empresa.nombre || empresa.rut);
+                    if (empresaReal) {
+                        document.getElementById('header-empresa-info').innerText = empresaReal.nombre;
+                        document.getElementById('bottom-nav-empresa').style.display = 'flex';
+                        actualizarContadorPedidosBadge(empresaReal.rut || empresaReal.nombre);
+                        
+                        // Registrar en socket
+                        socket.emit('registrar_dispositivo', { tipo: 'empresa', id: empresaReal.rut || empresaReal.nombre });
+                        
+                        mostrarDashboardEmpresa();
+                    }
+                } catch (e) { console.error(e); }
+            }
+        }
+
+        function configurarEventosLoginEmpresa() {
+            const btnReg = document.getElementById('irARegistroEmpresa');
+            if (btnReg) {
+                btnReg.onclick = () => {
+                    document.getElementById('screen-login-empresa').style.display = 'none';
+                    document.getElementById('screen-registro-empresa').style.display = 'block';
+                };
+            }
+
+            const rutGuardado = localStorage.getItem('lt_recordar_rut_empresa');
+            if (rutGuardado) {
+                const inputRut = document.getElementById('loginRutEmpresa');
+                const checkRecordar = document.getElementById('recordarUsuarioEmpresa');
+                if (inputRut) inputRut.value = rutGuardado;
+                if (checkRecordar) checkRecordar.checked = true;
+            }
+
+            const btnIng = document.getElementById('btnIngresarEmpresa');
+            if (btnIng) {
+                btnIng.onclick = () => {
+                    ejecutarLoginEmpresa();
+                };
+            }
+        }
+
+        function verificarRubroAdultosRegistro() {
+            let giro = document.getElementById('regEmpGiro').value;
+            let avisoAdultos = document.getElementById('aviso-adultos-registro');
+            let contenedorNuevo = document.getElementById('contenedor-nuevo-rubro');
+            
+            if (giro === 'Adultos (+18)') {
+                avisoAdultos.style.display = 'block';
+            } else {
+                avisoAdultos.style.display = 'none';
+            }
+
+            if (giro === 'Otro') {
+                contenedorNuevo.style.display = 'block';
+            } else {
+                contenedorNuevo.style.display = 'none';
+            }
+        }
+
+        function ejecutarLoginEmpresa() {
+            const userInput = document.getElementById('loginRutEmpresa').value.trim();
+            const passInput = document.getElementById('loginPassEmpresa').value.trim();
+            const recordar = document.getElementById('recordarUsuarioEmpresa').checked;
+
+            if (!userInput || !passInput) {
+                alert("⚠️ Ingresá tu nombre de fantasía o usuario y contraseña.");
+                return;
+            }
+
+            let base = JSON.parse(localStorage.getItem('lt_base_empresas')) || [];
+            let emp = base.find(e => 
+                (String(e.nombre).trim().toLowerCase() === userInput.toLowerCase() || String(e.rut).trim() === userInput) && 
+                String(e.password).trim() === passInput
+            );
+
+            if (!emp) {
+                if ((userInput === '210000000018' || userInput.toLowerCase() === 'hamburguesas el mono') && passInput === '123') {
+                    inicializarBaseDatosEmpresasPorDefecto();
+                    base = JSON.parse(localStorage.getItem('lt_base_empresas')) || [];
+                    emp = base.find(e => String(e.rut).trim() === '210000000018');
+                } else {
+                    alert("❌ Usuario o contraseña incorrectos. Verificá los datos ingresados.");
+                    return;
+                }
+            }
+
+            if (recordar) {
+                localStorage.setItem('lt_recordar_rut_empresa', userInput);
+            } else {
+                localStorage.removeItem('lt_recordar_rut_empresa');
+            }
+
+            localStorage.setItem('lt_sesion_empresa', JSON.stringify(emp));
+            
+            // Emitir registro de dispositivo socket al iniciar sesión
+            socket.emit('registrar_dispositivo', { tipo: 'empresa', id: emp.rut || emp.nombre });
+
+            location.reload();
+        }
+
+        function completarRegistroEmpresa() {
+            let nombre = document.getElementById('regEmpNombre').value.trim();
+            let razonSocial = document.getElementById('regEmpRazon').value.trim();
+            let rut = document.getElementById('regEmpRut').value.trim();
+            let giro = document.getElementById('regEmpGiro').value;
+            let nuevoRubroTexto = document.getElementById('regEmpNuevoRubroTexto').value.trim();
+            let email = document.getElementById('regEmpEmail').value.trim();
+            let telefono = document.getElementById('regEmpTel').value.trim();
+            let direccionFiscal = document.getElementById('regEmpDirFiscal').value.trim();
+            let direccionRetiro = document.getElementById('regEmpDirRetiro').value.trim();
+            let banco = document.getElementById('regEmpBanco').value.trim();
+            let password = document.getElementById('regEmpPass').value.trim();
+            let terminosAceptados = document.getElementById('regTerminosCheck').checked;
+            let fileInput = document.getElementById('regEmpLogoFile');
+
+            if (!terminosAceptados) {
+                alert("⚠️ Debes aceptar los Términos y Condiciones del Servicio para registrarte.");
+                return;
+            }
+
+            if (giro === 'Otro' && nuevoRubroTexto) {
+                giro = nuevoRubroTexto;
+            }
+
+            if (!nombre || !password) { alert("⚠️ Completá al menos el nombre de fantasía y la contraseña."); return; }
+
+            let base = JSON.parse(localStorage.getItem('lt_base_empresas')) || [];
+            if (base.some(e => String(e.nombre).trim().toLowerCase() === nombre.toLowerCase())) { 
+                alert("⚠️ Ya existe un local registrado con este Nombre de Fantasía."); 
+                return; 
+            }
+
+            let datosNuevaEmpresa = {
+                rut: rut || 'SIN_RUT_' + Date.now(),
+                nombre,
+                razonSocial,
+                giro,
+                email,
+                telefono,
+                banco,
+                direccion: direccionFiscal || 'Montevideo',
+                direccionRetiro: direccionRetiro || direccionFiscal || 'Montevideo',
+                password,
+                productos: [],
+                pedidos: []
+            };
+
+            if (fileInput.files && fileInput.files[0]) {
+                let reader = new FileReader();
+                reader.onload = function(e) {
+                    datosNuevaEmpresa.logo = e.target.result;
+                    guardarEmpresaConLogo(base, datosNuevaEmpresa);
+                };
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                datosNuevaEmpresa.logo = '';
+                guardarEmpresaConLogo(base, datosNuevaEmpresa);
+            }
+        }
+
+        function guardarEmpresaConLogo(base, nuevaEmpresa) {
+            base.push(nuevaEmpresa);
+            localStorage.setItem('lt_base_empresas', JSON.stringify(base));
+            localStorage.setItem('lt_sesion_empresa', JSON.stringify(nuevaEmpresa));
+            
+            socket.emit('registrar_dispositivo', { tipo: 'empresa', id: nuevaEmpresa.rut || nuevaEmpresa.nombre });
+
+            alert("✅ ¡Comercio registrado con éxito!");
+            location.reload();
+        }
+
+        function guardarEmpresaActualizadaEnBase(emp) {
+            let base = JSON.parse(localStorage.getItem('lt_base_empresas')) || [];
+            let index = base.findIndex(e => String(e.nombre).trim().toLowerCase() === String(emp.nombre).trim().toLowerCase() || String(e.rut).trim() === String(emp.rut).trim());
+            if (index !== -1) {
+                base[index] = emp;
+            } else {
+                base.push(emp);
+            }
+            localStorage.setItem('lt_base_empresas', JSON.stringify(base));
+            localStorage.setItem('lt_sesion_empresa', JSON.stringify(emp));
+        }
+
+        function irLoginEmpresa() {
+            document.getElementById('screen-registro-empresa').style.display = 'none';
+            document.getElementById('screen-login-empresa').style.display = 'block';
+        }
+
+        function cerrarSesionEmpresa() {
+            localStorage.removeItem('lt_sesion_empresa');
+            location.reload();
+        }
+
+        function obtenerEmpresaActualizada() {
+            let sesion = JSON.parse(localStorage.getItem('lt_sesion_empresa'));
+            if (!sesion) return null;
+            return obtenerEmpresaActualizadaPorIdentificador(sesion.nombre || sesion.rut);
+        }
+
+        function obtenerEmpresaActualizadaPorIdentificador(identificador) {
+            let base = JSON.parse(localStorage.getItem('lt_base_empresas')) || [];
+            let emp = base.find(e => String(e.nombre).trim().toLowerCase() === String(identificador).trim().toLowerCase() || String(e.rut).trim() === String(identificador).trim());
+            if (emp) {
+                localStorage.setItem('lt_sesion_empresa', JSON.stringify(emp));
+            }
+            return emp;
+        }
+
+        function actualizarContadorPedidosBadge(identificador) {
+            let emp = obtenerEmpresaActualizadaPorIdentificador(identificador);
+            if (emp && emp.pedidos) {
+                let pendientes = emp.pedidos.filter(p => {
+                    let st = (p.estado || '').toLowerCase().trim();
+                    return st !== 'listo para retirar (en ruta/cadete)' && 
+                           !st.includes('entregado') && 
+                           !st.includes('cerrado');
+                });
+                let badge = document.getElementById('badge-pedidos-count');
+                if (badge) badge.innerText = pendientes.length;
+            }
+        }
+
+        function mostrarDashboardEmpresa() {
+            actualizarMenuActivoEmpresa(0);
+            let emp = obtenerEmpresaActualizada();
+            if (!emp) return;
+
+            const container = document.getElementById('main-content-empresa');
+            let totalPedidos = (emp.pedidos || []).filter(p => {
+                let st = (p.estado || '').toLowerCase().trim();
+                return st !== 'listo para retirar (en ruta/cadete)' && !st.includes('entregado') && !st.includes('cerrado');
+            }).length;
+            let totalEnRuta = (emp.pedidos || []).filter(p => p.estado === 'Listo para Retirar (En Ruta/Cadete)').length;
+
+            let mostrarLogoEnDashboard = (emp.logo);
+
+            container.innerHTML = `
+                <div style="background: linear-gradient(135deg, var(--primary), #004080); color:white; padding:20px; border-radius:var(--radius); margin-bottom:18px; display:flex; align-items:center; gap:15px;">
+                    ${mostrarLogoEnDashboard ? `<img src="${emp.logo}" style="width:60px; height:60px; border-radius:50%; object-fit:cover; border:2px solid white; background:#fff;" alt="Logo">` : ''}
+                    <div style="flex:1;">
+                        <h3 style="margin:0 0 5px 0;">🏪 ${emp.nombre}</h3>
+                        <p style="margin:0 0 4px 0; font-size:12px; opacity:0.9;">🏷️ Giro: <b>${emp.giro || 'No especificado'}</b></p>
+                        <p style="margin:0; font-size:12px; opacity:0.9;">📍 Retiro: ${emp.direccionRetiro || emp.direccion}</p>
+                    </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:15px;">
+                    <div style="background:#fff; border:1px solid var(--border); padding:12px; border-radius:var(--radius); text-align:center; cursor:pointer;" onclick="mostrarPedidosEntrantesComercio()">
+                        <span style="font-size:22px;">🛎️</span>
+                        <h4 style="margin:4px 0 0 0; color:var(--secondary);">${totalPedidos}</h4>
+                        <p style="margin:0; font-size:11px; color:#666;">Cocina Activos</p>
+                    </div>
+                    <div style="background:#fff; border:1px solid var(--border); padding:12px; border-radius:var(--radius); text-align:center; cursor:pointer;" onclick="mostrarPedidosEnRutaComercio()">
+                        <span style="font-size:22px;">🛵</span>
+                        <h4 style="margin:4px 0 0 0; color:var(--success);">${totalEnRuta}</h4>
+                        <p style="margin:0; font-size:11px; color:#666;">Esperando Cadete</p>
+                    </div>
+                </div>
+
+                <button type="button" onclick="mostrarGestionCatalogo()" style="background:var(--secondary); margin-bottom:8px;">+ Agregar Nuevo Producto</button>
+            `;
+        }
+
+        function mostrarGestionCatalogo() {
+            actualizarMenuActivoEmpresa(1);
+            let emp = obtenerEmpresaActualizada();
+            if (!emp) return;
+
+            const esGastronomia = (emp.giro || '').toLowerCase().includes('gastronomía');
+
+            const container = document.getElementById('main-content-empresa');
+            let prodsHtml = (emp.productos || []).map(p => `
+                <div class="gestion-card">
+                    <img src="${p.imagen || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=200&q=80'}" class="gestion-avatar" alt="${p.nombre}">
+                    <div style="flex:1;">
+                        <h4 style="margin:0 0 2px 0; color:var(--primary); font-size:14px;">${p.nombre}</h4>
+                        <p style="margin:0; font-size:13px; font-weight:bold; color:var(--success);">$${p.precio} | Stock: ${p.stock !== undefined ? p.stock : 10} un. ${p.enOutlet ? '<span class="badge-outlet">Outlet -'+p.descuento+'%</span>' : ''}</p>
+                    </div>
+                    <button type="button" onclick="eliminarProductoComercio(${p.id})" style="width:auto; padding:8px 10px; font-size:11px; background:#dc3545;">Eliminar</button>
+                </div>
+            `).join('') || '<p style="text-align:center; color:#666;">No tenés productos cargados aún.</p>';
+
+            container.innerHTML = `
+                <div class="section-title"><span>📦 Mi Catálogo Exclusivo</span></div>
+                
+                <div style="background: linear-gradient(135deg, #002855, #004080); color:white; padding:12px 15px; border-radius:var(--radius); margin-bottom:15px;">
+                    <h4 style="margin:0 0 4px 0; font-size:14px;">🚀 Potencia tus Ventas / Máxima Exposición</h4>
+                    <p style="margin:0 0 8px 0; font-size:11px; opacity:0.9;">Destacá hasta 5 productos por semana para duplicar tus ventas ($300 semanales por producto, sin compromiso).</p>
+                    <button type="button" onclick="contratarPotenciaVentas()" style="background:var(--secondary); font-size:12px; padding:8px;">Contratar Exposición Semanal ($300)</button>
+                </div>
+
+                <div style="background:#fff; border:1px solid var(--border); padding:15px; border-radius:var(--radius); margin-bottom:15px;">
+                    <h4 style="margin:0 0 10px 0; color:var(--primary); font-size:14px;">Agregar Nuevo Artículo</h4>
+                    
+                    <input type="text" id="nuevoProdNombre" placeholder="Nombre del producto o plato">
+                    <input type="number" id="nuevoProdPrecio" placeholder="Precio en $ (ej: 450)">
+                    <input type="number" id="nuevoProdStock" placeholder="Stock disponible por unidad" min="1" value="10">
+                    
+                    ${esGastronomia ? `
+                        <label style="font-size: 12px; color: #555; display:block; margin-top:6px;">Ingredientes / Notas de personalización:</label>
+                        <textarea id="nuevoProdNotas" placeholder="Ej: Lleva lechuga, tomate, mayonesa (permite quitar ingredientes)" style="height:60px;"></textarea>
+                    ` : ''}
+
+                    <label style="font-size: 12px; color: #555; display:block; margin-top:6px;">Foto del Producto (Hasta 5 fotos - Cámara o Archivo):</label>
+                    <input type="file" id="nuevoProdFile" accept="image/*" capture="environment">
+
+                    ${!esGastronomia ? `
+                        <label style="font-size: 12px; display:flex; align-items:center; gap:8px; margin: 8px 0;">
+                            <input type="checkbox" id="nuevoProdOutlet" style="width:auto; margin:0;" onclick="toggleOutletCampos()"> Publicar en Zona Outlet con descuento
+                        </label>
+                        <div id="contenedor-outlet-extra" style="display:none;">
+                            <input type="number" id="nuevoProdDescuento" placeholder="% de Descuento (ej: 20)" style="margin-bottom:6px;">
+                            <input type="number" id="nuevoProdHorasOutlet" placeholder="Duración cuenta regresiva (en horas, ej: 24)" style="margin-bottom:10px;">
+                        </div>
+                    ` : ''}
+
+                    <button type="button" onclick="guardarNuevoProducto()" style="background:var(--success);">Guardar en Catálogo</button>
+                </div>
+                ${prodsHtml}
+            `;
+        }
+
+        function toggleOutletCampos() {
+            let check = document.getElementById('nuevoProdOutlet');
+            let contenedorExtra = document.getElementById('contenedor-outlet-extra');
+            if (check && contenedorExtra) {
+                contenedorExtra.style.display = check.checked ? 'block' : 'none';
+            }
+        }
+
+        function contratarPotenciaVentas() {
+            alert("🚀 ¡Solicitud de 'Potencia tus Ventas' enviada con éxito! Se debitarán $300 de tu próxima liquidación semanal.");
+        }
+
+        function guardarNuevoProducto() {
+            let nombre = document.getElementById('nuevoProdNombre').value.trim();
+            let precio = parseFloat(document.getElementById('nuevoProdPrecio').value);
+            let stock = parseInt(document.getElementById('nuevoProdStock').value);
+            let notaInput = document.getElementById('nuevoProdNotas');
+            let notasDisponibles = notaInput ? notaInput.value.trim() : '';
+            let fileInput = document.getElementById('nuevoProdFile');
+            
+            let chkOutlet = document.getElementById('nuevoProdOutlet');
+            let enOutlet = chkOutlet ? chkOutlet.checked : false;
+            let descuento = parseFloat(document.getElementById('nuevoProdDescuento') ? document.getElementById('nuevoProdDescuento'].value : 0) || 0;
+            let horasOutlet = parseInt(document.getElementById('nuevoProdHorasOutlet') ? document.getElementById('nuevoProdHorasOutlet'].value : 24) || 24;
+
+            if (!nombre || isNaN(precio) || isNaN(stock)) { 
+                alert("⚠️ Completá el nombre, el precio y el stock obligatorio."); 
+                return; 
+            }
+
+            if (fileInput.files && fileInput.files[0]) {
+                let reader = new FileReader();
+                reader.onload = function(e) {
+                    procesarGuardadoProducto(nombre, precio, stock, notasDisponibles, e.target.result, enOutlet, descuento, horasOutlet);
+                };
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                procesarGuardadoProducto(nombre, precio, stock, notasDisponibles, 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80', enOutlet, descuento, horasOutlet);
+            }
+        }
+
+        function procesarGuardadoProducto(nombre, precio, stock, notasDisponibles, imagen, enOutlet, descuento, horasOutlet) {
+            let base = JSON.parse(localStorage.getItem('lt_base_empresas')) || [];
+            let sesion = JSON.parse(localStorage.getItem('lt_sesion_empresa'));
+            let emp = base.find(e => String(e.nombre).trim().toLowerCase() === String(sesion.nombre).trim().toLowerCase() || String(e.rut).trim() === String(sesion.rut).trim());
+
+            if (!emp.productos) emp.productos = [];
+            let nuevoP = {
+                id: Date.now(),
+                nombre,
+                precio,
+                stock,
+                notasDisponibles,
+                enOutlet,
+                descuento,
+                tiempoFinOutlet: enOutlet ? (Date.now() + (horasOutlet * 3600 * 1000)) : null,
+                imagen
+            };
+
+            emp.productos.push(nuevoP);
+            guardarEmpresaActualizadaEnBase(emp);
+
+            alert("✅ ¡Producto agregado con éxito con control de stock!");
+            mostrarGestionCatalogo();
+        }
+
+        function eliminarProductoComercio(idProd) {
+            if (!confirm("¿Estás seguro de eliminar este producto?")) return;
+            let base = JSON.parse(localStorage.getItem('lt_base_empresas')) || [];
+            let sesion = JSON.parse(localStorage.getItem('lt_sesion_empresa'));
+            let emp = base.find(e => String(e.nombre).trim().toLowerCase() === String(sesion.nombre).trim().toLowerCase() || String(e.rut).trim() === String(sesion.rut).trim());
+
+            emp.productos = emp.productos.filter(p => p.id !== idProd);
+            guardarEmpresaActualizadaEnBase(emp);
+
+            mostrarGestionCatalogo();
+        }
+
+        function mostrarPedidosEntrantesComercio() {
+            actualizarMenuActivoEmpresa(2);
+            let emp = obtenerEmpresaActualizada();
+            if (!emp) return;
+
+            actualizarContadorPedidosBadge(emp.rut || emp.nombre);
+            const container = document.getElementById('main-content-empresa');
+            
+            Object.values(temporizadoresGlobales).forEach(t => clearInterval(t));
+            temporizadoresGlobales = {};
+
+            let pedidosActivos = (emp.pedidos || []).filter(p => {
+                let st = (p.estado || '').toLowerCase().trim();
+                return st !== 'listo para retirar (en ruta/cadete)' && 
+                       !st.includes('entregado') && 
+                       !st.includes('cerrado');
+            });
+            pedidosActivos.sort((a, b) => b.id - a.id);
+
+            let htmlPedidos = pedidosActivos.map(p => {
+                let textoQr = `PEDIDO:#${p.id}|CLIENTE:${p.cliente}|PIN:${p.codigoVerificacion}|TOTAL:$${p.total}`;
+                let urlQr = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(textoQr)}`;
+
+                let itemsHtml = '';
+                if (p.items && p.items.length > 0) {
+                    itemsHtml = p.items.map(i => `
+                        <div style="font-size: 13px; border-bottom: 1px dashed #eee; padding: 6px 0;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span><b>${i.cantidad || 1}x</b> ${i.nombre}</span>
+                                <b style="color: #333;">$${(i.precio * (i.cantidad || 1))}</b>
+                            </div>
+                            ${i.nota ? `<div style="font-size: 11px; color: var(--secondary); margin-top: 2px;">📝 Nota / Quitar: ${i.nota}</div>` : ''}
+                        </div>
+                    `).join('');
+                } else if (p.descripcion) {
+                    itemsHtml = `<p style="font-size:13px; color:#333; margin:4px 0;">📦 <b>Detalle:</b> ${p.descripcion}</p>`;
+                } else {
+                    itemsHtml = `<p style="font-size:13px; color:#666; margin:4px 0;">Pedido directo de catálogo</p>`;
+                }
+
+                let estadoActual = p.estado || 'Recibido';
+                if (!p.tiempoInicioEstado) p.tiempoInicioEstado = Date.now();
+
+                return `
+                    <div style="background: #fff; border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: var(--radius); padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.02);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <strong style="color: var(--primary); font-size: 16px;">📦 Pedido #${p.id}</strong>
+                            <span style="font-size: 11px; background: #eef2f6; padding: 4px 10px; border-radius: 6px; font-weight: bold; color: var(--primary);">Estado: ${estadoActual}</span>
+                        </div>
+                        
+                        <p style="margin: 4px 0; font-size: 13px; color: #333;">👤 <b>Cliente:</b> ${p.cliente} <span style="color:#666; font-size:11px;">(${p.telefonoCliente || 'Sin tel'})</span></p>
+                        <p style="margin: 4px 0; font-size: 13px; color: #333;">📍 <b>Destino:</b> ${p.direccion} ${p.tipoEntrega === 'mostrador' ? '<b style="color:var(--secondary);">(Retira Mostrador)</b>' : ''}</p>
+                        
+                        <div style="background: #fdfdfd; border: 1px solid #eee; padding: 10px; border-radius: 8px; margin: 8px 0;">
+                            <span style="font-size: 11px; color: #666; font-weight: bold; display:block; margin-bottom:4px;">DETALLE DE PRODUCTOS:</span>
+                            ${itemsHtml}
+                            <div style="display: flex; justify-content: space-between; font-size: 14px; margin-top: 8px; border-top: 1px solid #ddd; padding-top: 6px;">
+                                <b>Total a cobrar:</b> <b style="color: var(--success);">$${p.total}</b>
+                            </div>
+                        </div>
+
+                        <div style="background: #fff3cd; border: 1px solid #ffeeba; padding: 8px 12px; border-radius: 8px; margin-top: 8px; display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 12px; color: #856404; font-weight: bold;">⏱️ Tiempo en (${estadoActual}):</span>
+                            <span id="cronometro-${p.id}" style="font-family: monospace; font-size: 16px; font-weight: bold; color: #856404;">00:00</span>
+                        </div>
+
+                        <div style="background: #eef2f6; padding: 10px; border-radius: 8px; margin-top: 10px;">
+                            <span style="font-size: 11px; color: #333; font-weight: bold; display:block; margin-bottom:6px;">⚡ GESTIÓN:</span>
+                            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                                <button type="button" onclick="cambiarEstadoPedido(${p.id}, 'En Preparación')" style="flex:1; min-width:120px; padding: 8px; font-size: 11px; background: var(--warning); color:#000;">1. En Preparación</button>
+                                <button type="button" onclick="cambiarEstadoPedido(${p.id}, 'Listo para Retirar (En Ruta/Cadete)')" style="flex:1; min-width:120px; padding: 8px; font-size: 11px; background: var(--success);">2. Poner en Camino (Liberar)</button>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 10px; align-items: center; background: #f8f9fa; border: 1px solid var(--border); padding: 10px; border-radius: 8px; margin-top: 10px;">
+                            <div style="flex: 1; text-align: center;">
+                                <span style="font-size: 11px; color: #137333; font-weight: bold; display:block;">🔑 PIN de Seguridad:</span>
+                                <h2 style="margin: 4px 0; color: #137333; letter-spacing: 3px; font-size: 20px;">${p.codigoVerificacion}</h2>
+                                <button type="button" onclick="imprimirTicketPedido(${p.id})" style="padding: 6px 10px; font-size: 11px; background: var(--primary); margin-top: 4px;">🖨️ Imprimir Ticket</button>
+                            </div>
+                            <div style="background: white; padding: 5px; border-radius: 6px; border: 1px solid #ddd; text-align: center;">
+                                <img src="${urlQr}" alt="QR Pedido #${p.id}" style="width: 75px; height: 75px; display: block; margin: 0 auto;">
+                                <span style="font-size: 9px; color: #666; display: block; margin-top: 2px;">QR Cadete</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('') || '<p style="text-align:center; color:#666; margin-top:30px;">No hay pedidos pendientes en preparación.</p>';
+
+            container.innerHTML = `
+                <div id="bandera-vista-pedidos"></div>
+                <div class="section-title">
+                    <span>🛎️ Pedidos en Cocina (Nuevos Arriba)</span>
+                    <button type="button" onclick="mostrarPedidosEntrantesComercio()" style="width:auto; padding:6px 10px; font-size:11px; background:var(--primary);">Actualizar 🔄</button>
+                </div>
+                ${htmlPedidos}
+            `;
+
+            guardarEmpresaActualizadaEnBase(emp);
+            pedidosActivos.forEach(p => iniciarCronometroEnVivo(p.id, p.tiempoInicioEstado));
+        }
+
+        function mostrarPedidosEnRutaComercio() {
+            actualizarMenuActivoEmpresa(3);
+            let emp = obtenerEmpresaActualizada();
+            if (!emp) return;
+
+            const container = document.getElementById('main-content-empresa');
+            let pedidosEnRuta = (emp.pedidos || []).filter(p => p.estado === 'Listo para Retirar (En Ruta/Cadete)');
+            pedidosEnRuta.sort((a, b) => b.id - a.id);
+
+            let htmlRuta = pedidosEnRuta.map(p => `
+                <div style="background: #fff; border: 1px solid var(--border); border-left: 4px solid var(--success); border-radius: var(--radius); padding: 15px; margin-bottom: 15px;">
+                    <strong style="color: var(--success); font-size: 16px;">🛵 Pedido #${p.id} (En Camino / Liberado)</strong>
+                    <p style="margin: 4px 0; font-size: 13px;">👤 <b>Cliente:</b> ${p.cliente} (${p.telefonoCliente || 'Sin tel'})</p>
+                    <p style="margin: 4px 0; font-size: 13px;">📍 <b>Destino:</b> ${p.direccion}</p>
+                    <p style="margin: 4px 0; font-size: 13px; color:var(--secondary);">🔑 <b>PIN de Entrega:</b> ${p.codigoVerificacion}</p>
+                    
+                    <div style="background: #fff3cd; border: 1px solid #ffeeba; padding: 10px; border-radius: 8px; margin-top: 10px; text-align: center;">
+                        <span style="font-size: 12px; color: #856404; font-weight: bold;">⏳ Cadete liberado y en ruta zonal...</span>
+                        <p style="font-size: 11px; color: #666; margin: 4px 0 0 0;">El pedido se cerrará automáticamente al confirmarse la entrega al cliente.</p>
+                    </div>
+                </div>
+            `).join('') || '<p style="text-align:center; color:#666; margin-top:30px;">No hay pedidos en ruta actualmente.</p>';
+
+            container.innerHTML = `
+                <div id="bandera-vista-envios"></div>
+                <div class="section-title">
+                    <span>🛵 Pedidos En Ruta / Liberados</span>
+                    <button type="button" onclick="mostrarPedidosEnRutaComercio()" style="width:auto; padding:6px 10px; font-size:11px; background:var(--primary);">Actualizar 🔄</button>
+                </div>
+                ${htmlRuta}
+            `;
+        }
+
+        function mostrarHistorialFinancieroComercio() {
+            actualizarMenuActivoEmpresa(4);
+            let emp = obtenerEmpresaActualizada();
+            if (!emp) return;
+
+            const container = document.getElementById('main-content-empresa');
+            let pedidosCerrados = (emp.pedidos || []).filter(p => {
+                let st = (p.estado || '').toLowerCase().trim();
+                return st.includes('entregado') || st.includes('cerrado');
+            });
+            pedidosCerrados.sort((a, b) => b.id - a.id);
+
+            const COMISION_PORCENTAJE = 0.10;
+            let brutoTotal = 0;
+            let comisionesTotal = 0;
+
+            let htmlHistorial = pedidosCerrados.map(p => {
+                let montoBruto = parseFloat(p.total) || 0;
+                let comision = montoBruto * COMISION_PORCENTAJE;
+                let neto = montoBruto - comision;
+
+                brutoTotal += montoBruto;
+                comisionesTotal += comision;
+
+                return `
+                    <div style="background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; margin-bottom: 10px; font-size: 13px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                            <b>Pedido #${p.id}</b>
+                            <span style="color:var(--success); font-weight:bold;">Entregado ✓</span>
+                        </div>
+                        <p style="margin:2px 0; color:#555;">Cliente: ${p.cliente}</p>
+                        <div style="display: flex; justify-content: space-between; border-top: 1px dashed #eee; margin-top: 6px; padding-top: 6px; font-size: 12px;">
+                            <span>Venta Bruta: $${montoBruto.toFixed(2)}</span>
+                            <span style="color:#dc3545;">Comisión (10%): -$${comision.toFixed(2)}</span>
+                            <b style="color:var(--primary);">Neto a Favor: $${neto.toFixed(2)}</b>
+                        </div>
+                    </div>
+                `;
+            }).join('') || '<p style="text-align:center; color:#666; margin-top:30px;">Aún no hay pedidos entregados en el historial.</p>';
+
+            let netoTotal = brutoTotal - comisionesTotal;
+
+            container.innerHTML = `
+                <div class="section-title"><span>💰 Historial y Liquidación</span></div>
+                <div style="background:linear-gradient(135deg, #137333, #0d5123); color:white; padding:15px; border-radius:var(--radius); margin-bottom:15px;">
+                    <h4 style="margin:0 0 8px 0; font-size:14px;">Resumen Financiero Acumulado</h4>
+                    <p style="margin:2px 0; font-size:12px; opacity:0.9;">Total Bruto Ventas: $${brutoTotal.toFixed(2)}</p>
+                    <p style="margin:2px 0; font-size:12px; opacity:0.9;">Total Comisiones Descontadas: -$${comisionesTotal.toFixed(2)}</p>
+                    <p style="margin:4px 0 0 0; font-size:11px; opacity:0.8;">Destino de Pago: <b>${emp.banco || 'Cuenta bancaria no especificada'}</b></p>
+                    <h3 style="margin:8px 0 0 0; font-size:18px; border-top:1px solid rgba(255,255,255,0.3); paddingTop:6px;">Neto Líquido: $${netoTotal.toFixed(2)}</h3>
+                </div>
+                ${htmlHistorial}
+            `;
+        }
+
+        function iniciarCronometroEnVivo(idPedido, timestampInicio) {
+            const elCronometro = document.getElementById(`cronometro-${idPedido}`);
+            if (!elCronometro) return;
+
+            function actualizarReloj() {
+                let ahora = Date.now();
+                let segundosTotales = Math.floor((ahora - timestampInicio) / 1000);
+                if (segundosTotales < 0) segundosTotales = 0;
+                let mins = Math.floor(segundosTotales / 60);
+                let secs = segundosTotales % 60;
+                elCronometro.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            }
+
+            actualizarReloj();
+            temporizadoresGlobales[idPedido] = setInterval(actualizarReloj, 1000);
+        }
+
+        window.cambiarEstadoPedido = function(idPedido, nuevoEstado) {
+            let emp = obtenerEmpresaActualizada();
+            if (!emp) return;
+
+            if (!emp.pedidos) emp.pedidos = [];
+            let pedido = emp.pedidos.find(p => Number(p.id) === Number(idPedido));
+
+            if (pedido) {
+                pedido.estado = nuevoEstado;
+                pedido.tiempoInicioEstado = Date.now();
+
+                // 1. Guardamos cambios locales y emitimos al servidor backend
+                guardarEmpresaActualizadaEnBase(emp);
+
+                // Emitir actualización vía Socket.io al servidor backend
+                socket.emit('pedido_actualizado', {
+                    id: pedido.id,
+                    estado: nuevoEstado,
+                    cliente: pedido.cliente,
+                    comercio: emp.nombre,
+                    rutComercio: emp.rut
+                });
+
+                // 2. Sincronizamos con el almacenamiento local compartido (Cliente y Cadete)
+                let pedidosCliente = JSON.parse(localStorage.getItem('lt_pedidos_cliente')) || [];
+                let pCliente = pedidosCliente.find(p => Number(p.id) === Number(idPedido));
+                if (pCliente) {
+                    pCliente.estado = nuevoEstado;
+                    localStorage.setItem('lt_pedidos_cliente', JSON.stringify(pedidosCliente));
+                }
+
+                if (nuevoEstado === 'Listo para Retirar (En Ruta/Cadete)') {
+                    let pedidosCadete = JSON.parse(localStorage.getItem('lt_pedidos_cadete')) || [];
+                    
+                    let pedidoParaCadete = {
+                        id: pedido.id,
+                        comercio: emp.nombre,
+                        rutComercio: emp.rut,
+                        direccionComercio: emp.direccionRetiro || emp.direccion,
+                        telefonoComercio: emp.telefono || '099000000',
+                        cliente: pedido.cliente,
+                        direccionCliente: pedido.direccion,
+                        telefonoCliente: pedido.telefonoCliente || 'Sin tel',
+                        total: pedido.total,
+                        formaPago: pedido.formaPago || 'Efectivo',
+                        codigoVerificacion: pedido.codigoVerificacion,
+                        tipoEntrega: pedido.tipoEntrega || 'domicilio',
+                        estado: 'Disponible para retirar',
+                        cadeteAsignado: null
+                    };
+
+                    let indexCadeteExistente = pedidosCadete.findIndex(p => Number(p.id) === Number(pedidoParaCadete.id));
+                    if (indexCadeteExistente !== -1) {
+                        pedidosCadete[indexCadeteExistente] = pedidoParaCadete;
+                    } else {
+                        pedidosCadete.push(pedidoParaCadete);
+                    }
+                    localStorage.setItem('lt_pedidos_cadete', JSON.stringify(pedidosCadete));
+                }
+
+                window.dispatchEvent(new Event('storage'));
+
+                alert(`✅ Pedido #${idPedido} actualizado a:\n"${nuevoEstado}"`);
+
+                if (nuevoEstado === 'Listo para Retirar (En Ruta/Cadete)') {
+                    mostrarPedidosEnRutaComercio();
+                } else {
+                    mostrarPedidosEntrantesComercio();
+                }
+            } else {
+                alert("⚠️ No se encontró el pedido a modificar.");
+            }
+        };
+
+        window.imprimirTicketPedido = function(idPedido) {
+            let emp = obtenerEmpresaActualizada();
+            if (!emp || !emp.pedidos) { alert("⚠️ No hay sesión activa."); return; }
+
+            let pedido = emp.pedidos.find(p => Number(p.id) === Number(idPedido));
+            if (!pedido) { alert("⚠️ No se encontró el pedido #" + idPedido); return; }
+
+            let itemsTicket = (pedido.items || []).map(i => `
+                <tr>
+                    <td>${i.cantidad || 1}x ${i.nombre} ${i.nota ? '<br><small>('+i.nota+')</small>' : ''}</td>
+                    <td style="text-align:right;">$${(i.precio * (i.cantidad || 1))}</td>
+                </tr>
+            `).join('') || `<tr><td colspan="2">${pedido.descripcion || 'Pedido de catálogo'}</td></tr>`;
+
+            let ventana = window.open('', '_blank', 'width=400,height=600');
+            ventana.document.write(`
+                <html>
+                <head><title>Ticket Pedido #${pedido.id}</title></head>
+                <body style="font-family: monospace; padding: 15px; font-size: 14px;">
+                    <h3 style="text-align:center; margin:0;">LO TENGO</h3>
+                    <p style="text-align:center; font-size:11px; margin:2px 0;">Comprobante para Comercio / Cocina</p>
+                    <hr>
+                    <p><b>Comercio:</b> ${emp.nombre}</p>
+                    <p><b>Pedido ID:</b> #${pedido.id}</p>
+                    <p><b>Cliente:</b> ${pedido.cliente} (${pedido.telefonoCliente || 'Sin tel'})</p>
+                    <p><b>Tipo:</b> ${pedido.tipoEntrega === 'mostrador' ? 'Retiro por Mostrador' : 'Envío a Domicilio'}</p>
+                    <hr>
+                    <table style="width:100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="border-bottom: 1px solid #000;">
+                                <th style="text-align:left;">Ítem</th>
+                                <th style="text-align:right;">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>${itemsTicket}</tbody>
+                    </table>
+                    <hr>
+                    <h3 style="text-align:right;">Total: $${pedido.total}</h3>
+                    <hr>
+                    <h2 style="text-align:center; margin:10px 0;">PIN: ${pedido.codigoVerificacion}</h2>
+                    <p style="text-align:center; font-size:11px;">(Si no cuenta con impresora, anote el nombre, dirección y PIN a mano)</p>
+                    <script>window.onload = function() { window.print(); }<\/script>
+                </body>
+                </html>
+            `);
+            ventana.document.close();
+        };
+
+        function actualizarMenuActivoEmpresa(index) {
+            const botones = document.querySelectorAll('.bottom-nav .nav-item');
+            botones.forEach((btn, idx) => {
+                if (idx === index) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+        }
+    </script>
+</body>
+</html>

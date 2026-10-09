@@ -1,0 +1,133 @@
+document.addEventListener("DOMContentLoaded", () => {
+    verificarSesionActiva();
+    inicializarFlujoRegistroWhatsApp();
+});
+
+// Revisa si hay sesión activa
+function verificarSesionActiva() {
+    const sesionGuardada = localStorage.getItem('lt_sesion_cliente');
+    if (sesionGuardada) {
+        try {
+            const usuario = JSON.parse(sesionGuardada);
+            mostrarPantallaPrincipal(usuario);
+        } catch (e) {
+            console.error("Error al leer sesión:", e);
+        }
+    }
+}
+
+function inicializarFlujoRegistroWhatsApp() {
+    const btnGenerarCodigo = document.getElementById('btnGenerarCodigo');
+    const btnIngresar = document.getElementById('btnIngresar');
+    const btnFinalizarRegistro = document.getElementById('btnFinalizarRegistro');
+
+    let telefonoActual = "";
+    let codigoGeneradoUnico = "";
+    let passwordElegida = "";
+
+    // Paso 1: Ingresar teléfono y generar código en pantalla
+    if (btnGenerarCodigo) {
+        btnGenerarCodigo.onclick = function() {
+            const tel = document.getElementById('txtTelefono').value;
+            if (!tel || tel.length < 8) {
+                alert("Por favor ingresá un número de teléfono válido.");
+                return;
+            }
+
+            telefonoActual = tel;
+            // Generamos un código aleatorio de 4 dígitos exclusivo para este número
+            codigoGeneradoUnico = Math.floor(1000 + Math.random() * 9000).toString();
+
+            // Mostramos el código generado en el cuadro visual
+            document.getElementById('lblCodigoMostrado').innerText = codigoGeneradoUnico;
+
+            // Ocultamos la sección de teléfono y mostramos la verificación
+            document.getElementById('step-phone').style.display = 'none';
+            document.getElementById('step-verify').style.display = 'block';
+        };
+    }
+
+    // Paso 2: Validar el código ingresado y la contraseña elegida al presionar "Ingresar"
+    if (btnIngresar) {
+        btnIngresar.onclick = function() {
+            const codigoIngresado = document.getElementById('txtCodigoIngresado').value;
+            const pass = document.getElementById('txtPasswordNueva').value;
+
+            if (codigoIngresado !== codigoGeneradoUnico) {
+                alert("❌ El código ingresado no coincide.");
+                return;
+            }
+
+            if (!pass || pass.length < 4) {
+                alert("⚠️ Por favor elegí una contraseña de al menos 4 caracteres.");
+                return;
+            }
+
+            passwordElegida = pass;
+
+            // Pasamos a completar los datos personales
+            document.getElementById('step-verify').style.display = 'none';
+            document.getElementById('step-profile').style.display = 'block';
+        };
+    }
+
+    // Paso 3: Guardar perfil completo con teléfono y contraseña
+    if (btnFinalizarRegistro) {
+        btnFinalizarRegistro.onclick = function() {
+            const nombre = document.getElementById('txtNombre').value;
+            const cedula = document.getElementById('txtCedula').value;
+            const correo = document.getElementById('txtCorreo').value;
+            const direccion = document.getElementById('txtDireccion').value;
+
+            if (!nombre || !cedula || !correo || !direccion) {
+                alert("⚠️ Completá todos los campos de la plantilla.");
+                return;
+            }
+
+            const datosUsuario = {
+                telefono: telefonoActual,
+                password: passwordElegida,
+                nombre: nombre,
+                cedula: cedula,
+                correo: correo,
+                direccion: direccion,
+                metodoPagoAgregado: false
+            };
+
+            localStorage.setItem('lt_sesion_cliente', JSON.stringify(datosUsuario));
+            alert("¡Registro exitoso! Ya estás adentro.");
+            mostrarPantallaPrincipal(datosUsuario);
+        };
+    }
+}
+
+// Pantalla principal y gestión de pagos/sesión
+function mostrarPantallaPrincipal(usuario) {
+    const container = document.getElementById('auth-section');
+    if (!container) return;
+
+    container.innerHTML = `
+        <h3 style="color: #002855; margin-top:0;">¡Hola, ${usuario.nombre}!</h3>
+        <div style="text-align: left; background: #f8f9fa; padding: 12px; border-radius: 8px; font-size: 13px; color: #444; margin-bottom: 15px;">
+            <p style="margin: 4px 0;"><strong>Teléfono:</strong> ${usuario.telefono}</p>
+            <p style="margin: 4px 0;"><strong>Cédula:</strong> ${usuario.cedula}</p>
+            <p style="margin: 4px 0;"><strong>Dirección:</strong> ${usuario.direccion}</p>
+            <p style="margin: 4px 0;"><strong>Correo:</strong> ${usuario.correo}</p>
+        </div>
+        <button id="btnPagar" type="button" style="background-color: #009ee3; margin-bottom: 10px;">Ir a Pagar (Mercado Pago)</button>
+        <button id="btnCerrarSesion" type="button" style="background-color: #d9534f;">Cerrar Sesión</button>
+    `;
+
+    document.getElementById('btnPagar').onclick = function() {
+        if (!usuario.metodoPagoAgregado) {
+            alert("⚠️ Atención: No se puede procesar el pago porque no tenés ningún medio de pago asociado. Agregá una tarjeta.");
+            return;
+        }
+        alert("Abriendo pasarela de pago...");
+    };
+
+    document.getElementById('btnCerrarSesion').onclick = function() {
+        localStorage.removeItem('lt_sesion_cliente');
+        location.reload();
+    };
+}
